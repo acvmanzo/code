@@ -332,7 +332,7 @@ def savebar(fname = 'bargraph'):
 
 
 
-def plotdata(dictdata, dictmeans, keylist, ptype, ylabel, ftitle, ymin=0, ylim=10, datac='b', meanc='r',
+def plotdata(dictdata, dictmeans, keylist, ptype, ylabel, ftitle, datac='b', meanc='r',
 bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titlesize='xx-large', xlabelsize='large'):
     """Plots either a bar graph or a scatter plot using data from 'dictdata', with means taken from 'dictmeans' in the
     order specified by 'keylist'.
@@ -419,7 +419,8 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
             plt.bar(x_list, meanyvals, width=0.5, color=bcolor, ecolor=bcolor, label=label)
         xtoffset = xtoffset + 0.25
         #This line specifies the x and y limits; modify as needed.
-        plt.axis([0.5, num+end, ymin, ylim])
+        #plt.axis([0.5, num+end, ymin, ylim])
+        plt.xlim(0.5, num+end)
 
     if ptype == 's':
 
@@ -441,7 +442,9 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
             elinewidth=2, barsabove='True', capsize=8, fmt='o')
 
         #This line specifies the x and y limits; modify as needed.
-        plt.axis([0.5, num+end, ymin, ylim])
+        #plt.axis([0.5, num+end, ymin, ylim])
+
+        plt.xlim(0.5, num+end)
 
 
     #xt specifies the x values for the x-axis labels.

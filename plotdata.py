@@ -9,55 +9,103 @@ def convtosec (minvalue, secvalue):
     return(60*minvalue + secvalue)
 
 
-def dictlat(fname):
-    """Generates three dictionaries from the data in fname, with the conditions as keywords.
+def courtshipline(string):
 
-    fname is of the following format:
-    Data, Offset (s), Well #, Genotype, Wing ext (m), Wing ext (s), Cop
-    Suc (m),Cop Suc (s),Cop Att 1 (m),Cop Att 1 (s)
+    cvals = {}
+    x = ['date', 'movie', 'offset', 'well', 'gen', 'wingm', 'wings', 'copsucm', 'copsucs', 'copatt1m', 'copatt1s']
+    y = string.split(',')[0:11]
+    z = zip(x, y)
 
-    Generates three dictionaries with latency to wing extension,
-    latency to successful copulation, and latency to first copulation
-    attempt.
+    for item in z:
+        cvals[item[0]] = item[1]
+
+    return(cvals)
+
+
+def dictlat(kind, fname):
+
+    """kind = 'wing', 'copatt1', 'copsuc'
+
     """
 
-
-    winglat = {}
-    copsuclat = {}
-    copattlat = {}
+    d = {}
 
     f = open(fname)
     f.next()
-
     for l in f:
-        date, movie, offset, well, gen, wingm, wings, copsucm, copsucs, copatt1m, copatt1s = l.split(',')[0:11]
+        cd= courtshipline(l)
 
-        for x in [winglat, copsuclat, copattlat]:
-            if gen not in x:
-                x[gen] = []
+        gen = cd['gen']
+        if gen not in d:
+            d[gen] = []
 
-        if wingm != 'x':
-            try:
-                winglat[gen].append(convtosec(float(wingm),
-                float(wings))-float(offset))
-            except ValueError:
-                continue
+        sm = kind + 'm'
+        ss = kind + 's'
 
-        if copsucm != 'x':
-            try:
-                copsuclat[gen].append(convtosec(float(copsucm),
-                float(copsucs))-float(offset))
-            except ValueError:
-                continue
+        if cd[sm] != 'x' and cd[sm] != '-':
+            d[gen].append(convtosec(float(cd[sm]), float(cd[ss]))-float(cd['offset']))
 
-        if copatt1m != 'x':
-            try:
-                copattlat[gen].append(convtosec(float(copatt1m),
-                float(copatt1s))-float(offset))
-            except ValueError:
-                continue
+    return(d)
 
-    return(winglat, copsuclat, copattlat)
+
+
+
+#def dictlat(fname):
+    #"""Generates three dictionaries from the data in fname, with the conditions as keywords.
+
+    #fname is of the following format:
+    #Data, Offset (s), Well #, Genotype, Wing ext (m), Wing ext (s), Cop
+    #Suc (m),Cop Suc (s),Cop Att 1 (m),Cop Att 1 (s)
+
+    #Generates three dictionaries with latency to wing extension,
+    #latency to successful copulation, and latency to first copulation
+    #attempt.
+    #"""
+
+
+    #winglat = {}
+    #copsuclat = {}
+    #copattlat = {}
+
+    #f = open(fname)
+    #f.next()
+
+
+    #for l in f:
+        #d = courtshipline(l)
+        #print(d)
+
+        #gen = d['gen']
+        #wingm = d['wingm']
+
+
+        #for x in [winglat, copsuclat, copattlat]:
+            #if gen not in x:
+                #x[gen] = []
+
+        #if wingm != 'x':
+            #try:
+                #winglat[gen].append(convtosec(float(wingm),
+                #float(wings))-float(offset))
+            #except ValueError:
+                #continue
+
+        #if copsucm != 'x':
+            #try:
+                #copsuclat[gen].append(convtosec(float(copsucm),
+                #float(copsucs))-float(offset))
+            #except ValueError:
+                #continue
+
+        #if copatt1m != 'x':
+            #try:
+                #copattlat[gen].append(convtosec(float(copatt1m),
+                #float(copatt1s))-float(offset))
+            #except ValueError:
+                #continue
+
+    #return(winglat, copsuclat, copattlat)
+
 
 
 def dictmeans(dict, label='data'):
@@ -85,23 +133,47 @@ def dictmeans(dict, label='data'):
     return(mean_dict)
 
 
-def plotlat(kind, fname, keyfile='keylist', type='b'):
+#def plotlat(kind, fname, keyfile='keylist', type='b'):
 
-    winglat, copsuclat, copattlat = dictlat(fname)
-    mwinglat, mcopsuclat, mcopattlat = map(dictmeans,[winglat, copsuclat, copattlat])
+    #winglat, copsuclat, copattlat = dictlat(fname)
+    #mwinglat, mcopsuclat, mcopattlat = map(dictmeans,[winglat, copsuclat, copattlat])
+
+    #if kind == 'wing':
+        #keylist = sorted(mwinglat.keys())
+        #fig1 = gpl.plotdata(winglat, mwinglat, keylist, type, ylabel='Latency (s)', ftitle = 'Latency to wing extension', ylim=60, ymin=0)
+
+    #if kind == 'copsuc':
+
+        #keylist = sorted(mcopsuclat.keys())
+        #fig1 = gpl.plotdata(copsuclat, mcopsuclat, keylist, type, ylabel='Latency (s)', ftitle = 'Latency to copulation', ylim=400, ymin=0)
+
+    #if kind == 'copatt':
+        #keylist = sorted(mcopattlat.keys())
+        #fig1 = gpl.plotdata(copattlat, mcopattlat, keylist, type, ylabel='Latency (s)', ftitle = 'Latency to first copulation attempt', ylim=300, ymin=0)
+
+
+def plotlat(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
+
+    d = dictlat(kind, fname)
+    md = dictmeans(d)
+
+    if iskeyfile == 'true':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = sorted(d.keys())
+
+    ylabel = 'Latency (s)'
 
     if kind == 'wing':
-        keylist = sorted(mwinglat.keys())
-        fig1 = gpl.plotdata(winglat, mwinglat, keylist, type, ylabel='Latency (s)', ftitle = 'Latency to wing extension', ylim=60, ymin=0)
+        ftitle = 'Latency to wing extension'
 
     if kind == 'copsuc':
+        ftitle = 'Latency to copulation'
 
-        keylist = sorted(mcopsuclat.keys())
-        fig1 = gpl.plotdata(copsuclat, mcopsuclat, keylist, type, ylabel='Latency (s)', ftitle = 'Latency to copulation', ylim=400, ymin=0)
+    if kind == 'copatt1':
+        ftitle = 'Latency to first copulation attempt'
 
-    if kind == 'copatt':
-        keylist = sorted(mcopattlat.keys())
-        fig1 = gpl.plotdata(copattlat, mcopattlat, keylist, type, ylabel='Latency (s)', ftitle = 'Latency to first copulation attempt', ylim=300, ymin=0)
+    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle)
 
 
 def dictfreq(fname):
@@ -164,11 +236,13 @@ def savegraph(fname = 'graph'):
     plt.savefig(fname)
 
 
-def dictshaptest(dict):
 
+KINDLIST = ['wing', 'copsuc', 'copatt1']
+FNAME = '2013-07_courtship_inprog.csv'
 
-
-#FNAME = '2013-07_courtship_inprog.csv'
+for KIND in KINDLIST:
+    plotlat(KIND, FNAME)
+    savegraph(KIND+'lat')
 
 #plotfreq('wing', FNAME)
 #savegraph('wingfreq')
