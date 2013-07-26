@@ -168,14 +168,14 @@ def savegraph(fname = 'graph'):
     plt.savefig(fname)
 
 
-KINDLIST = ['wing', 'copsuc', 'copatt1']
-FNAME = '2013-07_courtship_inprog.csv'
+#KINDLIST = ['wing', 'copsuc', 'copatt1']
+#FNAME = '2013-07_courtship_inprog.csv'
 
-for KIND in KINDLIST:
-    plotlat(KIND, FNAME)
-    savegraph(KIND+'lat')
-    plotfreq(KIND, FNAME)
-    savegraph(KIND+'freq')
+#for KIND in KINDLIST:
+    #plotlat(KIND, FNAME)
+    #savegraph(KIND+'lat')
+    #plotfreq(KIND, FNAME)
+    #savegraph(KIND+'freq')
 
 
 
