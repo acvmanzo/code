@@ -35,15 +35,10 @@ def writeshapfile(shapfile, datadict, kind):
             f.write('{0}\t{1}\t{2:.4g}\n'.format(n, kind, x[1][0]))
 
 
-
 def dictmw(datadict):
 
     r = robjects.r
     unlist = r['unlist']
-    #k = KINDLIST[0]
-    #d = pd.dictlat(k, DATAFILE)
-
-    #mwlist = []
     mwdict = {}
 
     for i,v in datadict.iteritems():
@@ -51,7 +46,6 @@ def dictmw(datadict):
         v, ctrl = map(unlist, [v, d[CTRL]])
         mw = rsl.mannwhitney(v, ctrl)
 
-        #mwlist.append((i, mw.rx('p.value')[0][0]))
         mwdict[i] = {}
         mwdict[i]['sigtest'] = mw.rx('method')[0][0]
         mwdict[i]['pval'] = mw.rx('p.value')[0][0]
@@ -88,20 +82,6 @@ def mcpval(pvaldict, test, iskeyfile = 'true', keyfile='keylist'):
     return(newdict)
 
 
-#def createmwfile(pvaldict, filename):
-
-    #testlist = []
-    #adjplist = []
-
-    #for i, v in pvaldict.iteritems():
-        #testlist.append(v['sigtest'])
-        #adjplist.append(v['adjpvaltest'])
-
-    #with open(filename, 'w') as f:
-        #f.write('Significance test: {}\n'.format(testlist[0]))
-        #f.write('P-values adjusted using {}\n'.format(adjplist[0]))
-
-
 def createmwfile(filename):
 
     with open(filename, 'w') as f:
@@ -115,29 +95,6 @@ def writemwfile(filename, pvaldict, kind):
             f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, v['sigtest'][:8], v['adjpvaltest'], v['pval'], v['adjpval']))
 
 
-def sample():
-    a, b = zip(*mwlist)
-    #print(a)
-    #print(b)
-    adjustp = rsl.padjust(list(b), "fdr", len(b))
-    #print(adjustp)
-
-    c = zip(a, adjustp)
-    #print(c)
-    #print(mwdict)
-    for item in c:
-        #print(mwdict[item[0]])
-        mwdict[item[0]]['adjpval'] = item[1]
-
-    print(mwdict)
-
-    with open(MCFILE, 'w') as f:
-        for i, v in mwdict.iteritems():
-            f.write('{0}\t{1}\t{2}\n'.format(i, v['pval'], v['adjpval']))
-
-
-    #with open(MCFILE, 'w') as f:
-        #f.write('{0}'.format(c[0]))
 
 createshapfile(SHAPFILE)
 createmwfile(MCPVALFILE)
