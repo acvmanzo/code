@@ -7,6 +7,7 @@ import rpy2.robjects as robjects
 import os
 
 
+r = robjects.r
 
 def convtosec (minvalue, secvalue):
     return(60*minvalue + secvalue)
@@ -63,7 +64,7 @@ def dictlat(kind, fname):
 
 def dictfreq(kind, fname):
 
-    """Generates a dictionary where the keywords are genotypes and the values are the % of flies displaying a behavior specified by 'kind'.
+    """Generates a dictionary where the keywords are genotypes and the values are a list in which an entry of "100" = success and an entry of "0" = failure.
 
     kind: 'wing' (wing extension) 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
     fname: file containing raw data
@@ -91,6 +92,45 @@ def dictfreq(kind, fname):
             pass
 
     return(d)
+
+
+def dictproptest(d, conf=0.05):
+    """Returns a p-value for whether a set of proportions are from the same distribution. Input is a dictionary in which the keywords are genotypes or conditions and the values are a list in which an entry of "100" = success and an entry of "0" = failure (output of dictfreq).
+
+    """
+
+    ks = []
+    nsuc = []
+    n=[]
+
+    for k, v in d.iteritems():
+        ks.append(k)
+        nsuc.append(np.sum(v)/100)
+        n.append(len(v))
+
+    dpt = zip(ks, nsuc, n)
+
+    unlist = r['unlist']
+    pt = rsl.proptest(unlist(nsuc), unlist(n))
+    return(pt.rx('p.value')[0][0])
+
+
+def createproptestfile(fname):
+
+    """Creates a file (specified in 'fname') that will list the results of the proportion test as implemented in R.
+    """
+
+    with open(fname, 'w') as f:
+        f.write('Proportion test results\n')
+        f.write('Kind\tp-value\n')
+
+
+def writeproptestfile(ofile, d, kind):
+    """Input is a dictionary in which the keywords are genotypes or conditions and the values are a list in which an entry of "100" = success and an entry of "0" = failure (output of dictfreq)"""
+
+    pt = dictproptest(d)
+    with open(ofile, 'a') as f:
+        f.write('{0}\t{1}\n'.format(kind, pt))
 
 
 
@@ -121,9 +161,21 @@ def dictmeans(dict, label='data'):
 
 
 def dictbin(dict, conf=0.05, methods='wilson', label='data'):
-    """Generates a new dictionary in which the keywords are conditions and the values are lists of the mean frequency, standard deviation, standard error, and n for that condition.
+    """Generates a new dictionary from frequency data.
+    Input:
+    dict = output of function dictfreq
+    conf = confidence level for confidence intervals
+    methods = method for constructing conf. interval
+    label = parameter being measured
 
-    dict: dictionary where keys are genotypes and values are raw data
+    Output:
+    A dictionary where the keywords are conditions or genotypes and the values are as follows:
+    nsuc = number of successes
+    n = number of trials
+    prop = nsuc/n
+    method = method for constructing binomical confidence intervals (see documentation for rstatslib.binomici_w
+    lowerci = min value of confidence interval
+    upperci = max value of confidence interval
     """
 
     mean_dict = {}
@@ -280,11 +332,14 @@ def dictmw(d, ctrlkey='cs', test='exact'):
         mwdict[i] = {}
         mwdict[i]['sigtest'] = mw.rx('method')[0][0]
         mwdict[i]['pval'] = mw.rx('p.value')[0][0]
+        mwdict[i]['n'] = len(v)
+        mwdict[i]['median'] = np.median(v).tolist()
+        mwdict[i]['control'] = ctrlkey
 
     return(mwdict)
 
 
-def mcpval(pvaldict, method, iskeyfile = 'true', keyfile='keylist'):
+def mcpval(pvaldict, method='fdr', iskeyfile = 'true', keyfile='keylist'):
 
     """Returns a dictionary where the keys are genotypes and the values include p-values that are corrected for multiple comparisons using the p.adjust function in R.
 
@@ -302,15 +357,20 @@ def mcpval(pvaldict, method, iskeyfile = 'true', keyfile='keylist'):
 
     gens = []
     pvals = []
+    ctrl = []
     newdict = {}
 
     for k in keylist:
         gens.append(k)
         pvals.append(pvaldict[k]['pval'])
+        ctrl.append(pvaldict[k]['control'])
         newdict[k] = pvaldict[k]
 
     for k in keylist:
         assert pvals[gens.index(k)] == pvaldict[k]['pval']
+
+    pvals.pop(gens.index(ctrl[0]))
+    gens.remove(ctrl[0])
 
     adjpvals = list(rsl.padjust(pvals, method, len(pvals)))
     newptuple = zip(gens, adjpvals)
@@ -318,6 +378,9 @@ def mcpval(pvaldict, method, iskeyfile = 'true', keyfile='keylist'):
     for t in newptuple:
         newdict[t[0]]['adjpval'] = t[1]
         newdict[t[0]]['adjpvaltest'] = method
+
+    newdict[ctrl[0]]['adjpval'] = 'n/a'
+    newdict[ctrl[0]]['adjpvaltest'] = 'n/a'
 
     return(newdict)
 
@@ -328,27 +391,26 @@ def createmwfile(fname):
     """
 
     with open(fname, 'w') as f:
-        f.write('Condition\tBehavior\tSigtest\tMultCompar\tp-value\tAdj p-value\n')
+        f.write('Condition\tBehavior\tControl\tSigtest\tMultCompar\tp-value\tAdj p-value\n')
 
 
 def writemwfile(fname, pvaldict, kind):
 
     """Writes a file (specified in 'fname') listing the results of the Mann-Whitney significance test as implemented in R.
 
-    pvaldict = dictionary where the keys are genotypes and the values include p-values derived from a statistical test; should be the output of a function like dictmw()
+    pvaldict = dictionary where the keys are genotypes and the values include p-values derived from a statistical test; output of the mcpval function.
     kind = type of behavior - 'wing' (wing extension), 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
     """
 
     for k, v in pvaldict.iteritems():
         with open(fname, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, v['sigtest'][:15], v['adjpvaltest'], v['pval'], v['adjpval']))
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], v['adjpval']))
 
 
 def plotqqplots(kind, fname, ctrl='cs'):
 
     d = dictlat(kind, fname)
 
-    r = robjects.r
     qqplot = r['qqplot']
     qqnorm = r['qqnorm']
     unlist = r['unlist']
@@ -365,7 +427,6 @@ def plotqqplots(kind, fname, ctrl='cs'):
         png(file=name2)
         pl=qqnorm(unlist(d[k]), ylab=k, main="Q-Q Norm")
         devoff()
-
 
 
 

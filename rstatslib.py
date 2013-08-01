@@ -1,55 +1,61 @@
+# Wrappers for R functions. See R documentation for each function. Note that the data is often returned as a string or float vector and needs to be subscripted for use in python code.
+
 import numpy as np
 import os
 import cmn.cmn as cmn
 import rpy2.robjects as robjects
 
+r = robjects.r
+addpath = r['.libPaths']
+addpath('/home/andrea/rlib')
 
 def shapirowilk(values):
+    # Tests whether values are normally distributed.
 
-    r = robjects.r
     test = r['shapiro.test']
     return(test(values))
 
 def mannwhitney(x, y):
+    # Nonparametric test to determine whether two populations are the same or not.
 
-    r = robjects.r
     test = r['wilcox.test']
     return(test(x, y, alternative="two.sided"))
 
 def mannwhitneyexact(x, y):
+    # Nonparametric test to determine whether two populations are the same or not; this function calculates exact p-values in the presence of ties.
 
-    r = robjects.r
-    addpath = r['.libPaths']
-    addpath('/home/andrea/rlib')
     library = r['library']
     library('exactRankTests')
     test = r['wilcox.exact']
     return(test(x, y, alternative="two.sided"))
 
 def padjust(p, method, n):
+    # Adjusts p-values according to the method specified; method often used is "fdr".
 
-    r = robjects.r
     test = r['p.adjust']
     return(test(p, method, n))
 
+
 def binomci_w(x, n, conflevel, methods='wilson'):
+    # Generates binomnial confidence intervals with the Wilson method as the default.
     # x = vector of number of successes in binomial experiment
     # n = vector of number of independent trials in binomial experiment
 
-    r = robjects.r
     library = r['library']
     library('binom')
     ci = r['binom.confint']
     return(ci(x, n, conflevel, methods))
-    
+
+
 def proptest(x, n, confleveln=0.95):
-    
-    r = robjects.r
+    # Tests whether a set of proportions are all the same or all different (like an ANOVA).
+    # x = vector of number of successes in binomial experiment
+    # n = vector of number of independent trials in binomial experiment
+
     proptest = r['prop.test']
     conflevel = robjects.StrVector("conf.level")
-    #return(proptest(x, n, **{'conf.level': confleveln}))
-    return(proptest(x, n))
-    
+    return(proptest(x, n, **{'conf.level': confleveln}))
+
 
 #rnorm = r['rnorm']
 #datanorm = rnorm(50)

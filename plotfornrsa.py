@@ -7,14 +7,26 @@ import pylab
 import rstatslib as rsl
 import rpy2.robjects as robjects
 
-def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, subplotn, subplotl, keyfile='keylist', fontsz=9, lw=1, stitlesz=10):
 
+def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
+
+    # ======== SET INITIAL FIGURE PROPERTIES =============
     mpl.rc('axes', linewidth=lw)
     mpl.rc('axes.formatter', limits = [-6, 6])
 
     # Sets font properties.
     fontv = mpl.font_manager.FontProperties()
     fontv.set_size(fontsz)
+
+    # Defines coordinates for each bar.
+    lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
+    x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
+    x_list = x_gen1 # Coordinates for the temperature labels.
+
+    # Defines the axes.
+    ax = plt.subplot(subplotn)
+
+    # =========== PLOT DATA =======================
 
     # Load data
     keylist = cmn.load_keys(keyfile)
@@ -30,14 +42,6 @@ def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, subplotn, 
         vals.append(d[k])
         conds.append(k)
         pvals.append(adjpd[k]['adjpval'])
-
-    # Defines coordinates for each bar.
-    lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
-    x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
-    x_list = x_gen1 # Coordinates for the temperature labels.
-
-    # Defines the axes.
-    ax = plt.subplot(subplotn)
 
     #Plots the box plot.
     bp = plt.boxplot(vals, positions=x_list, sym='')
@@ -107,10 +111,10 @@ def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, subplotn, 
     plt.yticks(fontproperties=fontv)
 
     # Specifies the number of tickmarks/labels on the yaxis.
-    ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(5))
+    ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(yaxisticks))
+
 
     # ========ADDS SIGNIFICANCE STARS============
-
 
     p05i = [i for i, pval in enumerate(pvals) if pval <0.05]
     for i in p05i:
@@ -126,7 +130,7 @@ def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, subplotn, 
 
 
 
-def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, subplotn, subplotl, ymin, barwidth, barnum, fontsz, stitlesz, leglabels, lw=1):
+def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, ylim, colors, subplotn, subplotl, barwidth, barnum, fontsz, stitlesz, leglabels, lw=1):
 
     mpl.rc('axes', linewidth=lw)
     mpl.rc('axes.formatter', limits = [-6, 6])
@@ -135,33 +139,30 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, subplotn, subplotl, 
     fontv = mpl.font_manager.FontProperties()
     fontv.set_size(fontsz)
 
-    # Load data
-    
-    keylist = cmn.load_keys(keyfile)
-    colors = ['#555659', '#d3d3d3', 'w']
-    
     # Defines the axes.
     ax = plt.subplot(subplotn)
-    
+
+    # Defines variables used in finding coordinates for each bar.
     lastbar = (barnum*len(kindlist)*barwidth)
-    print(lastbar)
     x_gen1 = np.linspace(1.5*barwidth, lastbar+barnum*barwidth, barnum).tolist()
-    
+
+    # Load data.
+    keylist = cmn.load_keys(keyfile)
+
     for i, kind in enumerate(kindlist):
         d = cl.dictfreq(kind, fname)
         db = cl.dictbin(d, conf, label=kind)
-        print(db)
-
         vals = []
         conds = []
         lowerci = []
         upperci = []
         nsuc = []
         n = []
-        
+
         # Defines coordinates for each bar.
         x_list = [x + i for x in x_gen1]
 
+        # Appends data for the bar plot to appropriate lists.
         for k in keylist:
             vals.append(db[k]['prop'])
             conds.append(k)
@@ -170,35 +171,35 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, subplotn, subplotl, 
             lowerci.append(db[k]['prop']-100*db[k]['lowerci'])
             upperci.append(100*db[k]['upperci']-db[k]['prop'])
 
-        # Defines the colors for each bar.
-        #cols = ['k', '#c9ced4', 'w']
-        #colors = np.tile(cols, len(keylist).tolist())
 
-
-        # Defines limit of x axis.
-        #xlim = x_list[-1]+1.5*barwidth
-
-        #Plots the bar plot.
+        # Plots the bar plot for each kind of data.
         truebarw = barwidth-(0.05*barwidth)
         plt.bar(x_list, vals, yerr=[lowerci,upperci], width=truebarw, color=colors[i], bottom=0, ecolor='k', capsize=0.5, linewidth=lw, label=leglabels[i])
 
-        print(n)
-        r = robjects.r
-        unlist = r['unlist']
-        print(rsl.proptest(unlist(nsuc), unlist(n)))
 
-    #Coordinates where the xlabels will be listed.
-    
-    xlabel_list = [x  for x in x_list]
+    # ======== ADDS TICKS, LABELS and TITLES==========
+
+    # Sets the x- and y-axis limits.
+    plt.ylim(ymin, ylim)
+
+    # Plots and formats xlabels.
+    xlabel_list = [x for x in x_list]
     plt.xticks(xlabel_list, conds, rotation=45, fontproperties=fontv)
-
 
     # Formats the yticks.
     plt.yticks(fontproperties=fontv)
 
-    # Formats the xticks.
-    #plt.xticks(multialignment = 'center', fontproperties=fontv)
+    # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
+    plt.ylabel(ylabel, labelpad=4, fontproperties=fontv, multialignment='center')
 
+    # Adds the title.
+    plt.title('% Flies displaying behavior', fontsize=stitlesz)
+
+    # Labels the subplot
+    plt.text(-0.1, 1.1, subplotl, transform=ax.transAxes)
+
+
+    # ======== FORMATS THE PLOT==========
     #Uncomment lines below to display without top and right borders.
     for loc, spine in ax.spines.iteritems():
         if loc in ['left','bottom']:
@@ -207,47 +208,67 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, subplotn, subplotl, 
             spine.set_color('none') # don't draw spine
         else:
             raise ValueError('unknown spine location: %s'%loc)
-            
+
+    # ======== FORMATS THE TICKS ==========
     #Uncomment lines below to display ticks only where there are borders.
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
 
-    # Uncomment the line below to remove all of the plot axis lines.
-    #plt.setp(ax, frame_on=False)
-
-    #Uncomment the line below to remove all tick marks/labels.
-    #ax.axes.xaxis.set_major_locator(matplotlib.ticker.NullLocator())
-
     # Specifies the number of tickmarks/labels on the yaxis.
-    ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(7))
-
+    ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(yaxisticks))
 
     #Removes the tickmarks on the x-axis but leaves the labels and the spline.
     for line in ax.get_xticklines():
         line.set_visible(False)
 
-     #Adjusts the space between the plot and the edges of the figure; (0,0) is the lower lefthand corner of the figure.
- 
-    # Sets the x- and y-axis limits.
-    ylim = 130
-    plt.ylim(ymin, ylim)
 
-    # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
-    plt.ylabel(ylabel, labelpad=4, fontproperties=fontv, multialignment='center')
-
-    plt.title('% Flies displaying behavior', fontsize=stitlesz)
-   
-    
+    # ======== PLOT AND FORMAT LEGEND ==========
     #Plots legend.
     a1 = plt.legend(ncol=len(kindlist), loc='upper center', labelspacing=0.1, columnspacing=0.7, markerscale=0.5, fontsize=fontsz, handletextpad=0.3, borderpad=0)
-    
-    #bbox_to_anchor=(0.1, 0.95, 0.8, 0.1)
-    
-    # Changes legend font to fontsz.
-    #ltext  = a1.get_texts()
-    #plt.setp(ltext, fontproperties=fontv)
-     #Removes border around the legend.
+    #Removes border around the legend.
     a1.draw_frame(False)
-    
-    plt.text(-0.1, 1.1, subplotl, transform=ax.transAxes)
-    
+
+
+def createinfolat(ofile):
+    with open(ofile, 'w') as f:
+        f.write('Genotype\tBehavior\tmedian\tn\tAdj p-value\tCtrl\n')
+
+def writeinfolat(ifile, ofile, kind):
+
+    d = cl.dictlat(kind, ifile)
+    mwd = cl.dictmw(d)
+    mcwd = cl.mcpval(mwd)
+
+    mx = []
+    mi = []
+
+    for k in d.keys():
+        with open(ofile, 'a') as f:
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, mwd[k]['median'], mwd[k]['n'], mcwd[k]['adjpval'], mcwd[k]['control']))
+            mx.append(np.max(mwd[k]['n']))
+            mi.append(np.min(mwd[k]['n']))
+
+    with open(ofile, 'a') as f:
+        f.write('Max n = {0}\n'.format(np.max(mx)))
+        f.write('Min n = {0}\n'.format(np.min(mi)))
+
+
+def createinfoprop(ofile):
+    with open(ofile, 'w') as f:
+        f.write('Genotype\tBehavior\tnsuc\tn\n')
+
+
+def writeinfoprop(ifile, ofile, kind):
+    d = cl.dictfreq(kind, ifile)
+    bd = cl.dictbin(d)
+
+    mx = []
+    mi = []
+    for k, v in bd.iteritems():
+        with open(ofile, 'a') as f:
+            f.write('{0}\t{1}\t{2}\t{3}\n'.format(k, kind, v['nsuc'], v['n']))
+            mx.append(np.max(v['n']))
+            mi.append(np.min(v['n']))
+    with open(ofile, 'a') as f:
+        f.write('Max n = {0}\n'.format(np.max(mx)))
+        f.write('Min n = {0}\n'.format(np.min(mi)))
