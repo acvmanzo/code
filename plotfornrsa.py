@@ -125,7 +125,7 @@ def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, subplotn, 
 
 
 
-def multiplot_3bars(type, fname, keyfile, errors, savefig, figname, ylim, border, ylabel, fontsz, figw, figh, figdpi, yaxisticks, ymin, barwidth, barnum, lw):
+def multiplot_3bars(type, fname, keyfile, conf, ylim, border, ylabel, subplotn, yaxisticks, ymin, barwidth, barnum, lw=1):
 
     mpl.rc('axes', linewidth=lw)
     mpl.rc('axes.formatter', limits = [-6, 6])
@@ -136,24 +136,11 @@ def multiplot_3bars(type, fname, keyfile, errors, savefig, figname, ylim, border
 
     # Load data
     keylist = cmn.load_keys(keyfile)
-    d = cl.dictlat(kind, fname)
-    mwd = cl.dictmw(d)
-    adjpd = cl.mcpval(mwd, 'fdr')
+    d = cl.dictfreq(kind, fname)
+    db = cl.dictbin(d, conf)
 
     vals = []
     conds = []
-    pvals = []
-
-    matplotlib.rc('axes', linewidth=lw)
-    matplotlib.rc('axes.formatter', limits = [-6, 6])
-
-    # Sets font properties.
-    fontv = mpl.font_manager.FontProperties()
-    fontv.set_size(fontsz)
-
-
-    keylist = cmn.load_keys(keyfile)
-    d = dictlat(kind, fname)
 
 
     # Defines coordinates for each bar.
@@ -168,13 +155,8 @@ def multiplot_3bars(type, fname, keyfile, errors, savefig, figname, ylim, border
 
 
     # Defines the colors for each bar.
-    #color1 = np.tile('k', barnum-1).tolist()
-    #redcol = '#B52634'
-    #bluecol = '#2a77d5'
-    graycol = '#c9ced4'
-    #color1.append(redcol)
-    colors = np.tile(graycol, 3).tolist()
-
+    cols = ['k', '#c9ced4', 'w']
+    colors = np.tile(cols, len(keylist).tolist())
 
     #Coordinates where the xlabels will be listed.
     truebarw = barwidth-(0.05*barwidth)
@@ -183,9 +165,8 @@ def multiplot_3bars(type, fname, keyfile, errors, savefig, figname, ylim, border
     # Defines limit of x axis.
     xlim = x_list[-1]+1.5*barwidth
 
-    #Creates a figure of the indicated size and dpi.
-    fig1 = plt.figure(figsize=(figw, figh), dpi=figdpi, facecolor='w', edgecolor='k')
-
+    # Defines the axes.
+    ax = plt.subplot(subplotn)
 
     #Plots the bar plot.
     plt.bar(x_list, means, width=truebarw, bottom=0, color=colors, ecolor='k', capsize=0.5, linewidth=lw)
@@ -221,10 +202,6 @@ def multiplot_3bars(type, fname, keyfile, errors, savefig, figname, ylim, border
             plt.errorbar(xlabel_list, means, yerr=[zeros,stderrs], fmt=None, ecolor='k', lw=lw, capsize=2)
         if errors == 'stdev':
             plt.errorbar(xlabel_list, means, yerr=[zeros,stdevs], fmt=None, ecolor='k' ,lw=lw, capsize=2)
-
-    # Defines the axes.
-    ax = plt.gca()
-
 
     if type == 'cibdiffa':
         conds2 = []

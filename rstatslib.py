@@ -32,6 +32,16 @@ def padjust(p, method, n):
     test = r['p.adjust']
     return(test(p, method, n))
 
+def binomci_w(x, n, conflevel, methods='wilson'):
+    # x = vector of number of successes in binomial experiment
+    # n = vector of number of independent trials in binomial experiment
+
+    r = robjects.r
+    library = r['library']
+    library('binom')
+    ci = r['binom.confint']
+    return(ci(x, n, conflevel, methods))
+
 #rnorm = r['rnorm']
 #datanorm = rnorm(50)
 #winglat, copsuclat, copattlat = dictlat(FNAME)

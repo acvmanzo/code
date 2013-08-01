@@ -120,7 +120,7 @@ def dictmeans(dict, label='data'):
     return(mean_dict)
 
 
-def dictmedians(dict, label='data'):
+def dictbin(dict, conf=0.05, methods='wilson'):
     """Generates a new dictionary in which the keywords are conditions and the values are lists of the mean frequency, standard deviation, standard error, and n for that condition.
 
     dict: dictionary where keys are genotypes and values are raw data
@@ -129,19 +129,25 @@ def dictmedians(dict, label='data'):
     mean_dict = {}
 
     for condition, value in dict.iteritems():
+
         meanval = np.mean(value)
         stdev = np.std(value)
+
+        xsuc = np.sum(value)/100
         n = len(value)
-        sterr = stdev/np.sqrt(n)
+
+        z = rsl.binomci_w(xsuc, n, conf, methods)
 
         if condition not in mean_dict:
-            mean_dict[condition] = []
+            mean_dict[condition] = {}
 
-        mean_dict[condition].append(meanval)
-        mean_dict[condition].append(stdev)
-        mean_dict[condition].append(sterr)
-        mean_dict[condition].append(n)
-        mean_dict[condition].append('{0}'.format(label))
+        mean_dict[condition]['nsuc'] = xsuc
+        mean_dict[condition]['n'] = n
+        mean_dict[condition]['method'] = methods
+        mean_dict[condition]['mean'] = z.rx('mean')[0][0]*100
+        mean_dict[condition]['lowerci'] = z.rx('lower')[0][0]
+        mean_dict[condition]['upperci'] = z.rx('upper')[0][0]
+
 
     return(mean_dict)
 
