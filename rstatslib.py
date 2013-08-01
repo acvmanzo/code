@@ -16,6 +16,16 @@ def mannwhitney(x, y):
     test = r['wilcox.test']
     return(test(x, y, alternative="two.sided"))
 
+def mannwhitneyexact(x, y):
+
+    r = robjects.r
+    addpath = r['.libPaths']
+    addpath('/home/andrea/rlib')
+    library = r['library']
+    library('exactRankTests')
+    test = r['wilcox.exact']
+    return(test(x, y, alternative="two.sided"))
+
 def padjust(p, method, n):
 
     r = robjects.r

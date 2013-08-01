@@ -1,22 +1,31 @@
-#KINDLIST = ['wing', 'copsuc', 'copatt1']
-#FNAME = '2013-07_courtship_inprog.csv'
-
-#for KIND in KINDLIST:
-    #plotlat(KIND, FNAME)
-    #savegraph(KIND+'lat')
-    #plotfreq(KIND, FNAME)
-    #savegraph(KIND+'freq')
+from courtshiplib import *
 
 
+KINDLIST = ['wing', 'copsuc', 'copatt1']
+FNAME = '2013-0718_courtship_data _for_nrsa.csv'
+K = 'copsuc'
+KINDLIST = ['wing', 'copsuc', 'copatt1']
+SHAPFILE = 'shap_lat.txt'
+MCPVALFILE = 'mcpvalue_lat_exact.txt'
+CTRL = 'cs'
 
-#createshapfile(SHAPFILE)
-#createmwfile(MCPVALFILE)
 
-#for k in KINDLIST:
-    #d = dictlat(k, DATAFILE)
+print(os.path.abspath('.'))
+for KIND in KINDLIST:
+    plotlat(KIND, FNAME)
+    plt.savefig(KIND+'lat')
+    plotfreq(KIND, FNAME)
+    plt.savefig(KIND+'freq')
 
-    #mwd = dictmw(d)
-    #adjpd = mcpval(mwd, 'fdr')
+createshapfile(SHAPFILE)
+createmwfile(MCPVALFILE)
 
-    #writeshapfile(SHAPFILE, d, k)
-    #writemwfile(MCPVALFILE, adjpd, k)
+
+for k in KINDLIST:
+    d = dictlat(k, FNAME)
+    mwd = dictmw(d)
+    adjpd = mcpval(mwd, 'fdr')
+
+    writeshapfile(SHAPFILE, d, k)
+    writemwfile(MCPVALFILE, adjpd, k)
+

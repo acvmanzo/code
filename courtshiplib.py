@@ -6,12 +6,7 @@ import rstatslib as rsl
 import rpy2.robjects as robjects
 import os
 
-K = 'copsuc'
-KINDLIST = ['wing', 'copsuc', 'copatt1']
-DATAFILE = '/home/andrea/Documents/lab/behavior_ca/courtship/codprac/2013-07_courtship_inprog.csv'
-SHAPFILE = '/home/andrea/Documents/lab/behavior_ca/courtship/codprac/shap_lat.txt'
-MCPVALFILE = '/home/andrea/Documents/lab/behavior_ca/courtship/codprac/mcpvalue_lat.txt'
-CTRL = 'cs'
+
 
 def convtosec (minvalue, secvalue):
     return(60*minvalue + secvalue)
@@ -43,6 +38,8 @@ def dictlat(kind, fname):
     Generates a dictionary from data in 'fname' where the keywords are genotypes and the values are the latencies to a behavior specified by 'kind'.
 
     kind = 'wing' (wing extension), 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
+    fname = dictionary with raw data
+
     """
 
     d = {}
@@ -66,9 +63,10 @@ def dictlat(kind, fname):
 
 def dictfreq(kind, fname):
 
-    """Generates a dictionary from data in 'fname' where the keywords are genotypes and the values are the % of flies displaying a behavior specified by 'kind'.
+    """Generates a dictionary where the keywords are genotypes and the values are the % of flies displaying a behavior specified by 'kind'.
 
-    kind = 'wing' (wing extension), 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
+    kind: 'wing' (wing extension) 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
+    fname: file containing raw data
     """
 
     d = {}
@@ -97,8 +95,35 @@ def dictfreq(kind, fname):
 
 
 def dictmeans(dict, label='data'):
-    """Generates a new dictionary in which the keywords are conditions and the values are lists of
-    the mean frequency, standard deviation, standard error, and n for that condition.
+    """Generates a new dictionary in which the keywords are conditions and the values are lists of the mean frequency, standard deviation, standard error, and n for that condition.
+
+    dict: dictionary where keys are genotypes and values are raw data
+    """
+
+    mean_dict = {}
+
+    for condition, value in dict.iteritems():
+        meanval = np.mean(value)
+        stdev = np.std(value)
+        n = len(value)
+        sterr = stdev/np.sqrt(n)
+
+        if condition not in mean_dict:
+            mean_dict[condition] = []
+
+        mean_dict[condition].append(meanval)
+        mean_dict[condition].append(stdev)
+        mean_dict[condition].append(sterr)
+        mean_dict[condition].append(n)
+        mean_dict[condition].append('{0}'.format(label))
+
+    return(mean_dict)
+
+
+def dictmedians(dict, label='data'):
+    """Generates a new dictionary in which the keywords are conditions and the values are lists of the mean frequency, standard deviation, standard error, and n for that condition.
+
+    dict: dictionary where keys are genotypes and values are raw data
     """
 
     mean_dict = {}
@@ -124,6 +149,15 @@ def dictmeans(dict, label='data'):
 
 def plotlat(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 
+    """Generates a bar plot of the latencies for each type of behavior for each genotype.
+
+    kind: type of behavior - 'wing' (wing extension) 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
+    fname: file containing raw data
+    iskeyfile: specifies whether a keylist file exists; default is 'true'
+    keyfile: file with a list of the genotypes to be plotted; default name is 'keylist'
+    type: type of plot; default is 'b' which is a bar plot
+    """
+
     d = dictlat(kind, fname)
     md = dictmeans(d)
 
@@ -148,6 +182,16 @@ def plotlat(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 
 def plotfreq(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 
+    """Generates a bar plot of the frequency of each type of behavior for each genotype.
+
+    kind: type of behavior - 'wing' (wing extension) 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
+    fname: file containing raw data
+    iskeyfile: specifies whether a keylist file exists; default is 'true'
+    keyfile: file with a list of the genotypes to be plotted; default name is 'keylist'
+    type: type of plot; default is 'b' which is a bar plot
+    """
+
+
     d = dictfreq(kind, fname)
     md = dictmeans(d)
 
@@ -171,23 +215,28 @@ def plotfreq(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 
 
 
-def savegraph(fname = 'graph'):
-    """Saves the bar graph plotted with 'plotbar'."""
-    plt.savefig(fname)
+def createshapfile(fname):
 
-
-def createshapfile(shapfile):
+    """Creates a file (specified in 'fname') that will list the results of the Shapiro-Wilk test of normality as implemented in R. One line is written with the results from a set of values drawn from a normal distribution.
+    """
 
     r = robjects.r
     normsample = r['rnorm'](50)
     x = rsl.shapirowilk(normsample)
-    with open(shapfile, 'w') as f:
+    with open(fname, 'w') as f:
         f.write('Shapiro-Wilk test results\n')
         f.write('Condition\tBehavior\tp-value\n')
         f.write('{0}\t{1}\t{2:.4g}\n'.format('normsample', 'normsample', x[1][0]))
 
 
-def writeshapfile(shapfile, datadict, kind):
+def writeshapfile(fname, datadict, kind):
+
+    """Writes a file that lists the results of the Shapiro-Wilk test of normality as implemented in R.
+
+    fname: name of the output file
+    datadict: a dictionary with the keys as genotypes and the values as the raw data,
+    kind: type of behavior - 'wing' (wing extension), 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
+    """
 
     r = robjects.r
     unlist = r['unlist']
@@ -195,20 +244,31 @@ def writeshapfile(shapfile, datadict, kind):
     for n, v in datadict.iteritems():
         v = unlist(v)
         x = rsl.shapirowilk(v)
-        with open(SHAPFILE, 'a') as f:
+        with open(fname, 'a') as f:
             f.write('{0}\t{1}\t{2:.4g}\n'.format(n, kind, x[1][0]))
 
 
-def dictmw(datadict):
+def dictmw(d, ctrlkey='cs', test='exact'):
+
+    """Returns a dictionary in which the keys are the genotypes and the values are the results of the Mann-Whitney test as implemented in R.
+
+    datadict: a dictionary with the keys as the genotypes and the values as the raw data
+    ctrlkey: the name of the key for the dictionary entry that will serve as the control genotype; default is 'cs'
+    """
 
     r = robjects.r
     unlist = r['unlist']
     mwdict = {}
 
-    for i,v in datadict.iteritems():
+    for i,v in d.iteritems():
 
-        v, ctrl = map(unlist, [v, d[CTRL]])
-        mw = rsl.mannwhitney(v, ctrl)
+        v, ctrl = map(unlist, [v, d[ctrlkey]])
+
+        if test == 'exact':
+            mw = rsl.mannwhitneyexact(v, ctrl)
+
+        if test == 'std':
+            mw = rsl.mannwhitney(v, ctrl)
 
         mwdict[i] = {}
         mwdict[i]['sigtest'] = mw.rx('method')[0][0]
@@ -217,7 +277,16 @@ def dictmw(datadict):
     return(mwdict)
 
 
-def mcpval(pvaldict, test, iskeyfile = 'true', keyfile='keylist'):
+def mcpval(pvaldict, method, iskeyfile = 'true', keyfile='keylist'):
+
+    """Returns a dictionary where the keys are genotypes and the values include p-values that are corrected for multiple comparisons using the p.adjust function in R.
+
+    pvaldict = dictionary where the keys are genotypes and the values include p-values derived from a statistical test; should be the output of a function like dictmw()
+    method = method chosen for multiple correction using the p.adjust function ('holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none')
+    iskeyfile: specifies whether a keylist file exists; default is 'true'
+    keyfile: file with a list of the genotypes to be used; default name is 'keylist'
+
+    """
 
     if iskeyfile == 'true':
         keylist = cmn.load_keys(keyfile)
@@ -236,33 +305,59 @@ def mcpval(pvaldict, test, iskeyfile = 'true', keyfile='keylist'):
     for k in keylist:
         assert pvals[gens.index(k)] == pvaldict[k]['pval']
 
-    adjpvals = list(rsl.padjust(pvals, test, len(pvals)))
+    adjpvals = list(rsl.padjust(pvals, method, len(pvals)))
     newptuple = zip(gens, adjpvals)
 
     for t in newptuple:
         newdict[t[0]]['adjpval'] = t[1]
-        newdict[t[0]]['adjpvaltest'] = test
+        newdict[t[0]]['adjpvaltest'] = method
 
     return(newdict)
 
 
-def createmwfile(filename):
+def createmwfile(fname):
 
-    with open(filename, 'w') as f:
+    """Creates a file (specified in 'fname') that will list the results of the Mann-Whitney significance test as implemented in R.
+    """
+
+    with open(fname, 'w') as f:
         f.write('Condition\tBehavior\tSigtest\tMultCompar\tp-value\tAdj p-value\n')
 
 
-def writemwfile(filename, pvaldict, kind):
+def writemwfile(fname, pvaldict, kind):
+
+    """Writes a file (specified in 'fname') listing the results of the Mann-Whitney significance test as implemented in R.
+
+    pvaldict = dictionary where the keys are genotypes and the values include p-values derived from a statistical test; should be the output of a function like dictmw()
+    kind = type of behavior - 'wing' (wing extension), 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
+    """
 
     for k, v in pvaldict.iteritems():
-        with open(filename, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, v['sigtest'][:8], v['adjpvaltest'], v['pval'], v['adjpval']))
+        with open(fname, 'a') as f:
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, v['sigtest'][:15], v['adjpvaltest'], v['pval'], v['adjpval']))
 
 
+def plotqqplots(kind, fname, ctrl='cs'):
 
+    d = dictlat(kind, fname)
 
+    r = robjects.r
+    qqplot = r['qqplot']
+    qqnorm = r['qqnorm']
+    unlist = r['unlist']
+    png = r['png']
+    devoff = r['dev.off']
 
+    for k in d.keys():
+        name1 = 'qqplot'+k+'.png'
+        png(file=name1)
+        pl=qqplot(unlist(d[ctrl]), unlist(d[k]), xlab=ctrl, ylab=k, main="Q-Q Plot")
+        devoff()
 
+        name2 = 'qqnorm'+k+'.png'
+        png(file=name2)
+        pl=qqnorm(unlist(d[k]), ylab=k, main="Q-Q Norm")
+        devoff()
 
 
 
