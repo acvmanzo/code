@@ -120,7 +120,7 @@ def dictmeans(dict, label='data'):
     return(mean_dict)
 
 
-def dictbin(dict, conf=0.05, methods='wilson'):
+def dictbin(dict, conf=0.05, methods='wilson', label='data'):
     """Generates a new dictionary in which the keywords are conditions and the values are lists of the mean frequency, standard deviation, standard error, and n for that condition.
 
     dict: dictionary where keys are genotypes and values are raw data
@@ -144,7 +144,8 @@ def dictbin(dict, conf=0.05, methods='wilson'):
         mean_dict[condition]['nsuc'] = xsuc
         mean_dict[condition]['n'] = n
         mean_dict[condition]['method'] = methods
-        mean_dict[condition]['mean'] = z.rx('mean')[0][0]*100
+        mean_dict[condition]['label'] = label
+        mean_dict[condition]['prop'] = z.rx('mean')[0][0]*100
         mean_dict[condition]['lowerci'] = z.rx('lower')[0][0]
         mean_dict[condition]['upperci'] = z.rx('upper')[0][0]
 

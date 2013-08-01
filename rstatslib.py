@@ -41,6 +41,15 @@ def binomci_w(x, n, conflevel, methods='wilson'):
     library('binom')
     ci = r['binom.confint']
     return(ci(x, n, conflevel, methods))
+    
+def proptest(x, n, confleveln=0.95):
+    
+    r = robjects.r
+    proptest = r['prop.test']
+    conflevel = robjects.StrVector("conf.level")
+    #return(proptest(x, n, **{'conf.level': confleveln}))
+    return(proptest(x, n))
+    
 
 #rnorm = r['rnorm']
 #datanorm = rnorm(50)
