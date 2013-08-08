@@ -1,6 +1,5 @@
 from courtshiplib import *
 
-
 KINDLIST = ['wing', 'copsuc', 'copatt1']
 FNAME = '2013-0718_courtship_data _for_nrsa.csv'
 K = 'copsuc'
@@ -8,7 +7,7 @@ KINDLIST = ['wing', 'copsuc', 'copatt1']
 SHAPFILE = 'shap_lat.txt'
 MCPVALFILE = 'mcpvalue_lat_exact.txt'
 PTFILE = 'proptest.txt'
-CTRL = 'cs'
+CTRL = '+/+'
 DIR = 'summary/'
 
 cmn.makenewdir(DIR)
@@ -26,7 +25,7 @@ createproptestfile(DIR+PTFILE)
 
 for k in KINDLIST:
     d = dictlat(k, FNAME)
-    mwd = dictmw(d)
+    mwd = dictmw(d, ctrlkey='+/+')
     adjpd = mcpval(mwd, 'fdr')
 
     writeshapfile(DIR+SHAPFILE, d, k)

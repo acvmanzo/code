@@ -36,7 +36,6 @@ def courtshipline(line):
 
 
 def dictlat(kind, fname):
-
     """
     Generates a dictionary from data in 'fname' where the keywords are genotypes and the values are the latencies to a behavior specified by 'kind'.
 
@@ -163,7 +162,7 @@ def dictmeans(dict, label='data'):
 
 
 def dictbin(dict, conf=0.05, methods='wilson', label='data'):
-    """Generates a new dictionary from frequency data.
+    """Generates a new dictionary with binomical confidence intervals from frequency data.
     Input:
     dict = output of function dictfreq
     conf = confidence level for confidence intervals
@@ -432,15 +431,20 @@ def plotqqplots(kind, fname, ctrl='cs'):
 
 
 
-def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
+def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
     # ======== SET INITIAL FIGURE PROPERTIES =============
     mpl.rc('axes', linewidth=lw)
     mpl.rc('axes.formatter', limits = [-6, 6])
 
-    # Sets font properties.
+    # Sets font to Arial and assigns font properties.
     fontv = mpl.font_manager.FontProperties()
+    fontv = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/arial.ttf')
     fontv.set_size(fontsz)
+    # Sets italicized font.
+    fonti = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/ariali.ttf')
+    fonti.set_size(fontsz)
+
 
     # Defines coordinates for each bar.
     lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
@@ -455,7 +459,7 @@ def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, yaxisticks
     # Load data
     keylist = cmn.load_keys(keyfile)
     d = dictlat(kind, fname)
-    mwd = dictmw(d)
+    mwd = dictmw(d, ctrlkey)
     adjpd = mcpval(mwd, 'fdr')
 
     vals = []
@@ -489,7 +493,7 @@ def multiplot_1bar(kind, fname, barnum, barwidth, xlim, ymin, ylabel, yaxisticks
     # ========ADDS TICKS, LABELS and TITLES==========
 
     # Adds labels to the x-axis at the x-coordinates specified in x_list; labels are specified in the conds list.
-    plt.xticks(x_list, conds, fontproperties=fontv, rotation=45)
+    plt.xticks(x_list, conds, fontproperties=fonti, rotation=45)
 
     # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
     plt.ylabel(ylabel, labelpad=2, fontproperties=fontv, multialignment='center')
@@ -562,6 +566,9 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, yl
     # Sets font properties.
     fontv = mpl.font_manager.FontProperties()
     fontv.set_size(fontsz)
+    # Sets italicized font.
+    fonti = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/ariali.ttf')
+    fonti.set_size(fontsz)
 
     # Defines the axes.
     ax = plt.subplot(subplotn)
@@ -608,7 +615,7 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, yl
 
     # Plots and formats xlabels.
     xlabel_list = [x for x in x_list]
-    plt.xticks(xlabel_list, conds, rotation=45, fontproperties=fontv)
+    plt.xticks(xlabel_list, conds, rotation=45, fontproperties=fonti)
 
     # Formats the yticks.
     plt.yticks(fontproperties=fontv)
@@ -657,10 +664,10 @@ def createinfolat(ofile):
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tmedian\tn\tAdj p-value\tCtrl\n')
 
-def writeinfolat(ifile, ofile, kind):
+def writeinfolat(ifile, ofile, kind, ctrlkey):
 
     d = dictlat(kind, ifile)
-    mwd = dictmw(d)
+    mwd = dictmw(d, ctrlkey)
     mcwd = mcpval(mwd)
 
     mx = []
