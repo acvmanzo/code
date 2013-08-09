@@ -9,6 +9,4 @@ canal.py - Executable function for analyzing courtship data.
 courtshiplib.py - Library with functions useful for analyzing courtship data from a csv file generated during manual scoring.
 cplotfig.py - Executable function for plotting a four-panel figure with the courtship data.
 genplotlib.py - Library with functions to plot scatter plots and bar graphs.
-rstatslib.py - Wrappers for R functions. 
-
-prac.py, rpyprac.py, and rtest.R are files used for testing code.
+rplotlib.py - Wrappers for R functions. 

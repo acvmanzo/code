@@ -1,4 +1,4 @@
-# Plots scatter plots and bar graphs.
+# Library with functions to plot scatter plots and bar graphs.
 # Replaces genbarlib.
 
 import numpy as np

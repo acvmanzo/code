@@ -1,3 +1,6 @@
+
+# Contains functions useful for analyzing courtship data from a csv file generated during manual scoring.
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -13,7 +16,6 @@ r = robjects.r
 
 def convtosec (minvalue, secvalue):
     return(60*minvalue + secvalue)
-
 
 def courtshipline(line):
 
@@ -59,12 +61,10 @@ def dictlat(kind, fname):
 
         if cdict[km] != 'x' and cdict[km] != '-':
             d[gen].append(convtosec(float(cdict[km]), float(cdict[ks]))-float(cdict['offset']))
-
     return(d)
 
 
 def dictfreq(kind, fname):
-
     """Generates a dictionary where the keywords are genotypes and the values are a list in which an entry of "100" = success and an entry of "0" = failure.
 
     kind: 'wing' (wing extension) 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
@@ -95,9 +95,8 @@ def dictfreq(kind, fname):
     return(d)
 
 
-def dictproptest(d, conf=0.05):
+def dictproptest(d):
     """Returns a p-value for whether a set of proportions are from the same distribution. Input is a dictionary in which the keywords are genotypes or conditions and the values are a list in which an entry of "100" = success and an entry of "0" = failure (output of dictfreq).
-
     """
 
     ks = []
@@ -392,6 +391,8 @@ def createmwfile(fname):
     """
 
     with open(fname, 'w') as f:
+        f.write('Mann-Whitney U Test corrected for Multiple Comparisons\n')
+
         f.write('Condition\tBehavior\tControl\tSigtest\tMultCompar\tp-value\tAdj p-value\n')
 
 
@@ -408,8 +409,9 @@ def writemwfile(fname, pvaldict, kind):
             f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], v['adjpval']))
 
 
-def plotqqplots(kind, fname, ctrl='cs'):
+def plotqqplots(kind, fname, outputdir, ctrl='cs'):
 
+    curdir = os.path.abspath('.')
     d = dictlat(kind, fname)
 
     qqplot = r['qqplot']
@@ -418,18 +420,22 @@ def plotqqplots(kind, fname, ctrl='cs'):
     png = r['png']
     devoff = r['dev.off']
 
+    os.chdir(outputdir)
     for k in d.keys():
-        name1 = 'qqplot'+k+'.png'
+        kname = k.replace('/', '_')
+        name1 = 'qqplot'+kname+'.png'
         png(file=name1)
         pl=qqplot(unlist(d[ctrl]), unlist(d[k]), xlab=ctrl, ylab=k, main="Q-Q Plot")
         devoff()
 
-        name2 = 'qqnorm'+k+'.png'
+        name2 = 'qqnorm'+kname+'.png'
         png(file=name2)
         pl=qqnorm(unlist(d[k]), ylab=k, main="Q-Q Norm")
         devoff()
+    os.chdir(curdir)
 
 
+#### BELOW ARE FUNCTIONS FOR PLOTTING A 4-PANEL PUBLICATION-QUALITY FIGURE ####
 
 def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
@@ -557,7 +563,6 @@ def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, y
         plt.text(x_list[i], 0.75*ylim, '***', horizontalalignment='center', fontsize=fontsz)
 
 
-
 def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, ylim, colors, subplotn, subplotl, barwidth, barnum, fontsz, stitlesz, leglabels, lw=1):
 
     mpl.rc('axes', linewidth=lw)
@@ -661,10 +666,12 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, yl
 
 
 def createinfolat(ofile):
+    '''Creates a file with information on the latency graphs plotted in multiplot_1bar.'''
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tmedian\tn\tAdj p-value\tCtrl\n')
 
 def writeinfolat(ifile, ofile, kind, ctrlkey):
+    '''Writes into a file with information on the latency graphs plotted in multiplot_1bar.'''
 
     d = dictlat(kind, ifile)
     mwd = dictmw(d, ctrlkey)
@@ -685,11 +692,14 @@ def writeinfolat(ifile, ofile, kind, ctrlkey):
 
 
 def createinfoprop(ofile):
+    '''Creates a file with information on the frequency graphs plotted in multiplot_1bar.'''
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tnsuc\tn\n')
 
 
 def writeinfoprop(ifile, ofile, kind):
+    '''Writes into a file with information on the frequency graphs plotted in multiplot_1bar.'''
+
     d = dictfreq(kind, ifile)
     bd = dictbin(d)
 

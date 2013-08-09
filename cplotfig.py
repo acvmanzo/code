@@ -1,46 +1,53 @@
+#! /usr/bin/env python
+
+# Executable function for plotting a four-panel figure with the courtship data.
 
 import courtshiplib as cl
 import cmn.cmn as cmn
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-# Options for the whole figure.
-FNAME = '2013-0718_courtship_data _for_nrsa.csv'
-DIR = 'presfig/'
-OUTPUTFIG = DIR+'courtres.png'
-OFILELAT = DIR+'courtreslat.txt'
-OFILEPROP = DIR+'courtresprop.txt'
-OFILEPROPTEST= DIR+'proptest.txt'
+# Input and output files.
+FNAME = '2013-0718_courtship_data _for_nrsa.csv' #File containing original data.
+DIR = 'presfig/' # Directory that figure will be saved in.
+OUTPUTFIG = DIR+'courtres.png' # Name of figure.
+OFILELAT = DIR+'courtreslat.txt' # Name of file with latency info.
+OFILEPROP = DIR+'courtresprop.txt' # Name of file with frequency info.
+OFILEPROPTEST= DIR+'proptest.txt' # Name of file with results of the R function 'prop.test'
 
-KINDLIST = ['wing', 'copatt1', 'copsuc']
-SUBPLOTNS = [221, 222, 223, 224]
-SUBPLOTLS = ['A', 'B', 'C', 'D']
-CTRLKEY = '+/+'
+# Info about figure content.
+KINDLIST = ['wing', 'copatt1', 'copsuc'] # Behaviors to be analyzed.
+CTRLKEY = '+/+' # Name of the control strain that all other lines will be compared to in the Mann-Whitney U Test.
 
-FIGW=7
-FIGH=5
-FIGDPI=1000
-FONTSZ=9
-LW = 1
-STITLESZ=10
+# Figure parameters.
+SUBPLOTNS = [221, 222, 223, 224] # Subplots of the figure.
+SUBPLOTLS = ['A', 'B', 'C', 'D'] # Labels for the subplots.
+FIGW=7 # Figure width.
+FIGH=5 # Figure height.
+FIGDPI=1000 # Figure DPI.
+FONTSZ=9 # Size of font.
+LW = 1 # Width of lines in the figure.
+STITLESZ=10 # Title font size.
 
 # Options for both types of plots:
-BARNUM=6
+BARNUM=6 # Number of conditions to be plotted.
 BARWIDTH=1
 XLIM=BARNUM*BARWIDTH+2*BARWIDTH
 YMIN=-10
 
 # Options for 1bar plot:
 YLABEL1='Latency (s)'
-YAXISTICKS1 = 5
+YAXISTICKS1 = 5 # Number of y-axis ticks.
 
 # Options for 3bar plot:
 COLORS=['#555659', '#d3d3d3', 'w']
 YLABEL2 ='%'
-YAXISTICKS2 = 7
+YAXISTICKS2 = 7 # Number of y-axis ticks.
 YMIN2 = 0
 YLIM2 = 130
 LEGLABELS = ['we', 'attcop', 'cop']
+
+
 
 # Creates directory and output text files.
 cmn.makenewdir(DIR)
