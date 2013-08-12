@@ -21,9 +21,9 @@ cmn.makenewdir(QQDIR)
 
 # For each type of behavior, plots a latency graph, frequency graph, and qqplots for each genotype.
 for KIND in KINDLIST:
-    plotlat(KIND, FNAME)
+    plotlatbw(KIND, FNAME, iskeyfile='No')
     plt.savefig(DIR+KIND+'lat')
-    plotfreq(KIND, FNAME)
+    plotfreq(KIND, FNAME, iskeyfile='No')
     plt.savefig(DIR+KIND+'freq')
     plotqqplots(KIND, FNAME, QQDIR, CTRLKEY)
 

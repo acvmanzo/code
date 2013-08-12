@@ -135,7 +135,7 @@ def writeproptestfile(ofile, d, kind):
 
 
 def dictmeans(dict, label='data'):
-    """Generates a new dictionary in which the keywords are conditions and the values are lists of the mean frequency, standard deviation, standard error, and n for that condition.
+    """Generates a new dictionary in which the keywords are conditions and the values are lists of the mean, standard deviation, standard error, and n for that condition.
 
     dict: dictionary where keys are genotypes and values are raw data
     """
@@ -205,6 +205,32 @@ def dictbin(dict, conf=0.05, methods='wilson', label='data'):
     return(mean_dict)
 
 
+def plotlatbw(kind, fname, iskeyfile = 'true', type='bw'):
+    '''Plots a box and whisker plot of the latency data.'''
+
+    d = dictlat(kind, fname)
+    md = dictmeans(d)
+
+    if iskeyfile == 'true':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = sorted(d.keys())
+
+    ylabel = 'Latency (s)'
+
+    if kind == 'wing':
+        ftitle = 'Latency to wing extension'
+
+    if kind == 'copsuc':
+        ftitle = 'Latency to copulation'
+
+    if kind == 'copatt1':
+        ftitle = 'Latency to first copulation attempt'
+
+    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle)
+    if kind == 'wing':
+        plt.ylim(0, 150)
+
 
 def plotlat(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 
@@ -271,6 +297,7 @@ def plotfreq(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
         ftitle = 'Percentage of flies attempting copulation'
 
     fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle)
+    plt.ylim(0, 120)
 
 
 
@@ -463,7 +490,10 @@ def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, y
     # =========== PLOT DATA =======================
 
     # Load data
-    keylist = cmn.load_keys(keyfile)
+    if keylist == 'no':
+        keylist = sorted(d.keys())
+    else:
+        keylist = cmn.load_keys(keyfile)
     d = dictlat(kind, fname)
     mwd = dictmw(d, ctrlkey)
     adjpd = mcpval(mwd, 'fdr')

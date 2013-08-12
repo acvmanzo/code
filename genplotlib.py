@@ -340,6 +340,7 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
     ptype = ['b' | 's']
         b: bar graph
         s: scatter plot
+        bw: box and whisker plot
 
     ylabel = label for the yaxis
     ftitle = title of the figure
@@ -368,6 +369,7 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
     cond_list = []
     dataxvals = []
     datayvals = []
+    bwyvals = []
     meanyvals = []
     meanstdev = []
     meansterr = []
@@ -386,6 +388,11 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
         x = x+xd
         xv = np.tile(x, len(data)).tolist()
         dataxvals.extend(xv)
+
+        # 'bwyvals' is a list of lists containing the data points.
+
+        bwyvals.append(dictdata[condition])
+
 
         # 'meanyvals' is a list of the mean values for each condition, 'meanstdev' is a list of
         # the standard deviations for each condition, and 'meansterr' is a list of the standard errors
@@ -443,12 +450,17 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
 
         #This line specifies the x and y limits; modify as needed.
         #plt.axis([0.5, num+end, ymin, ylim])
+        plt.xlim(0.5, num+end)
 
+    if ptype == 'bw':
+        plt.boxplot(bwyvals)
         plt.xlim(0.5, num+end)
 
 
     #xt specifies the x values for the x-axis labels.
     xt = [n+xtoffset for n in x_list]
+
+
 
     #If the length of the labels are > 25, then the labels are rotated.
     cond_list_len = [len(c) for c in cond_list]
@@ -460,8 +472,10 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
         plt.xticks(xt, cond_list, fontsize=xlabelsize)
 
 
+
+
     plt.ylabel(ylabel, fontsize='x-large')
-    plt.title(ftitle, fontsize=titlesize)
+    plt.ftitle(ftitle, fontsize=titlesize)
 
     if withleg == 'yes':
         leg = plt.legend(loc='best', scatterpoints=1)
