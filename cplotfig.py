@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 # Input and output files.
-FNAME = '2013-0718_courtship_data _for_nrsa.csv' #File containing original data.
+FNAME = '2013-0718_courtship_data_for_nrsa.csv' #File containing original data.
 DIR = 'presfig/' # Directory that figure will be saved in.
 OUTPUTFIG = DIR+'courtres.png' # Name of figure.
 OFILELAT = DIR+'courtreslat.txt' # Name of file with latency info.

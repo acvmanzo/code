@@ -475,7 +475,7 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
 
 
     plt.ylabel(ylabel, fontsize='x-large')
-    plt.ftitle(ftitle, fontsize=titlesize)
+    plt.title(ftitle, fontsize=titlesize)
 
     if withleg == 'yes':
         leg = plt.legend(loc='best', scatterpoints=1)

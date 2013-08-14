@@ -7,16 +7,16 @@ import sys
 import numpy as np
 import re
 
-print('arg = input file (comma-separated .txt)')
+print('arg = input file (tab-separated .txt)')
 
 ifname=sys.argv[1]
 ofname=ifname.strip('.txt')+'_wiki.txt'
 
 def writetableline(l):
     y = l.strip('\n').split('\t')
-    x = [t.strip('\"') for t in y]
+    x = [t.strip('\r') for t in y]
     nentries = len(x)
-    seps = np.tile('||', nentries+1)
+    seps = np.tile('|| ', nentries+1)
     z = zip(seps, x)
     return(z)
 

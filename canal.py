@@ -5,7 +5,7 @@
 from courtshiplib import *
 
 KINDLIST = ['wing', 'copsuc', 'copatt1'] # List of behaviors; wing = wing extension; copsuc = successful copulation; copatt1 = first attempted copulation.
-FNAME = '2013-0718_courtship_data _for_nrsa.csv' # Name of file with the data from manual scoring.
+FNAME = '2013-0718_courtship_data_for_nrsa.csv' # Name of file with the data from manual scoring.
 SHAPFILE = 'shap_lat.txt' # Name of file listing results of the Shapiro-Wilk test.
 MCPVALFILE = 'mcpvalue_lat_exact.txt' # Name of file listing results of the Mann-Whitney U Test, with p-values adjusted for multiple comparisons.
 MWTEST = 'exact' # Specifies whether to use the R function wilcox.exact ('exact') or wilcox.test ('std')

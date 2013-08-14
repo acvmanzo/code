@@ -490,8 +490,8 @@ def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, y
     # =========== PLOT DATA =======================
 
     # Load data
-    if keylist == 'no':
-        keylist = sorted(d.keys())
+    if keyfile == 'no':
+        keyfile = sorted(d.keys())
     else:
         keylist = cmn.load_keys(keyfile)
     d = dictlat(kind, fname)
