@@ -8,14 +8,18 @@ from matplotlib.mlab import PCA
 #from skimage import morphology
 
 #images = ['subm0043']
-images = ['subm0025', 'subm0069', 'subm0027', 'subm0043', 'subm0082']
+#imgnums = [14, 17, 18, 19, 21, 23, 26, 28, 36, 37, 40, 41, 42, 43, 44, 46, 47, 48, 50, 52, 55, 57, 60, 67, 75, 78, 82]
+#imgnums_upright_closed = [14, 17, 18, 40, 60, 67, 78, 82]
+imgnums_upside_closed = [19, 21, 23, 44, 48, 52, 57, 69, 75]
+
+images = ['subm00{0}'.format(n) for n in imgnums_upside_closed]
+#images = ['subm0025', 'subm0069', 'subm0027', 'subm0043', 'subm0082']
 ext = '.tif'
 outdir = '/home/andrea/Documents/auto/results/'
+outdirrotimg = '/home/andrea/Documents/auto/results/rotimgs/'
 imgdim = (290, 300)
 onesimage = np.ones(imgdim)
 areafile = outdir+'areameans.txt'
-
-
 
 
 def plotrect(corners, color):
@@ -30,8 +34,13 @@ def plotrect(corners, color):
 with open(areafile, 'w') as f:
     f.write('Means of various areas\n')
 
-for imgname in images:
+twc_vals = []
+twl_vals = []
+twr_vals = []
 
+
+for imgname in images:
+    print(imgname)
     imgfile = imgname+ext
   
     plt.figure()
@@ -102,6 +111,7 @@ for imgname in images:
     posarray = np.rollaxis(np.mgrid[0:imgdim[0], 0:imgdim[1]], 0, 3)
 
     # For each connected component:
+    
     for x in np.arange(nb_labels):
     #for x in [0]:
     # Find the coordinates of the points comprising each connected component.
@@ -172,12 +182,16 @@ for imgname in images:
         #thabd = throtimage[75:110, 65:85]
         twc = [120, 140, 70, 90]
         twcwing = throtimage[twc[0]:twc[1], twc[2]:twc[3]]
+        twc_vals.append(np.mean(twcwing))
+        
         
         twl = [110, 130, 40, 60]
         twlwing = throtimage[twl[0]:twl[1], twl[2]:twl[3]]
+        twl_vals.append(np.mean(twlwing))
         
         twr = [110, 130, 100, 120]
         twrwing = throtimage[twr[0]:twr[1], twr[2]:twr[3]]
+        twr_vals.append(np.mean(twrwing))
                 
         plt.figure()
         plt.subplot(121)
@@ -192,7 +206,7 @@ for imgname in images:
         plt.subplot(122)
         plt.plot(throtimage[:, 75].T)
        
-        plt.savefig('{0}{1}_test_fly{2}.png'.format(outdir, imgname, x))
+        plt.savefig('{0}{1}_test_fly{2}.png'.format(outdirrotimg, imgname, x))
         plt.close()
         
         with open(areafile, 'a') as f:
@@ -200,4 +214,11 @@ for imgname in images:
                 f.write('{0}\tfly {1}\t{2}\t{3}\n'.format(imgname, x, area[0], np.mean(area[1])))
             
         
+        
     #plt.show()
+print(twc_vals)
+#with open('{0}{1}'.format(outdir, 'areameanssummary.txt'), 'w') as g:
+    #g.write('Summary of area intensity means\n')
+    #g.write('Mean intensity middle wing\t{0}\n'.format(np.mean(twc_vals)))
+    #g.write('Mean intensity left wing\t{0}\n'.format(np.mean(twl_vals)))
+    #g.write('Mean intensity right wing\t{0}\n'.format(np.mean(twr_vals)))
