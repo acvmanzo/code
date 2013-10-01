@@ -48,23 +48,25 @@ data = [
     ((28, 2), (False, True)),
     ((47, 1), (False, True)),
     ((48, 1), (False, True)),
-    ((50, 1), (False, True)),
-]
+    ((50, 1), (False, True))]
 
+#data = [
+#    ((14, 1), (True, False)),
+#    ((36, 2), (True, True)),
+#    ((19, 1), (False, False)),
+#    ((23, 2), (False, True))]
 
-CONDS = [
-('flies_up_closed', flies_up_closed),
-( 'flies_up_ext', flies_up_ext), 
-( 'flies_down_ext', flies_down_ext), 
-( 'flies_down_closed', flies_down_closed)
-]
+CONDS = {
+    (True, False):     'flies_up_closed',
+    (True, True):      'flies_up_ext',
+    (False, True):     'flies_down_ext',
+    (False, False):    'flies_down_closed'}
 
 INFO = [
     ('flies_up_closed', 221),
-    ( 'flies_up_ext', 222), 
-    ( 'flies_down_ext', 223), 
-    ( 'flies_down_closed', 224)
-    ]
+    ('flies_up_ext', 222),
+    ('flies_down_ext', 223),
+    ('flies_down_closed', 224)]
     
 #CONDS = [
 #('flies_down_ext', flies_down_ext)
@@ -75,23 +77,25 @@ INFO = [
 
 def test_findint():
 
+    outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
+    cmn.makenewdir(outtestdir)
+
+    roi_ints = []
+    for (filen, flyn), _ in data:
+        img = 'subm00{0}'.format(filen)
+        print(img)
+        roi_ints.extend(find_roi_ints(img, (flyn,), outtestdir))
+
     d = {}
-    for cond in CONDS:
-        outtestdir = '/home/andrea/Documents/auto/results/testimgs_'+cond[0]+'/'
-        cmn.makenewdir(outtestdir)
-        
-        d[cond[0]] = {}
-        roi_ints = []
-        for val in cond[1]:
-            img = 'subm00{0}'.format(val[0])
-            print(img)
-            roi_ints.extend(find_roi_ints(img, np.array(val[1])[np.newaxis], outtestdir))
-        d[cond[0]] = roi_ints
+    for name in CONDS.itervalues():
+        d[name] = []
+    for (_, label), roi_int in zip(data, roi_ints):
+        d[CONDS[label]].append(roi_int)
 
     with open(OUTRESDIR+'test_int', 'w') as h:
         pickle.dump(d, h)
 
-    return(d)
+    return d
     
 
 def test_plotint(d, info):
