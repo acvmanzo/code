@@ -17,15 +17,21 @@ from mpl_toolkits.mplot3d import Axes3D
 #images = ['subm00{0}'.format(n) for n in imgnums_upside_closed]
 ##images = ['subm0025', 'subm0069', 'subm0027', 'subm0043', 'subm0082']
 
-ext = '.tif'
+EXT = '.tif'
 outdir = '/home/andrea/Documents/auto/results/'
-outdirrotimg = '/home/andrea/Documents/auto/results/rotimgs/'
+OUTROTDIR = '/home/andrea/Documents/auto/results/rotimgs/'
+OUTWINGDIR = '/home/andrea/Documents/auto/results/wingimgs/'
 imgdim = (290, 300)
 onesimage = np.ones(imgdim)
 areafile = outdir+'areameans.txt'
 origin = np.array([75, 75], dtype=np.int32)
 MIRRY = np.array([[-1, 0], [0, 1]])
 MIRRX = np.array([[1, 0], [0, -1]])
+
+'''Note that matplotlib doesn't plot images and points using the same coordinate system (run this code to check:
+imshow([[0,1],[0,0]])
+plot(0, 1, 'yo')
+'''
 
 
 def region(center_a, side_al):
@@ -36,9 +42,9 @@ def region(center_a, side_al):
     
     Ccoordinates are written so that AP axis is x (so that angle 0 is when the fly is pointing along x axis, positive is in the anterior direction), and the ML axis is y, positive is going to the left).
 '''
-    center_p = np.dot(center, MIRRY)
-    side_ar = np.dot(side, MIRRX)
-    side_pl = np.dot(side, MIRRY)
+    center_p = np.dot(center_a, MIRRY)
+    side_ar = np.dot(side_al, MIRRX)
+    side_pl = np.dot(side_al, MIRRY)
     side_pr = np.dot(side_pl, MIRRX)
     
     return(center_a, center_p, side_al, side_ar, side_pl, side_pr)
@@ -59,8 +65,8 @@ def changecoord(tmat, pts):
     return np.dot(pts, tmat[:-1, :-1]) + tmat[-1, :-1]
 
     
-def plotrect(corners, color):
-    '''corners: [a, b, c, d] where a and b define the y coordinates, and c and d define the x coordinates'''
+def plotrect(corners, color='r'):
+    '''corners: [a, b, c, d] where a and b define the rows, and c and d define the columns'''
     
     plt.plot(corners[2:4], [corners[0], corners[0]], '{0}-'.format(color))
     plt.plot(corners[2:4], [corners[1], corners[1]], '{0}-'.format(color))
@@ -68,16 +74,24 @@ def plotrect(corners, color):
     plt.plot([corners[3], corners[3]], corners[0:2], '{0}-'.format(color))
 
 
-def findflies(imfile, plot='no'):
+def plotrois(imrois):
+    cols = np.tile(['b', 'g', 'r', 'c', 'm', 'y', 'w'], 2)
+    cols = cols[:np.shape(imrois)[0]+1]
+    for x, ((r1,c1), (r2,c2)) in enumerate(np.sort(imrois, axis=1)):
+        plotrect([r1, r2, c1, c2], color=cols[x])
+        plt.text(c1, r1, '{0}'.format(x), color=cols[x])
+
+def findflies(imfile, t, plot='no'):
     '''
     Input:
     imfile = raw image file
+    t = intensity threshold for selecting fly body
     plot = 'yes' (plots figure) or 'no'
     
     Output:
     orig_im = original image
-    label_im = array where connected components are labeled by integers
-    nb_labels = number of connected components
+    label_im = array where connected components are labeled by integers; 0 is the background and labeled components start at 1
+    nb_labels = number of connected components (not including the background)
     coms = centers of mass of connected components
     '''
     # Load the image. 
@@ -85,7 +99,7 @@ def findflies(imfile, plot='no'):
     img = np.array(Image.open(imfile)).astype(float)
     
     # Thresholds the image based on the peaks in the intensity histogram.
-    low_values_indices = img < 120  # Where values are low
+    low_values_indices = img < t  # Where values are low
     #high_values_indices = img > 60
     img[low_values_indices] = 0
     #img[high_values_indices] = 0
@@ -141,12 +155,22 @@ def findflies(imfile, plot='no'):
     return(orig_im, label_im, nb_labels, coms)
 
 
-def orientflies(orig_im, label_im, comp_label, coms, imgname):
+def orientflies(orig_im, label_im, comp_label, coms, fly_offset, rotimshape, imname):
     '''
+    Rotates image so that each fly (connected component) is positioned vertically along its AP axis.
+    
     Input:
-    orig_im = 
+    orig_im = original image
     label_im = array where connected components are labeled by integers (from findflies())
-    comp_label = label designating connected components (one of the numbers in nb_labels from findflies())
+    comp_label = label designating connected components; starts at 1
+    coms = centers of mass of the connected components
+    fly_offset = list of new center coordinates for the oriented image
+    rotimshape = tuple with size of the rotated image
+    imname = image name
+    plot = 'no' (does not plot figure) or 'yes'
+    
+    Output:
+    orient_im = rotated/translated image
     ''' 
     # Create an array where each entry is the index.
     posarray = np.rollaxis(np.mgrid[0:imgdim[0], 0:imgdim[1]], 0, 3)
@@ -165,34 +189,104 @@ def orientflies(orig_im, label_im, comp_label, coms, imgname):
     u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
     
     # Plot points in the new axes.
-    flypoints = [[0, 0], [10, 0], [0,5]]
-    origpoints = np.dot(flypoints, eigenv) + centroid
+    #flypoints = [[0, 0], [10, 0], [0,5]]
+    #origpoints = np.dot(flypoints, eigenv) + centroid
     
-    # Rotate image.
-    flyoffset = [-75, -75]
+    # Orient image.
+    flyoffset = fly_offset*-1
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
-    rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, centroid + imgoffset, output_shape = (150, 150))
-    plt.figure()
-    plt.imshow(rotimage, cmap=plt.cm.gray)
-    plt.plot([0, 150], [75, 75], 'r-') 
-    plt.plot([75, 75], [0, 150], 'r-') 
-
-    # Select head+thorax and abdomen areas.
-    #print(rotimage)
-    #print(np.shape(rotimage))
-    headthor = rotimage[45:75, 65:85]     
-    plotrect([45, 75, 65, 85], 'y')
+    rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, centroid + imgoffset, output_shape = rotimshape)
     
-    abd = rotimage[75:110, 65:85]
-    plotrect([75, 110, 65, 85], 'g')
-
-    #print('headthor', np.mean(headthor))
-    #print('abdomen', np.mean(abd))
-    
-    plt.savefig('{0}{1}_fly{2}.png'.format(outdir, imgname, comp_label))
-    plt.close()
     return(rotimage)
 
+def plot_rotimage(orient_im, rotimshape, fly_offset, comp_label, imname):
+    # Plot oriented image.
+    plt.figure()
+    plt.imshow(orient_im, cmap=plt.cm.gray)
+    plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
+    plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
+    plt.savefig('{0}{1}_fly{2}.png'.format(OUTROTDIR, imname, comp_label))
+
+    # Select head+thorax and abdomen areas. Thought that I could use intensity in these regions to disambiguate direction, but too similar.
+    #headthor = orient_im[45:75, 65:85]     
+    #plotrect([45, 75, 65, 85], 'y')
+    #abd = orient_im[75:110, 65:85]
+    #plotrect([75, 110, 65, 85], 'g')
+
+def plot_wingimage(w_im, imrois, img, comp_label):
+    
+    plt.figure()
+    plt.imshow(w_im, cmap=plt.cm.gray)
+    plotrois(imrois)
+    plt.savefig('{0}{1}_fly{2}.png'.format(OUTWINGDIR, img, comp_label))
+
+def defrois(center_a, side_al, tmat):
+    '''
+    Input: 
+    orient_im = image in which fly is aligned vertically along its AP axis; output of orientflies()
+    '''
+  
+    # Define regions of interest in fly coordinates.
+    #center_a = [[30, 65], [10, 85]] # In image coordinates
+    #side_al = [[40, 40], [20, 60]]
+
+    rois = region(center_a, side_al) 
+    # center_a, center_p, side_al, side_ar, side_pl, side_pr  = rois
+    
+    # Convert regions of interest to fly image coordinates.
+    imrois = changecoord(tmat, rois)
+    
+    return(imrois)
+    
+    
+def getrc(imrois):
+    '''From the array imrois (returned by defrois()), returns the x and y coordinates. These are row and column coordinates if plotted like an image, but are x and y coordinates if plotted using plt.plot.
+    '''
+    
+    x = []
+    y = []
+    for (r1,c1), (r2,c2) in np.sort(imrois, axis=1):
+        x.extend([r1, r2])
+        y.extend([c1, c2])
+    
+    return(x,y)
+
+def thwings(orient_im, low_value, high_value):
+    ''' Thresholds image to pick out wings.
+    Input:
+    orient_im = image of oriented fly
+    low_value = scalar; values below this are set to 0
+    high_value = scalar; values above this set to 0
+    Output:
+    w_im = thresholded image
+    '''   
+    
+    w_im = orient_im
+    low_values_indices = w_im < low_value  # Where values are below low_value
+    high_values_indices = w_im > high_value
+    w_im[low_values_indices] = 0
+    w_im[high_values_indices] = 0
+    
+    return(w_im)
+
+
+def roimeans(w_im, imrois):
+    '''
+    Input:
+    w_im = image of oriented fly, threshholded to isolate wings
+    imrois = list of points that define regions of interest in the image coordinates; returned by defrois(); the order or rois are: 
+        center_a, center_p, side_al, side_ar, side_pl, side_pr.
+    Output:
+    roi_int: list of mean intensities 
+    '''
+       
+    ## Measure mean intensity over each ROI.
+    roi_int = []
+    for (r1,c1), (r2,c2) in np.sort(imrois, axis=1):
+        roi_int.append(np.mean(w_im[r1:r2, c1:c2]))
+    return(roi_int)
+
+    
 def testareas(conds):
 #with open(areafile, 'w') as f:
     #f.write('Means of various areas\n')
@@ -212,8 +306,8 @@ def testareas(conds):
         for val in cond[1]:      
             imgname = 'subm00{0}'.format(val[0])
             print(imgname)
-            orig_img, label_im, nb_labels, coms = findflies(imgname+'.tif')
-            rotimage = rotateflies(orig_img, label_im, val[1], coms, imgname)
+            orig_im, label_im, nb_labels, coms = findflies(imgname+'.tif')
+            rotimage = rotateflies(orig_im, label_im, val[1], coms, imgname)
 
         # Figuringout how to distinguish fly orientation.
         #plt.plot(rotimage[:, 75].T)
