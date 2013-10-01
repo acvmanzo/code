@@ -23,8 +23,42 @@ outdirrotimg = '/home/andrea/Documents/auto/results/rotimgs/'
 imgdim = (290, 300)
 onesimage = np.ones(imgdim)
 areafile = outdir+'areameans.txt'
+origin = np.array([75, 75], dtype=np.int32)
+MIRRY = np.array([[-1, 0], [0, 1]])
+MIRRX = np.array([[1, 0], [0, -1]])
 
 
+def region(center_a, side_al):
+
+    ''' Input:
+    center: 2x2 numpy array with x, y coordinates of two opposite corners of center rectangle: [[x1, y1], [x2, y2]]
+    side: 2x2 numpy array with x, y coordinates of two opposite orners of side rectangle
+    
+    Ccoordinates are written so that AP axis is x (so that angle 0 is when the fly is pointing along x axis, positive is in the anterior direction), and the ML axis is y, positive is going to the left).
+'''
+    center_p = np.dot(center, MIRRY)
+    side_ar = np.dot(side, MIRRX)
+    side_pl = np.dot(side, MIRRY)
+    side_pr = np.dot(side_pl, MIRRX)
+    
+    return(center_a, center_p, side_al, side_ar, side_pl, side_pr)
+    
+
+def changecoord(tmat, pts):
+    '''
+    Inputs: 
+    tmat = transformation matrix (homogenous coordinates)
+        ex. tmat = np.array([
+        [0, 1, 0],
+        [-1, 0, 0],
+        [offsetx, offsety, 1]])
+        where offsetx, offsety are the center of the new axes. This matrix transforms points in fly coordinates to fly image coordinates.
+        
+    pts = coordinates in original axes (2x2 numpy array)
+    '''
+    return np.dot(pts, tmat[:-1, :-1]) + tmat[-1, :-1]
+
+    
 def plotrect(corners, color):
     '''corners: [a, b, c, d] where a and b define the y coordinates, and c and d define the x coordinates'''
     
@@ -34,77 +68,83 @@ def plotrect(corners, color):
     plt.plot([corners[3], corners[3]], corners[0:2], '{0}-'.format(color))
 
 
-def findflies(imgfile):
+def findflies(imfile, plot='no'):
     '''
     Input:
-    imgfile = raw image file
+    imfile = raw image file
+    plot = 'yes' (plots figure) or 'no'
     
     Output:
+    orig_im = original image
     label_im = array where connected components are labeled by integers
     nb_labels = number of connected components
+    coms = centers of mass of connected components
     '''
+    # Load the image. 
+    orig_im = np.array(Image.open(imfile)).astype(float)
+    img = np.array(Image.open(imfile)).astype(float)
     
-    plt.figure()
-    plt.subplot(231)
-    
-    # Load the image. Plots into a figure.
-    orig_img = np.array(Image.open(imgfile)).astype(float)
-    img = np.array(Image.open(imgfile)).astype(float)
-    plt.imshow(orig_img, cmap=plt.cm.gray)
-    plt.axis('off')
-    plt.title('Original image')
-
-    # Plot a histogram of the intensities.
-    plt.subplot(232)
-    hist, bin_edges = np.histogram(img, bins=60)
-    bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
-    plt.plot(bin_centers, hist, lw=2)
-    plt.ylim(0, 500)
-    plt.title('Histogram of intensities')
-
-    # Thresholds the image based on the peaks in the histogram.
+    # Thresholds the image based on the peaks in the intensity histogram.
     low_values_indices = img < 120  # Where values are low
     #high_values_indices = img > 60
     img[low_values_indices] = 0
     #img[high_values_indices] = 0
-
-    # Plot the threshholded image.
-    plt.subplot(233)
-    plt.imshow(img, cmap=plt.cm.gray)
-    plt.axis('off')
-    plt.title('Threshholded image')
-
+    
     # Functions to smooth the connected components.
     #open_img = ndimage.binary_opening(img)
     close_img = ndimage.binary_closing(img, structure=np.ones((5,5)).astype(img.dtype))
-    plt.subplot(234)
-    plt.imshow(close_img, cmap=plt.cm.gray)
-    plt.axis('off')
-    plt.title('Binary closing')
-
-    # Label the connected components.
+    
+    # Select the connected components.
     label_im, nb_labels = ndimage.label(close_img)
     sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
-    #print(sizes)
     coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, np.arange(1, nb_labels+1)))
-    #print(coms)
+    
+    
+    if plot == 'yes':
+        # Plots images into a figure.
+        plt.figure()
+        plt.subplot(231)
+        plt.imshow(orig_im, cmap=plt.cm.gray)
+        plt.axis('off')
+        plt.title('Original image')
 
-    # Label their centers of mass.
-    plt.subplot(235)
-    plt.imshow(label_im, cmap=plt.cm.gray)
-    plt.plot(coms.T[1], coms.T[0], 'rx', lw=1)
-    plt.title('Connected comp = {0}'.format(nb_labels))
-    plt.axis((0, 300, 0, 300))
-    imgname = os.path.splitext(imgfile)[0]
-    plt.savefig(outdir+imgname+'_fig.png')
-    plt.close()
+        # Plot a histogram of the intensities.
+        plt.subplot(232)
+        hist, bin_edges = np.histogram(img, bins=60)
+        bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
+        plt.plot(bin_centers, hist, lw=2)
+        plt.ylim(0, 500)
+        plt.title('Histogram of intensities')
 
-    return(orig_img, label_im, nb_labels, coms)
+        # Plot the threshholded image.
+        plt.subplot(233)
+        plt.imshow(img, cmap=plt.cm.gray)
+        plt.axis('off')
+        plt.title('Threshholded image')
+
+        # Plots the smoothed image.
+        plt.subplot(234)
+        plt.imshow(close_img, cmap=plt.cm.gray)
+        plt.axis('off')
+        plt.title('Binary closing')
+        
+        # Plot the connected components and their centers of mass.
+        plt.subplot(235)
+        plt.imshow(label_im, cmap=plt.cm.gray)
+        plt.plot(coms.T[1], coms.T[0], 'rx', lw=1)
+        plt.title('Connected comp = {0}'.format(nb_labels))
+        plt.axis((0, 300, 0, 300))
+        imgname = os.path.splitext(imfile)[0]
+        plt.savefig(outdir+imgname+'_fig.png')
+        plt.close()
+
+    return(orig_im, label_im, nb_labels, coms)
 
 
-def rotateflies(orig_img, label_im, comp_label, coms, imgname):
+def orientflies(orig_im, label_im, comp_label, coms, imgname):
     '''
     Input:
+    orig_im = 
     label_im = array where connected components are labeled by integers (from findflies())
     comp_label = label designating connected components (one of the numbers in nb_labels from findflies())
     ''' 
@@ -131,7 +171,7 @@ def rotateflies(orig_img, label_im, comp_label, coms, imgname):
     # Rotate image.
     flyoffset = [-75, -75]
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
-    rotimage = ndimage.interpolation.affine_transform(orig_img, 0.5*eigenv.T, centroid + imgoffset, output_shape = (150, 150))
+    rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, centroid + imgoffset, output_shape = (150, 150))
     plt.figure()
     plt.imshow(rotimage, cmap=plt.cm.gray)
     plt.plot([0, 150], [75, 75], 'r-') 
@@ -153,6 +193,82 @@ def rotateflies(orig_img, label_im, comp_label, coms, imgname):
     plt.close()
     return(rotimage)
 
+def testareas(conds):
+#with open(areafile, 'w') as f:
+    #f.write('Means of various areas\n')
+
+    d = {}
+    for cond in conds:
+        areasumfile = 'areasum'+cond[0]+'.txt'
+        rotimgdir = '/home/andrea/Documents/auto/results/rotimgs_'+cond[0]+'/'
+        cmn.makenewdir(rotimgdir)
+        
+        twc_vals = []
+        twl_vals = []
+        twr_vals = []
+
+        d[cond[0]] = {}
+
+        for val in cond[1]:      
+            imgname = 'subm00{0}'.format(val[0])
+            print(imgname)
+            orig_img, label_im, nb_labels, coms = findflies(imgname+'.tif')
+            rotimage = rotateflies(orig_img, label_im, val[1], coms, imgname)
+
+        # Figuringout how to distinguish fly orientation.
+        #plt.plot(rotimage[:, 75].T)
+
+            # Thresholding image to pick out wings.
+            throtimage = np.copy(rotimage)
+            low_values_indices = throtimage < 20  # Where values are low
+            high_values_indices = throtimage > 60
+            throtimage[low_values_indices] = 0
+            throtimage[high_values_indices] = 0
+
+            #thheadthor = throtimage[45:75, 65:85]
+            #print(thheadthor)
+            #thabd = throtimage[75:110, 65:85]
+            twc = [120, 140, 70, 90]
+            twcwing = throtimage[twc[0]:twc[1], twc[2]:twc[3]]
+            twc_vals.append(np.mean(twcwing))
+
+            twl = [110, 130, 40, 60]
+            twlwing = throtimage[twl[0]:twl[1], twl[2]:twl[3]]
+            twl_vals.append(np.mean(twlwing))
+
+            twr = [110, 130, 100, 120]
+            twrwing = throtimage[twr[0]:twr[1], twr[2]:twr[3]]
+            twr_vals.append(np.mean(twrwing))
+                    
+            plt.figure()
+            plt.subplot(121)
+            plt.imshow(throtimage, cmap=plt.cm.gray)
+            plotrect(twc, 'g')
+            plotrect(twl, 'b')
+            plotrect(twr, 'b')
+
+            plt.subplot(122)
+            plt.plot(throtimage[:, 75].T)
+            plt.savefig('{0}{1}_test_fly{2}.png'.format(rotimgdir, imgname, val[1]))
+            plt.close()
+
+            #with open(areafile, 'a') as f:
+                #for area in [('twcwing', twcwing), ('twlwing', twlwing), ('twrwing', twrwing)]:
+                    #f.write('{0}\tfly {1}\t{2}\t{3}\n'.format(imgname, x, area[0], np.mean(area[1])))
+                        
+            with open('{0}{1}'.format(outdir, areasumfile), 'w') as g:
+                g.write('Summary of area intensity means\n')
+                g.write('Mean intensity middle\t{0}\n'.format(np.mean(twc_vals)))
+                g.write('Mean intensity left\t{0}\n'.format(np.mean(twl_vals)))
+                g.write('Mean intensity right\t{0}\n'.format(np.mean(twr_vals)))
+
+        d[cond[0]]['twc_vals'] = twc_vals
+        d[cond[0]]['twl_vals'] = twl_vals
+        d[cond[0]]['twr_vals'] = twr_vals
+
+    with open(outdir+'areasumdict', 'w') as h:
+        pickle.dump(d, h)
+    return(d)
 
 
 
@@ -235,83 +351,6 @@ conds = [
 ]
 
 
-def testareas(conds):
-#with open(areafile, 'w') as f:
-    #f.write('Means of various areas\n')
-
-    d = {}
-    for cond in conds:
-        areasumfile = 'areasum'+cond[0]+'.txt'
-        rotimgdir = '/home/andrea/Documents/auto/results/rotimgs_'+cond[0]+'/'
-        cmn.makenewdir(rotimgdir)
-        
-        twc_vals = []
-        twl_vals = []
-        twr_vals = []
-
-        d[cond[0]] = {}
-
-        for val in cond[1]:      
-            imgname = 'subm00{0}'.format(val[0])
-            print(imgname)
-            orig_img, label_im, nb_labels, coms = findflies(imgname+'.tif')
-            rotimage = rotateflies(orig_img, label_im, val[1], coms, imgname)
-
-        # Figuringout how to distinguish fly orientation.
-        #plt.plot(rotimage[:, 75].T)
-
-            # Thresholding image to pick out wings.
-            throtimage = np.copy(rotimage)
-            low_values_indices = throtimage < 20  # Where values are low
-            high_values_indices = throtimage > 60
-            throtimage[low_values_indices] = 0
-            throtimage[high_values_indices] = 0
-
-            #thheadthor = throtimage[45:75, 65:85]
-            #print(thheadthor)
-            #thabd = throtimage[75:110, 65:85]
-            twc = [120, 140, 70, 90]
-            twcwing = throtimage[twc[0]:twc[1], twc[2]:twc[3]]
-            twc_vals.append(np.mean(twcwing))
-
-            twl = [110, 130, 40, 60]
-            twlwing = throtimage[twl[0]:twl[1], twl[2]:twl[3]]
-            twl_vals.append(np.mean(twlwing))
-
-            twr = [110, 130, 100, 120]
-            twrwing = throtimage[twr[0]:twr[1], twr[2]:twr[3]]
-            twr_vals.append(np.mean(twrwing))
-                    
-            plt.figure()
-            plt.subplot(121)
-            plt.imshow(throtimage, cmap=plt.cm.gray)
-            plotrect(twc, 'g')
-            plotrect(twl, 'b')
-            plotrect(twr, 'b')
-
-            plt.subplot(122)
-            plt.plot(throtimage[:, 75].T)
-            plt.savefig('{0}{1}_test_fly{2}.png'.format(rotimgdir, imgname, val[1]))
-            plt.close()
-
-            #with open(areafile, 'a') as f:
-                #for area in [('twcwing', twcwing), ('twlwing', twlwing), ('twrwing', twrwing)]:
-                    #f.write('{0}\tfly {1}\t{2}\t{3}\n'.format(imgname, x, area[0], np.mean(area[1])))
-                        
-            with open('{0}{1}'.format(outdir, areasumfile), 'w') as g:
-                g.write('Summary of area intensity means\n')
-                g.write('Mean intensity middle\t{0}\n'.format(np.mean(twc_vals)))
-                g.write('Mean intensity left\t{0}\n'.format(np.mean(twl_vals)))
-                g.write('Mean intensity right\t{0}\n'.format(np.mean(twr_vals)))
-
-        d[cond[0]]['twc_vals'] = twc_vals
-        d[cond[0]]['twl_vals'] = twl_vals
-        d[cond[0]]['twr_vals'] = twr_vals
-
-    with open(outdir+'areasumdict', 'w') as h:
-        pickle.dump(d, h)
-    return(d)
-
 def plotres_testareas():
 
     with open(outdir+'areasumdict', 'r') as f:
@@ -374,8 +413,8 @@ def plotresrot_testareas():
             for val in cond[1]:      
                 imgname = 'subm00{0}'.format(val[0])
                 print(imgname)
-                orig_img, label_im, nb_labels, coms = findflies(imgname+'.tif')
-                rotimage = rotateflies(orig_img, label_im, val[1], coms)
+                orig_im, label_im, nb_labels, coms = findflies(imgname+'.tif')
+                rotimage = orientflies(orig_im, label_im, val[1], coms)
                 rotimage = ndimage.interpolation.rotate(rotimage, 180)
             # Figuringout how to distinguish fly orientation.
             #plt.plot(rotimage[:, 75].T)
@@ -502,4 +541,3 @@ def plot3d():
     plt.savefig(outdir+'3dplot.png')
     plt.show()
 
-testareas(conds)
