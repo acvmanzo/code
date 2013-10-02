@@ -96,6 +96,50 @@ def test_findint():
         pickle.dump(d, h)
 
     return d
+
+
+def test_plotsome():
+    
+    outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
+    cmn.makenewdir(outtestdir)
+
+    roi_ints = []
+    for (filen, flyn), _ in data:
+        img = 'subm00{0}'.format(filen)
+        print(img)
+        roi_ints.extend(find_roi_ints(img, (flyn,), outtestdir))
+    
+    m = np.array(roi_ints)
+    side_a = np.sum(m[:, 2:4], axis=1)
+    side_p = np.sum(m[:, 4:6], axis=1)
+    roi_ints = np.hstack((m[:,0:2], side_a[:, np.newaxis], side_p[:, np.newaxis]))
+
+    cond = np.array([cond for _, cond in data], dtype=np.bool)
+    # center_a, center_p, side_al, side_ar, side_pl, side_pr
+    
+    up_ext = np.logical_and(cond[:, 0], cond[:, 1])
+    up_closed = np.logical_and(cond[:, 0], np.logical_not(cond[:, 1]))
+    down_ext = np.logical_and(np.logical_not(cond[:, 0]), cond[:, 1])
+    down_closed = np.logical_and(np.logical_not(cond[:, 0]), np.logical_not(cond[:, 1]))
+
+    #print(roi_ints)
+    #print(roi_ints[up_closed][:, 0])
+    
+    plt.figure()
+    plt.subplot(121)
+    plt.plot(roi_ints[up_closed][:, 0], roi_ints[up_closed][:, 2], 'ro')
+    plt.plot(roi_ints[up_ext][:, 0], roi_ints[up_ext][:, 2], 'bx')
+    plt.xlabel('center')
+    plt.ylabel('side')
+    plt.title('Up')
+    
+    plt.subplot(122)
+    plt.plot(roi_ints[down_closed][:, 1], roi_ints[down_closed][:, 3], 'ro')
+    plt.plot(roi_ints[down_ext][:, 1], roi_ints[down_ext][:, 3], 'bx')
+    plt.xlabel('center')
+    plt.ylabel('side')
+    plt.title('Down')
+    plt.savefig(OUTRESDIR+'test_plotsome.png')
     
 
 def test_plotint(d, info):
@@ -120,11 +164,16 @@ def test_plotint(d, info):
         plt.title(i[0])
         plt.ylim(0, 120)
     plt.savefig(OUTRESDIR+'test_int.png')
-    
-d = test_findint()
+
+
+#d = test_findint()
 #with open(OUTRESDIR+'test_int', 'r') as h:
     #d = pickle.load(h)
-test_plotint(d, INFO)
+#print(np.array(d['flies_down_closed']).shape)
+
+test_plotsome()
+
+#test_plotint(d, INFO)
 
     
     

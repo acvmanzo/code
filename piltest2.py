@@ -16,7 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 #imgnums_upside_closed = [19, 21, 23, 44, 48, 52, 57, 69, 75]
 
 EXT = '.tif'
-#OUTRESDIR = '/home/andrea/Documents/auto/results/'
+OUTRESDIR = '/home/andrea/Documents/auto/results/'
 #OUTROTDIR = '/home/andrea/Documents/auto/results/rotimgs/'
 #OUTWINGDIR = '/home/andrea/Documents/auto/results/wingimgs/'
 #OUTTESTDIR = '/home/andrea/Documents/auto/results/test/'
@@ -624,7 +624,7 @@ def find_roi_ints(img, comp_labels, outwingdir):
         imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
         #plot_rotimage(orient_im, ROTIMSHAPE, FLY_OFFSET, comp_label, img, OUTROTDIR)
         w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
-        plot_wingimage(w_im, imrois, img, comp_label, outwingdir)
+        #plot_wingimage(w_im, imrois, img, comp_label, outwingdir)
         roi_int = np.array(roimeans(w_im, imrois))
         #fly_roi_int = np.vstack((fly_roi_int, roi_int[np.newaxis]))
         fly_roi_int.append(roi_int)
