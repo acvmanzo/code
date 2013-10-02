@@ -14,23 +14,21 @@ from mpl_toolkits.mplot3d import Axes3D
 ##imgnums = [14, 17, 18, 19, 21, 23, 26, 28, 36, 37, 40, 41, 42, 43, 44, 46, 47, 48, 50, 52, 55, 57, 60, 67, 75, 78, 82]
 ##imgnums_upright_closed = [14, 17, 18, 40, 60, 67, 78, 82]
 #imgnums_upside_closed = [19, 21, 23, 44, 48, 52, 57, 69, 75]
-#images = ['subm00{0}'.format(n) for n in imgnums_upside_closed]
-##images = ['subm0025', 'subm0069', 'subm0027', 'subm0043', 'subm0082']
 
 EXT = '.tif'
-OUTRESDIR = '/home/andrea/Documents/auto/results/'
-OUTROTDIR = '/home/andrea/Documents/auto/results/rotimgs/'
-OUTWINGDIR = '/home/andrea/Documents/auto/results/wingimgs/'
-OUTTESTDIR = '/home/andrea/Documents/auto/results/test/'
+#OUTRESDIR = '/home/andrea/Documents/auto/results/'
+#OUTROTDIR = '/home/andrea/Documents/auto/results/rotimgs/'
+#OUTWINGDIR = '/home/andrea/Documents/auto/results/wingimgs/'
+#OUTTESTDIR = '/home/andrea/Documents/auto/results/test/'
 imgdim = (290, 300)
 onesimage = np.ones(imgdim)
-areafile = OUTRESDIR+'areameans.txt'
+#areafile = OUTRESDIR+'areameans.txt'
 origin = np.array([75, 75], dtype=np.int32)
 MIRRY = np.array([[-1, 0], [0, 1]])
 MIRRX = np.array([[1, 0], [0, -1]])
 
 IMNUMS = [str(x) for x in [50]]
-IMAGES = ['subm00'+n for n in IMNUMS]
+IMAGES = ['subm 00'+n for n in IMNUMS]
 BODY_TH = 120
 COMP_LABEL = [1, 2]
 FLY_OFFSET = np.array([75, 75])
@@ -97,6 +95,7 @@ def plotrois(imrois):
     for x, ((r1,c1), (r2,c2)) in enumerate(np.sort(imrois, axis=1)):
         plotrect([r1, r2, c1, c2], color=cols[x])
         plt.text(c1, r1, '{0}'.format(x), color=cols[x])
+	plt.close()
 
 def findflies(imfile, t, outdir, plot='yes'):
     '''
@@ -223,6 +222,7 @@ def plot_rotimage(orient_im, rotimshape, fly_offset, comp_label, imname, outdir)
     plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
     plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
     plt.savefig('{0}{1}_fly{2}.png'.format(outdir, imname, comp_label))
+    plt.close()
 
     # Select head+thorax and abdomen areas. Thought that I could use intensity in these regions to disambiguate direction, but too similar.
     #headthor = orient_im[45:75, 65:85]     
@@ -268,7 +268,7 @@ def getrc(imrois):
     
     return(x,y)
 
-def thwings(orient_im, low_value, high_value):
+def findwings(orient_im, low_value, high_value):
     ''' Thresholds image to pick out wings.
     Input:
     orient_im = image of oriented fly
@@ -623,7 +623,7 @@ def find_roi_ints(img, comp_labels, outwingdir):
         orient_im = orientflies(orig_im, label_im, comp_label, coms, FLY_OFFSET, ROTIMSHAPE, img)
         imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
         #plot_rotimage(orient_im, ROTIMSHAPE, FLY_OFFSET, comp_label, img, OUTROTDIR)
-        w_im = thwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
+        w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
         plot_wingimage(w_im, imrois, img, comp_label, outwingdir)
         roi_int = np.array(roimeans(w_im, imrois))
         #fly_roi_int = np.vstack((fly_roi_int, roi_int[np.newaxis]))
