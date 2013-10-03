@@ -22,6 +22,7 @@ OUTROTDIR = PARDIR+'/rotimgs/'
 OUTWINGDIR = PARDIR+'/wingimgs/'
 OUTTESTDIR = PARDIR+'/test/'
 OUTTHTESTDIR = PARDIR+'/thtest/'
+OUTBWTESTDIR = PARDIR+'/bwtest/'
 #OUTRESDIR = '/home/andrea/Documents/auto/results/'
 #OUTROTDIR = '/home/andrea/Documents/auto/results/rotimgs/'
 #OUTWINGDIR = '/home/andrea/Documents/auto/results/wingimgs/'
@@ -146,7 +147,7 @@ def findflies(imfile, t, outdir, plot='yes'):
 
         # Plot a histogram of the intensities.
         plt.subplot(232)
-        hist, bin_edges = np.histogram(img, bins=60)
+        hist, bin_edges = np.histogram(orig_im, bins=60)
         bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
         plt.plot(bin_centers, hist, lw=2)
         plt.ylim(0, 500)
@@ -291,6 +292,8 @@ def findwings(orient_im, low_value, high_value):
     w_im[high_values_indices] = 0
     
     return(w_im)
+
+
 
 
 def roimeans(w_im, imrois):
@@ -623,14 +626,14 @@ def plot3d():
 def find_roi_ints(img, comp_labels, outwingdir):
     
     imfile = img+EXT
-    orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTRESDIR, plot='no')
+    orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTRESDIR, plot='yes')
     fly_roi_int = []
     for comp_label in comp_labels:
         orient_im = orientflies(orig_im, label_im, comp_label, coms, FLY_OFFSET, ROTIMSHAPE, img)
         imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
-        #plot_rotimage(orient_im, ROTIMSHAPE, FLY_OFFSET, comp_label, img, OUTROTDIR)
+        plot_rotimage(orient_im, ROTIMSHAPE, FLY_OFFSET, comp_label, img, OUTROTDIR)
         w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
-        #plot_wingimage(w_im, imrois, img, comp_label, outwingdir)
+        plot_wingimage(w_im, imrois, img, comp_label, outwingdir)
         roi_int = np.array(roimeans(w_im, imrois))
         #fly_roi_int = np.vstack((fly_roi_int, roi_int[np.newaxis]))
         fly_roi_int.append(roi_int)

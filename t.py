@@ -174,19 +174,42 @@ def test_plotsome_fly():
         #print(center_a, side_a)
     
         plt.figure()
-        plt.subplot(121)
+        plt.subplot(131)
         plt.imshow(orient_im, cmap=plt.cm.gray)
-        plt.subplot(122)
+        
+        plt.subplot(132)
         
         if rev == True:
-            plt.plot(center_a, side_a, 'ro')
-        if rev == False:
-            plt.plot(center_p, side_p, 'ro')
+            x = center_a
+            y = side_a
             
+        if rev == False:
+            x = center_p
+            y = side_p
+
+        
+        plt.plot(x, y, 'ro')
         plt.xlim(0, 50)
         plt.ylim(0, 60)
         plt.xlabel('center')
         plt.ylabel('side')
+        plt.title('Correct orientation\n c-a={0:4f}'.format(x-y))
+        
+        plt.subplot(133)
+        if rev == True:
+            x = center_p
+            y = side_p
+
+        if rev == False:
+            x = center_a
+            y = side_a
+        
+        plt.plot(x, y, 'ro')
+        plt.xlim(0, 50)
+        plt.ylim(0, 60)
+        plt.xlabel('center')
+        plt.ylabel('side')
+        plt.title('Incorrect orientation\n c-a={0}'.format(x-y))
         plt.savefig(OUTROITESTDIR+img+'_{0}.png'.format(comp_label))
         plt.close()
         

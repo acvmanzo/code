@@ -58,7 +58,22 @@ data = [
     ((28, 2), (False, True)),
     ((47, 1), (False, True)),
     ((48, 1), (False, True)),
-    ((50, 1), (False, True))][:2]
+    ((50, 1), (False, True))]
+
+
+def findconn(im, th_low, th_high, imshape):
+    
+    image = np.copy(im)
+    thim = findwings(image, th_low, th_high)
+    new_thim = ndimage.binary_opening(thim, structure=np.ones((5,5)).astype(thim.dtype))
+    new_thim = ndimage.binary_closing(new_thim, structure=np.ones((5,5)).astype(new_thim.dtype))
+
+    onesimage = np.ones(imshape)
+    
+    label_im, nb_labels = ndimage.label(new_thim)
+    com = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, np.arange(1, nb_labels+1)))
+    return(label_im, nb_labels, com)
+    
 
 
 for (imnum, flyn),_ in data:
@@ -67,44 +82,38 @@ for (imnum, flyn),_ in data:
     imfile = img+EXT
     orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTRESDIR, plot='no')
     comp_label = flyn
+    
     orient_im = orientflies(orig_im, label_im, comp_label, coms, FLY_OFFSET, ROTIMSHAPE, img)
-    w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
-    imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
-    plot_wingimage(w_im, imrois, img, comp_label, OUTWINGDIR)
-    plt.close()
 
+    b_label_im, b_nb_labels, b_coms = findconn(orient_im, BODY_TH, 255, ROTIMSHAPE)
+    bw_label_im, bw_nb_labels, bw_coms = findconn(orient_im, 20, 255, ROTIMSHAPE)
+
+    #hist, bin_edges = np.histogram(orig_im, bins=60)
+    #bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
+    #plt.plot(bin_centers, hist, lw=2)
+    #plt.ylim(0, 500)
+    #plt.show()
     
-    #w_im_cl = ndimage.binary_opening(w_im, structure=np.ones((5,5)).astype(w_im.dtype))
-    w_im_op = ndimage.binary_opening(w_im, structure=np.ones((5,5)).astype(w_im.dtype))
-    w_im_op_cl = ndimage.binary_opening(w_im, structure=np.ones((5,5)).astype(w_im.dtype))
-    #w_im_cl_op = ndimage.binary_closing(w_im_cl, structure=np.ones((5,5)).astype(w_im.dtype))
-
-    # Select the connected components.
-    w_label_im, w_nb_labels = ndimage.label(w_im_op_cl)
-    w_onesimage = np.ones(ROTIMSHAPE)
-    sizes = ndimage.sum(w_onesimage, w_label_im, np.arange(1, w_nb_labels+1))
-    w_coms = np.array(ndimage.measurements.center_of_mass(w_onesimage, w_label_im, np.arange(1, w_nb_labels+1)))
-
-    #print(w_nb_labels)
-    #print(sizes)
-    #print(w_coms)
-    
-    # Plots images into a figure.
+    ## Plots images into a figure.
     plt.figure()
-    plt.subplot(121)
-    plt.imshow(w_im, cmap=plt.cm.gray)
-    plt.title('Wing image')
-   
-    # Plot the connected components and their centers of mass.
-    plt.subplot(122)
-    plt.imshow(w_label_im, cmap=plt.cm.gray)
+    plt.subplot(131)
+    plt.imshow(orient_im, cmap=plt.cm.gray)
+    plt.title('Orig image')
+    
+    plt.subplot(132)
+    plt.imshow(b_label_im, cmap=plt.cm.gray)
+    plt.title('Body')
+    plt.plot(b_coms.T[1], b_coms.T[0], 'ro', lw=1)
+    
+    plt.subplot(133)
+    plt.imshow(bw_label_im, cmap=plt.cm.gray)
+    plt.title('Body+wing')
+    
     try:
-        plt.plot(w_coms.T[1], w_coms.T[0], 'ro', lw=1)
+        plt.plot(bw_coms.T[1], bw_coms.T[0], 'ro', lw=1)
     except IndexError:
         pass
-    plt.title('Connected comp = {0}'.format(w_nb_labels))
-    imgname = os.path.splitext(imfile)[0]
-    plt.savefig(OUTTHTESTDIR+img+'_{0}.png'.format(comp_label))
+    plt.savefig(OUTBWTESTDIR+img+'_{0}.png'.format(comp_label))
     plt.close()
         
         ##imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
