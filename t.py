@@ -1,12 +1,6 @@
 from piltest2 import *
 
-PARDIR = os.path.dirname(os.path.abspath('.'))
-OUTRESDIR = PARDIR+'/results/'
-OUTSUBTHDIR = PARDIR+'/subth/'
-OUTROITESTDIR = PARDIR+'/roitest/'
-OUTROTDIR = PARDIR+'/rotimgs/'
-OUTWINGDIR = PARDIR+'/wingimgs/'
-OUTTESTDIR = PARDIR+'/test/'
+
 
 # ((file, fly), (reversed, extended))
 data = [
@@ -155,7 +149,18 @@ def test_plotsome_fly():
     #outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
     #cmn.makenewdir(outtestdir)
 
-    roi_ints = []
+    fwd_aminusp = []
+    rev_aminusp = []
+
+    extlist = []
+    cllist = []
+
+    rev_ext = []
+    rev_cl = []
+    fwd_ext = []
+    fwd_cl = []
+    
+    
     for (filen, flyn), (rev, ext) in data:
         img = 'subm00{0}'.format(filen)
         print(img)
@@ -172,51 +177,101 @@ def test_plotsome_fly():
         side_a = np.sum(roi_int[2:4])
         side_p = np.sum(roi_int[4:6])
         #print(center_a, side_a)
-    
-        plt.figure()
-        plt.subplot(131)
-        plt.imshow(orient_im, cmap=plt.cm.gray)
-        
-        plt.subplot(132)
-        
+
+
         if rev == True:
-            x = center_a
-            y = side_a
+            xc = center_a
+            yc = side_a
+            xw = center_p
+            yw = side_p       
+            rev_aminusp.append((center_p+side_p) - (center_a+side_a))
+
+            if ext == True:
+                rev_ext.append(xc-yc)
+                extlist.append(xc-yc)
+            else:
+                rev_cl.append(xc-yc)       
+                cllist.append(xc-yc)     
             
         if rev == False:
-            x = center_p
-            y = side_p
+            xc= center_p
+            yc = side_p
+            xw = center_a
+            yw = side_a
+            fwd_aminusp.append((center_p+side_p) - (center_a+side_a))
+            
+            if ext == True:
+                fwd_ext.append(xc-yc)
+                extlist.append(xc-yc)
+            if ext == False:
+                fwd_cl.append(xc-yc)
+                cllist.append(xc-yc)
 
+        #plt.figure()
+        #plt.subplot(131)
+        #plt.imshow(orient_im, cmap=plt.cm.gray)
+        #plt.subplot(132)       
+        #plt.plot(xc, yc, 'ro')
+        #plt.xlim(0, 50)
+        #plt.ylim(0, 60)
+        #plt.xlabel('center')
+        #plt.ylabel('side')
+        #plt.title('Correct orientation\n c-a={0:4f}'.format(xc-yc))
         
-        plt.plot(x, y, 'ro')
-        plt.xlim(0, 50)
-        plt.ylim(0, 60)
-        plt.xlabel('center')
-        plt.ylabel('side')
-        plt.title('Correct orientation\n c-a={0:4f}'.format(x-y))
+        #plt.subplot(133)
+        #plt.plot(xw, yw, 'ro')
+        #plt.xlim(0, 50)
+        #plt.ylim(0, 60)
+        #plt.xlabel('center')
+        #plt.ylabel('side')
+        #plt.title('Incorrect orientation\n c-a={0}'.format(xw-yw))
+        #plt.savefig(OUTROITESTDIR+img+'_{0}.png'.format(comp_label))
+        #plt.close()
         
-        plt.subplot(133)
-        if rev == True:
-            x = center_p
-            y = side_p
-
-        if rev == False:
-            x = center_a
-            y = side_a
+        #plt.figure()
+        #plt.imshow(orient_im, cmap=plt.cm.gray)
+        #plt.title('A - P = {0}'.format((center_a+side_a) - (center_p+side_p))) 
+        #plt.savefig(OUTROITESAMPTDIR+img+'_{0}.png'.format(comp_label))
+        #plt.close()
         
-        plt.plot(x, y, 'ro')
-        plt.xlim(0, 50)
-        plt.ylim(0, 60)
-        plt.xlabel('center')
-        plt.ylabel('side')
-        plt.title('Incorrect orientation\n c-a={0}'.format(x-y))
-        plt.savefig(OUTROITESTDIR+img+'_{0}.png'.format(comp_label))
-        plt.close()
-        
-
-
+        #plt.figure()
+        #plt.imshow(orient_im, cmap=plt.cm.gray)
+        #plotrois(imrois)
+        #plt.title('Cl vs Ext = {0}'.format((xc-yc))) 
+        #plt.savefig(OUTROITESTCETDIR+img+'_{0}.png'.format(comp_label))
         
         
+        
+        
+    #plt.figure()
+    #x_vals = np.hstack((np.tile(1, len(fwd_cl)), np.tile(2, len(fwd_ext)), np.tile(3, len(rev_cl)), np.tile(4, len(rev_ext))))
+    #y_vals = fwd_cl + fwd_ext + rev_cl + rev_ext
+    #plt.scatter(x_vals, y_vals)
+    #plt.xticks([1,2,3,4], ['fwd_cl', 'fwd_ext', 'rev_cl', 'rev_ext'])
+    #plt.savefig(OUTROITESTDIR+'comprois.png')
+        
+    #plt.figure()
+    #x_vals = np.hstack((np.tile(1, len(fwd_cl+fwd_ext)), np.tile(2, len(rev_cl+rev_ext))))
+    #y_vals = fwd_cl + fwd_ext + rev_cl + rev_ext
+    #plt.scatter(x_vals, y_vals)
+    #plt.xticks([1,2], ['fwd', 'rev'])
+    #plt.savefig(OUTROITESTDIR+'comprois_fvsr.png')
+ 
+    #plt.figure()
+    #x_vals = np.hstack((np.tile(1, len(fwd_aminusp)), np.tile(2, len(rev_aminusp))))
+    #y_vals = fwd_aminusp + rev_aminusp
+    #plt.scatter(x_vals, y_vals)
+    #plt.xticks([1,2], ['fwd', 'rev'])
+    #plt.title('Anterior ROIs - Posterior ROIs')
+    #plt.savefig(OUTROITESTDIR+'comprois_avsp.png')
+   
+    plt.figure()
+    x_vals = np.hstack((np.tile(1, len(cllist)), np.tile(2, len(extlist))))
+    y_vals = cllist + extlist
+    plt.scatter(x_vals, y_vals)
+    plt.xticks([1,2], ['closed', 'extended'])
+    plt.title('Center-Side')
+    plt.savefig(OUTROITESTDIR+'comprois_clvsext.png')
 
 
 def test_plotint(d, info):

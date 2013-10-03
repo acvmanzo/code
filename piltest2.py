@@ -8,6 +8,7 @@ from matplotlib.mlab import PCA
 import cmn.cmn as cmn
 import pickle
 from mpl_toolkits.mplot3d import Axes3D
+import scipy.signal as scis
 #from skimage import morphology
 
 ##images = ['subm0043']
@@ -15,20 +16,26 @@ from mpl_toolkits.mplot3d import Axes3D
 ##imgnums_upright_closed = [14, 17, 18, 40, 60, 67, 78, 82]
 #imgnums_upside_closed = [19, 21, 23, 44, 48, 52, 57, 69, 75]
 
+# File handling options.
 EXT = '.tif'
 PARDIR = os.path.dirname(os.path.abspath('.'))
 OUTRESDIR = PARDIR+'/results/'
-OUTROTDIR = PARDIR+'/rotimgs/'
-OUTWINGDIR = PARDIR+'/wingimgs/'
+OUTSUBTHDIR = PARDIR+'/subth/' 
+OUTROTDIR = PARDIR+'/rotimgs/' 
+OUTWINGDIR = PARDIR+'/wingimgs/' 
 OUTTESTDIR = PARDIR+'/test/'
 OUTTHTESTDIR = PARDIR+'/thtest/'
 OUTBWTESTDIR = PARDIR+'/bwtest/'
-#OUTRESDIR = '/home/andrea/Documents/auto/results/'
-#OUTROTDIR = '/home/andrea/Documents/auto/results/rotimgs/'
-#OUTWINGDIR = '/home/andrea/Documents/auto/results/wingimgs/'
-#OUTTESTDIR = '/home/andrea/Documents/auto/results/test/'
-imgdim = (290, 300)
-onesimage = np.ones(imgdim)
+OUTROITESTDIR = PARDIR+'/roitest/'
+OUTROITESAMPTDIR = PARDIR+'/roitest_aminusp/'
+OUTROITESTCETDIR = PARDIR+'/roitest_cl_ext/'
+
+
+for outdir in [OUTRESDIR, OUTSUBTHDIR, OUTROTDIR, OUTWINGDIR, OUTTESTDIR, OUTTHTESTDIR, OUTBWTESTDIR, OUTROITESTDIR, OUTROITESAMPTDIR, OUTROITESTCETDIR]:
+    cmn.makenewdir(outdir)
+
+IMGDIM = (290, 300)
+onesimage = np.ones(IMGDIM)
 #areafile = OUTRESDIR+'areameans.txt'
 origin = np.array([75, 75], dtype=np.int32)
 MIRRY = np.array([[-1, 0], [0, 1]])
@@ -196,7 +203,7 @@ def orientflies(orig_im, label_im, comp_label, coms, fly_offset, rotimshape, imn
     orient_im = rotated/translated image
     ''' 
     # Create an array where each entry is the index.
-    posarray = np.rollaxis(np.mgrid[0:imgdim[0], 0:imgdim[1]], 0, 3)
+    posarray = np.rollaxis(np.mgrid[0:IMGDIM[0], 0:IMGDIM[1]], 0, 3)
 
     # Find the coordinates of the points comprising each connected component.
     comppos = posarray[label_im == comp_label]
@@ -626,7 +633,7 @@ def plot3d():
 def find_roi_ints(img, comp_labels, outwingdir):
     
     imfile = img+EXT
-    orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTRESDIR, plot='yes')
+    orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTSUBTH, plot='yes')
     fly_roi_int = []
     for comp_label in comp_labels:
         orient_im = orientflies(orig_im, label_im, comp_label, coms, FLY_OFFSET, ROTIMSHAPE, img)

@@ -7,10 +7,6 @@ from piltest2 import *
 
 #comp_labels = [1, 2]
 
-
-for x in [OUTRESDIR, OUTROTDIR, OUTWINGDIR, OUTTESTDIR]:
-    cmn.makenewdir(x)
-
 data = [
     # flies_up_closed
     ((14, 1), (True, False)),
@@ -58,7 +54,7 @@ data = [
     ((28, 2), (False, True)),
     ((47, 1), (False, True)),
     ((48, 1), (False, True)),
-    ((50, 1), (False, True))][:2]
+    ((50, 1), (False, True))]
 
 
 for (imnum, flyn),_ in data:
