@@ -16,7 +16,13 @@ from mpl_toolkits.mplot3d import Axes3D
 #imgnums_upside_closed = [19, 21, 23, 44, 48, 52, 57, 69, 75]
 
 EXT = '.tif'
-OUTRESDIR = '/home/andrea/Documents/auto/results/'
+PARDIR = os.path.dirname(os.path.abspath('.'))
+OUTRESDIR = PARDIR+'/results/'
+OUTROTDIR = PARDIR+'/rotimgs/'
+OUTWINGDIR = PARDIR+'/wingimgs/'
+OUTTESTDIR = PARDIR+'/test/'
+OUTTHTESTDIR = PARDIR+'/thtest/'
+#OUTRESDIR = '/home/andrea/Documents/auto/results/'
 #OUTROTDIR = '/home/andrea/Documents/auto/results/rotimgs/'
 #OUTWINGDIR = '/home/andrea/Documents/auto/results/wingimgs/'
 #OUTTESTDIR = '/home/andrea/Documents/auto/results/test/'
@@ -95,7 +101,7 @@ def plotrois(imrois):
     for x, ((r1,c1), (r2,c2)) in enumerate(np.sort(imrois, axis=1)):
         plotrect([r1, r2, c1, c2], color=cols[x])
         plt.text(c1, r1, '{0}'.format(x), color=cols[x])
-	plt.close()
+
 
 def findflies(imfile, t, outdir, plot='yes'):
     '''
@@ -222,7 +228,7 @@ def plot_rotimage(orient_im, rotimshape, fly_offset, comp_label, imname, outdir)
     plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
     plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
     plt.savefig('{0}{1}_fly{2}.png'.format(outdir, imname, comp_label))
-    plt.close()
+
 
     # Select head+thorax and abdomen areas. Thought that I could use intensity in these regions to disambiguate direction, but too similar.
     #headthor = orient_im[45:75, 65:85]     
@@ -230,8 +236,8 @@ def plot_rotimage(orient_im, rotimshape, fly_offset, comp_label, imname, outdir)
     #abd = orient_im[75:110, 65:85]
     #plotrect([75, 110, 65, 85], 'g')
 
+
 def plot_wingimage(w_im, imrois, img, comp_label, outdir):
-    
     plt.figure()
     plt.imshow(w_im, cmap=plt.cm.gray)
     plotrois(imrois)

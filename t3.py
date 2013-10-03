@@ -68,7 +68,6 @@ for (imnum, flyn),_ in data:
     orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTRESDIR, plot='no')
     comp_label = flyn
     orient_im = orientflies(orig_im, label_im, comp_label, coms, FLY_OFFSET, ROTIMSHAPE, img)
-    #plt.imshow(orient_im)
     w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
     imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
     plot_wingimage(w_im, imrois, img, comp_label, OUTWINGDIR)

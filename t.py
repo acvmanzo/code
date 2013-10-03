@@ -1,5 +1,13 @@
 from piltest2 import *
 
+PARDIR = os.path.dirname(os.path.abspath('.'))
+OUTRESDIR = PARDIR+'/results/'
+OUTSUBTHDIR = PARDIR+'/subth/'
+OUTROITESTDIR = PARDIR+'/roitest/'
+OUTROTDIR = PARDIR+'/rotimgs/'
+OUTWINGDIR = PARDIR+'/wingimgs/'
+OUTTESTDIR = PARDIR+'/test/'
+
 # ((file, fly), (reversed, extended))
 data = [
     # flies_up_closed
@@ -77,8 +85,8 @@ INFO = [
 
 def test_findint():
 
-    outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
-    cmn.makenewdir(outtestdir)
+    #outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
+    #cmn.makenewdir(outtestdir)
 
     roi_ints = []
     for (filen, flyn), _ in data:
@@ -100,14 +108,14 @@ def test_findint():
 
 def test_plotsome():
     
-    outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
-    cmn.makenewdir(outtestdir)
+    #outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
+    #cmn.makenewdir(outtestdir)
 
     roi_ints = []
     for (filen, flyn), _ in data:
         img = 'subm00{0}'.format(filen)
         print(img)
-        roi_ints.extend(find_roi_ints(img, (flyn,), outtestdir))
+        roi_ints.extend(find_roi_ints(img, (flyn,), OUTTESTDIR))
     
     m = np.array(roi_ints)
     side_a = np.sum(m[:, 2:4], axis=1)
@@ -141,6 +149,52 @@ def test_plotsome():
     plt.title('Down')
     plt.savefig(OUTRESDIR+'test_plotsome.png')
     
+    
+def test_plotsome_fly():
+    
+    #outtestdir = '/home/andrea/Documents/auto/results/testimgs/'
+    #cmn.makenewdir(outtestdir)
+
+    roi_ints = []
+    for (filen, flyn), (rev, ext) in data:
+        img = 'subm00{0}'.format(filen)
+        print(img)
+        imfile = img+EXT
+        orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTRESDIR, plot='no')
+        comp_label = flyn
+        orient_im = orientflies(orig_im, label_im, comp_label, coms, FLY_OFFSET, ROTIMSHAPE, img)
+        w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
+        imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
+        roi_int = np.array(roimeans(w_im, imrois))
+        #print(roi_int)
+        center_a = roi_int[0]
+        center_p = roi_int[1]
+        side_a = np.sum(roi_int[2:4])
+        side_p = np.sum(roi_int[4:6])
+        #print(center_a, side_a)
+    
+        plt.figure()
+        plt.subplot(121)
+        plt.imshow(orient_im, cmap=plt.cm.gray)
+        plt.subplot(122)
+        
+        if rev == True:
+            plt.plot(center_a, side_a, 'ro')
+        if rev == False:
+            plt.plot(center_p, side_p, 'ro')
+            
+        plt.xlim(0, 50)
+        plt.ylim(0, 60)
+        plt.xlabel('center')
+        plt.ylabel('side')
+        plt.savefig(OUTROITESTDIR+img+'_{0}.png'.format(comp_label))
+        plt.close()
+        
+
+
+        
+        
+
 
 def test_plotint(d, info):
     fig = plt.figure()
@@ -171,7 +225,7 @@ def test_plotint(d, info):
     #d = pickle.load(h)
 #print(np.array(d['flies_down_closed']).shape)
 
-test_plotsome()
+test_plotsome_fly()
 
 #test_plotint(d, INFO)
 
