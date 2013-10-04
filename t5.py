@@ -1,11 +1,24 @@
 from piltest2 import *
 
 
-#IMNUMS = np.arange(5, 1779)
-#IMAGES = ['subm{0:04}'.format(n) for n in IMNUMS]
-print(IMAGES)
+IMNUMS = np.arange(5492, 5990, 1)
+IMAGES = ['mov{0:05}'.format(n) for n in IMNUMS]
+
 # center_a, center_p, side_al, side_ar, side_pl, side_pr
-    
+#os.chdir('submoviedir')
+#for img in IMAGES:
+    #for comp_label in COMP_LABEL:
+        #imfile = img+EXT
+        #orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTSUBTHDIR, plot='no')
+        #try:
+            #orient_im = orientflies(orig_im, label_im, comp_label, coms, FLY_OFFSET, ROTIMSHAPE, img)
+        #except:
+            #continue
+        #w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
+        #imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
+        #plot_wingimage(w_im, imrois, img, comp_label, OUTWINGDIR)
+        #plt.close()
+
 def plot_ca_frame():
     
     cma = []
@@ -26,7 +39,7 @@ def plot_ca_frame():
             w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
             imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
             #plot_wingimage(w_im, imrois, img, comp_label, OUTWINGDIR)
-            #plt.close()
+            plt.close()
             roi_int = np.array(roimeans(w_im, imrois))
             center_a = roi_int[0]
             center_p = roi_int[1]
@@ -44,6 +57,10 @@ def plot_ca_frame():
     plt.figure()
     plt.plot(cma)
     plt.savefig(PARDIR+'/'+'side-center.png')
+    
+    with open(PARDIR+'/'+'cma', 'w') as h:
+        pickle.dump(cma, h)
+    
     return(cma)
 
 
@@ -65,13 +82,10 @@ def window(winlen):
     
 
 
-DFTSIZE = 10000
+cma = plot_ca_frame()
 
-#cma = plot_ca_frame()
-#with open(PARDIR+'/'+'cma', 'w') as h:
-    #pickle.dump(cma, h)
-with open('cma', 'r') as h:
-    cma = pickle.load(h)
+#with open('cma', 'r') as h:
+    #cma = pickle.load(h)
 
 #plt.figure()
 #plt.subplot(121)
@@ -90,17 +104,46 @@ with open('cma', 'r') as h:
 #plt.plot(new)
 ##plt.xlim(0/4, DFTSIZE/2)
 #plt.show()
-WINLEN = 50
-wind = window(WINLEN)
-#print(wind)
-#plt.subplot(121)
-#plt.plot(cma/max(cma))
-#plt.subplot(122)
-#plt.plot(np.convolve(cma/max(cma), wind, 'same'))
-#plt.savefig('cma_conv.png')
-#plt.close()
-plt.plot((np.convolve(cma/max(cma), wind, 'same')))
-plt.savefig('cma_conv_{0}.png'.format(WINLEN))
-#b, a = scis.butter(1, 10, 'low')
-#output_signal = scis.filtfilt(b, a, cma)
-#plt.plot(output_signal)
+#FPS = 30
+#WINLEN = 150
+#wind = window(WINLEN)
+##print(wind)
+##plt.subplot(121)
+##plt.plot(cma/max(cma))
+##plt.subplot(122)
+##plt.plot(np.convolve(cma/max(cma), wind, 'same'))
+##plt.savefig('cma_conv.png')
+##plt.close()
+#conv_cma = np.convolve(cma/max(cma), wind, 'same')
+
+##xvals = np.linspace(11.67, 11.67+len(cma)/30/60, len(cma))
+##plt.plot(xvals, conv_cma)
+##ax = plt.gca()
+##ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(12))
+###plt.xlim(0, len(cma)/30/60)
+##plt.xlabel('Minutes')
+##plt.ylabel('side-center')
+##plt.savefig('cma_conv_{0}_min.png'.format(WINLEN))
+##plt.close()
+
+###xvals = np.linspace(11.67, 11.67+len(cma)/30/60, len(cma))
+#plt.plot(conv_cma)
+#ax = plt.gca()
+#ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(12))
+###plt.xlim(0, len(cma)/30/60)
+#plt.xlabel('Frames')
+#plt.ylabel('side-center')
+#plt.ylim(0, 0.75)
+#plt.savefig('cma_conv_{0}_frames.png'.format(WINLEN))
+
+##y = conv_cma > 0
+##newcma = np.where(y)
+##print(list(newcma))
+##with open('cma_morethanzero.txt', 'w') as f:
+    ##f.write('{0}'.format(list(newcma[0])))
+##print(newcma)
+##plt.show()
+
+##b, a = scis.butter(1, 10, 'low')
+##output_signal = scis.filtfilt(b, a, cma)
+##plt.plot(output_signal)

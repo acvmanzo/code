@@ -9,6 +9,7 @@ import cmn.cmn as cmn
 import pickle
 from mpl_toolkits.mplot3d import Axes3D
 import scipy.signal as scis
+import matplotlib as mpl
 #from skimage import morphology
 
 ##images = ['subm0043']
@@ -34,7 +35,7 @@ OUTROITESTCETDIR = PARDIR+'/roitest_cl_ext/'
 for outdir in [OUTRESDIR, OUTSUBTHDIR, OUTROTDIR, OUTWINGDIR, OUTTESTDIR, OUTTHTESTDIR, OUTBWTESTDIR, OUTROITESTDIR, OUTROITESAMPTDIR, OUTROITESTCETDIR]:
     cmn.makenewdir(outdir)
 
-IMGDIM = (290, 300)
+IMGDIM = (300, 300)
 onesimage = np.ones(IMGDIM)
 #areafile = OUTRESDIR+'areameans.txt'
 origin = np.array([75, 75], dtype=np.int32)
@@ -55,7 +56,9 @@ TMAT_FLY_IMG = np.array([
         [0, 1, 0],
         [FLY_OFFSET[0], FLY_OFFSET[1], 1]])
 WING_TH_LOW = 20
-WING_TH_HIGH = 60
+#WING_TH_HIGH = 60
+WING_TH_HIGH = 90
+
 
 '''Note that matplotlib doesn't plot images and points using the same coordinate system (run this code to check:
 imshow([[0,1],[0,0]])
