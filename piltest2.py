@@ -19,7 +19,7 @@ import matplotlib as mpl
 
 # File handling options.
 EXT = '.tif'
-PARDIR = os.path.dirname(os.path.abspath('.'))
+PARDIR = os.path.abspath('.')
 OUTRESDIR = PARDIR+'/results/'
 OUTSUBTHDIR = PARDIR+'/subth/' 
 OUTROTDIR = PARDIR+'/rotimgs/' 
@@ -51,6 +51,7 @@ ROTIMSHAPE = (150, 150)
 CENTER_A = np.array([[45, 10], [65, -10]]) # top left corner and bottom diagonal corner of square
 #SIDE_AL = np.array([[25, 30], [55, 15]]) 
 SIDE_AL = np.array([[25, 40], [45, 25]]) # top left corner and bottom diagonal corner of square
+MID_L = np.array([[-15, 65], [15, 25]])
 TMAT_FLY_IMG = np.array([
         [1, 0, 0],
         [0, 1, 0],
@@ -66,7 +67,7 @@ plot(0, 1, 'yo')
 '''
 
 
-def region(center_a, side_al):
+def region(center_a, side_al, mid_l):
 
     ''' Input:
     center: 2x2 numpy array with x, y coordinates of two opposite corners of center rectangle: [[x1, y1], [x2, y2]]
@@ -78,8 +79,9 @@ def region(center_a, side_al):
     side_ar = np.dot(side_al, MIRRX)
     side_pl = np.dot(side_al, MIRRY)
     side_pr = np.dot(side_pl, MIRRX)
+    mid_r = np.dot(mid_l, MIRRX)
     
-    return(center_a, center_p, side_al, side_ar, side_pl, side_pr)
+    return(center_a, center_p, side_al, side_ar, side_pl, side_pr, mid_l, mid_r)
     
 
 def changecoord(tmat, pts):
@@ -254,7 +256,7 @@ def plot_wingimage(w_im, imrois, img, comp_label, outdir):
     plotrois(imrois)
     plt.savefig('{0}{1}_fly{2}.png'.format(outdir, img, comp_label))
 
-def defrois(center_a, side_al, tmat):
+def defrois(center_a, side_al, mid_l, tmat):
     '''
     Input: 
     orient_im = image in which fly is aligned vertically along its AP axis; output of orientflies()
@@ -264,7 +266,7 @@ def defrois(center_a, side_al, tmat):
     #center_a = [[30, 65], [10, 85]] # In image coordinates
     #side_al = [[40, 40], [20, 60]]
 
-    rois = region(center_a, side_al) 
+    rois = region(center_a, side_al, mid_l) 
     # center_a, center_p, side_al, side_ar, side_pl, side_pr  = rois
     
     # Convert regions of interest to fly image coordinates.

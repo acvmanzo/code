@@ -73,10 +73,10 @@ def window(winlen):
     
 
 
-cma = plot_ca_frame()
+#cma = plot_ca_frame()
 
-#with open('cma', 'r') as h:
-    #cma = pickle.load(h)
+with open('cma', 'r') as h:
+    cma = pickle.load(h)
 
 #plt.figure()
 #plt.subplot(121)
@@ -96,45 +96,70 @@ cma = plot_ca_frame()
 ##plt.xlim(0/4, DFTSIZE/2)
 #plt.show()
 #FPS = 30
-#WINLEN = 150
-#wind = window(WINLEN)
-##print(wind)
-##plt.subplot(121)
-##plt.plot(cma/max(cma))
-##plt.subplot(122)
-##plt.plot(np.convolve(cma/max(cma), wind, 'same'))
-##plt.savefig('cma_conv.png')
-##plt.close()
-#conv_cma = np.convolve(cma/max(cma), wind, 'same')
+WINLEN = 90
+wind = window(WINLEN)
+#print(wind)
+#plt.subplot(121)
+#plt.plot(cma/max(cma))
+#plt.subplot(122)
+#plt.plot(np.convolve(cma/max(cma), wind, 'same'))
+#plt.savefig('cma_conv.png')
+#plt.close()
+conv_cma = np.convolve(cma/max(cma), wind, 'same')
 
-##xvals = np.linspace(11.67, 11.67+len(cma)/30/60, len(cma))
-##plt.plot(xvals, conv_cma)
-##ax = plt.gca()
-##ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(12))
-###plt.xlim(0, len(cma)/30/60)
-##plt.xlabel('Minutes')
-##plt.ylabel('side-center')
-##plt.savefig('cma_conv_{0}_min.png'.format(WINLEN))
-##plt.close()
-
-###xvals = np.linspace(11.67, 11.67+len(cma)/30/60, len(cma))
-#plt.plot(conv_cma)
+#xvals = np.linspace(11.67, 11.67+len(cma)/30/60, len(cma))
+#plt.plot(xvals, conv_cma)
 #ax = plt.gca()
 #ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(12))
+##plt.xlim(0, len(cma)/30/60)
+#plt.xlabel('Minutes')
+#plt.ylabel('side-center')
+#plt.savefig('cma_conv_{0}_min.png'.format(WINLEN))
+#plt.close()
+
+##xvals = np.linspace(11.67, 11.67+len(cma)/30/60, len(cma))
+plt.figure()
+plt.subplot(221)
+print(len(conv_cma/4))
+print(len(conv_cma[0:len(conv_cma)/4]))
+plt.plot(conv_cma[0:len(conv_cma)/4])
+#ax = plt.gca()
+##ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(12))
 ###plt.xlim(0, len(cma)/30/60)
 #plt.xlabel('Frames')
 #plt.ylabel('side-center')
-#plt.ylim(0, 0.75)
-#plt.savefig('cma_conv_{0}_frames.png'.format(WINLEN))
+plt.ylim(0, 0.7)
 
-##y = conv_cma > 0
-##newcma = np.where(y)
-##print(list(newcma))
-##with open('cma_morethanzero.txt', 'w') as f:
-    ##f.write('{0}'.format(list(newcma[0])))
-##print(newcma)
-##plt.show()
+plt.subplot(222)
+plt.plot(conv_cma[len(conv_cma)/4:len(conv_cma)/2])
+plt.ylim(0, 0.7)
+ax = plt.gca()
+ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(5))
 
-##b, a = scis.butter(1, 10, 'low')
-##output_signal = scis.filtfilt(b, a, cma)
-##plt.plot(output_signal)
+plt.subplot(223)
+plt.plot(conv_cma[len(conv_cma)/2:3*len(conv_cma)/4])
+plt.ylim(0, 0.7)
+ax = plt.gca()
+ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(5))
+
+plt.subplot(224)
+plt.plot(conv_cma[3*len(conv_cma)/4:len(conv_cma)])
+plt.ylim(0, 0.7)
+ax = plt.gca()
+ax.xaxis.set_major_locator(mpl.ticker.MaxNLocator(5))
+
+
+plt.savefig('cma_conv_{0}_frames.png'.format(WINLEN))
+
+
+#y = conv_cma > 0
+#newcma = np.where(y)
+#print(list(newcma))
+#with open('cma_morethanzero.txt', 'w') as f:
+    #f.write('{0}'.format(list(newcma[0])))
+#print(newcma)
+#plt.show()
+
+#b, a = scis.butter(1, 10, 'low')
+#output_signal = scis.filtfilt(b, a, cma)
+#plt.plot(output_signal)
