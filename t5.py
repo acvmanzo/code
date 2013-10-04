@@ -1,7 +1,7 @@
 from piltest2 import *
 
 
-IMNUMS = np.arange(5492, 5990, 1)
+IMNUMS = np.arange(1, 21014, 1)
 IMAGES = ['mov{0:05}'.format(n) for n in IMNUMS]
 
 # center_a, center_p, side_al, side_ar, side_pl, side_pr
@@ -24,7 +24,7 @@ def plot_ca_frame():
     cma = []
     
     for img in IMAGES:
-        print(img)
+        #print(img)
         flycma = []
         for comp_label in COMP_LABEL:
             imfile = img+EXT
@@ -51,8 +51,10 @@ def plot_ca_frame():
             
             else:
                 flycma.append(side_a - center_a)
-                
-        cma.append(np.max(flycma))
+        try:
+            cma.append(np.max(flycma))
+        except ValueError:
+            continue
 
     plt.figure()
     plt.plot(cma)
@@ -63,17 +65,6 @@ def plot_ca_frame():
     
     return(cma)
 
-
-def hmsub(trace):
-    """Mean-subtracts and then multiplies a trace (a numpy array) with a Hamming function of the same size as the 
-    trace."""
-    
-    return(np.hamming(np.size(trace))*(trace - np.mean(trace)))
-    
-def dft(trace, dftsize):
-    """Finds the discrete fourier transform of size 'dftsize' of a trace using the np.fft 
-    function."""
-    return(np.abs(np.fft.fft(trace, dftsize)))
 
 def window(winlen):
     
