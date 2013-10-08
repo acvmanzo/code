@@ -3,12 +3,19 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
+from scipy import misc
+from matplotlib.mlab import PCA
 import cmn.cmn as cmn
 import pickle
 from mpl_toolkits.mplot3d import Axes3D
 import scipy.signal as scis
 import matplotlib as mpl
-import genplotlib as gpl
+#from skimage import morphology
+
+##images = ['subm0043']
+##imgnums = [14, 17, 18, 19, 21, 23, 26, 28, 36, 37, 40, 41, 42, 43, 44, 46, 47, 48, 50, 52, 55, 57, 60, 67, 75, 78, 82]
+##imgnums_upright_closed = [14, 17, 18, 40, 60, 67, 78, 82]
+#imgnums_upside_closed = [19, 21, 23, 44, 48, 52, 57, 69, 75]
 
 # File handling options.
 EXT = '.tif'
@@ -23,6 +30,10 @@ OUTBWTESTDIR = PARDIR+'/bwtest/'
 OUTROITESTDIR = PARDIR+'/roitest/'
 OUTROITESAMPTDIR = PARDIR+'/roitest_aminusp/'
 OUTROITESTCETDIR = PARDIR+'/roitest_cl_ext/'
+
+
+for outdir in [OUTRESDIR, OUTSUBTHDIR, OUTROTDIR, OUTWINGDIR, OUTTESTDIR, OUTTHTESTDIR, OUTBWTESTDIR, OUTROITESTDIR, OUTROITESAMPTDIR, OUTROITESTCETDIR]:
+    cmn.makenewdir(outdir)
 
 IMGDIM = (300, 300)
 onesimage = np.ones(IMGDIM)
@@ -88,14 +99,20 @@ def changecoord(tmat, pts):
     return np.dot(pts, tmat[:-1, :-1]) + tmat[-1, :-1]
 
     
-
+def plotrect(corners, color='r'):
+    '''corners: [a, b, c, d] where a and b define the rows, and c and d define the columns'''
+    
+    plt.plot(corners[2:4], [corners[0], corners[0]], '{0}-'.format(color))
+    plt.plot(corners[2:4], [corners[1], corners[1]], '{0}-'.format(color))
+    plt.plot([corners[2], corners[2]], corners[0:2], '{0}-'.format(color))
+    plt.plot([corners[3], corners[3]], corners[0:2], '{0}-'.format(color))
 
 
 def plotrois(imrois):
     cols = np.tile(['b', 'g', 'r', 'c', 'm', 'y', 'w'], 2)
     cols = cols[:np.shape(imrois)[0]+1]
     for x, ((r1,c1), (r2,c2)) in enumerate(np.sort(imrois, axis=1)):
-        gpl.plotrect([r1, r2, c1, c2], color=cols[x])
+        plotrect([r1, r2, c1, c2], color=cols[x])
         plt.text(c1, r1, '{0}'.format(x), color=cols[x])
 
 
@@ -228,9 +245,9 @@ def plot_rotimage(orient_im, rotimshape, fly_offset, comp_label, imname, outdir)
 
     # Select head+thorax and abdomen areas. Thought that I could use intensity in these regions to disambiguate direction, but too similar.
     #headthor = orient_im[45:75, 65:85]     
-    #gpl.plotrect([45, 75, 65, 85], 'y')
+    #plotrect([45, 75, 65, 85], 'y')
     #abd = orient_im[75:110, 65:85]
-    #gpl.plotrect([75, 110, 65, 85], 'g')
+    #plotrect([75, 110, 65, 85], 'g')
 
 
 def plot_wingimage(w_im, imrois, img, comp_label, outdir):
@@ -358,9 +375,9 @@ def testareas2(conds):
             plt.figure()
             plt.subplot(121)
             plt.imshow(throtimage, cmap=plt.cm.gray)
-            gpl.plotrect(twc, 'g')
-            gpl.plotrect(twl, 'b')
-            gpl.plotrect(twr, 'b')
+            plotrect(twc, 'g')
+            plotrect(twl, 'b')
+            plotrect(twr, 'b')
 
             plt.subplot(122)
             plt.plot(throtimage[:, 75].T)
@@ -520,9 +537,9 @@ def plotresrot_testareas():
                 plt.figure()
                 plt.subplot(121)
                 plt.imshow(throtimage, cmap=plt.cm.gray)
-                gpl.plotrect(twc, 'g')
-                gpl.plotrect(twl, 'b')
-                gpl.plotrect(twr, 'b')
+                plotrect(twc, 'g')
+                plotrect(twl, 'b')
+                plotrect(twr, 'b')
 
                 plt.subplot(122)
                 plt.plot(throtimage[:, 75].T)

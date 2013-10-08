@@ -748,3 +748,10 @@ def gendictgc(fname):
     return([peakd, aread, durd])
 
 
+def plotrect(corners, color='r'):
+    '''corners: [a, b, c, d] where a and b define the rows, and c and d define the columns'''
+    
+    plt.plot(corners[2:4], [corners[0], corners[0]], '{0}-'.format(color))
+    plt.plot(corners[2:4], [corners[1], corners[1]], '{0}-'.format(color))
+    plt.plot([corners[2], corners[2]], corners[0:2], '{0}-'.format(color))
+    plt.plot([corners[3], corners[3]], corners[0:2], '{0}-'.format(color))

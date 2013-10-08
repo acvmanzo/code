@@ -6,7 +6,7 @@
 from mtslib import *
 
 #Run from aggression/newmovies/ folder.
-WINGDETDIR = os.path.join(cmn.defpardir(), 'wingdet')
+WINGDETDIR = os.path.join(cmn.defpardir(),'wingdet', 'expts')
 
 print('1-start (s), 2-dur (s) 3-specdur; yes or no')
 

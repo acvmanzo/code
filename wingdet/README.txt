@@ -8,23 +8,28 @@ I. Directory structure:
         movie1.MTS
         movie2.MTS
     wingdet/
-        movie1/
-            movie1.MTS
-            movie/
-                mov_00001.tif
-                mov_00002.tif
-            submovie/
-                submov_00001.tif
-                submov_00002.tif
-            
-        movie2/
-            movie2.MTS
-            movie/
-                mov_00001.tif
-                mov_00002.tif
-            submovie/
-                submov_00001.tif
-                submov_00002.tif
+        expts/
+            movie1/
+                background.tif
+                bgarray
+                movie1.MTS
+                movie/
+                    mov_00001.tif
+                    mov_00002.tif
+                submovie/
+                    submov_00001.tif
+                    submov_00002.tif
+                
+            movie2/
+                background.tif
+                bgarray
+                movie2.MTS
+                movie/
+                    mov_00001.tif
+                    mov_00002.tif
+                submovie/
+                    submov_00001.tif
+                    submov_00002.tif
 
 
 
@@ -42,8 +47,11 @@ specified.
 
 2. Background subtraction:
 Generates a background image from a sequence of image files and subtracts it 
-from each image. Subtracted images are placed in the 'submovie' folder. The 
-number of frames and method used to generate the background image can be 
-specified.
-    a. Python files used: bgsubbatch.py (executable), bgsublig.py
+from each image. The background image and the pickled background image array 
+are saved in the movie folders as 'background.tif' and 'bgarray', 
+respectively. Subtracted images are placed in the 'submovie' folder. The 
+number of frames and the method used to generate the background image 
+(median, average) can be specified.
+    a. Python files used: bgsubbatch.py (executable), bgsublib.py
 
+3. 

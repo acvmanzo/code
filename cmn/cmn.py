@@ -4,6 +4,7 @@ import glob
 import time
 import math
 
+### FUNCTIONS FOR FILE HANDLING ###
 
 def makenewdir(newdir):
     """Makes the new directory 'newdir' without raising an exception if 'newdir' already exists."""
@@ -15,8 +16,13 @@ def makenewdir(newdir):
             pass
     return(newdir)
 
-def var_str(name, value):
-    return name + ',' + value + '\n'
+
+def listsortfs(fdir):
+    os.chdir(fdir)
+    fs = os.listdir(fdir)
+    fs = [os.path.abspath(f) for f in fs]
+    fs = sorted(fs)
+    return(fs)
 
 
 def batchfiles(fn_name, params, ftype, fdir='.'):
@@ -36,15 +42,16 @@ def batchfiles(fn_name, params, ftype, fdir='.'):
 def batchdirs(fn_name, ftype, fdir='.'):
     """Carries out the function 'fn_name' recursively on directories in directory 'fdir'.
     """
-    os.chdir(fdir)
-    dirs = os.listdir(fdir)
-    # Absolute path rather than relative path allows changing of directories 
-    # in fn_name.
-    dirs = [os.path.abspath(d) for d in dirs]
-    dirs = sorted(d)
+    dirs = listsortfs(fdir)
     for d in dirs:
         print os.path.basename(d)
         fn_name(d)
+
+def batch_s(fdir):
+    os.chdir(fdir)
+    names = glob.iglob('*')
+    names = sorted([os.path.abspath(name) for name in names])
+    return(names)
 
 
 def defpardir(wdir='.'):
@@ -61,14 +68,6 @@ def defsibdir(sibbase, wdir='.'):
     return(sibdir)
     
 
-def listsortfs(fdir):
-    os.chdir(fdir)
-    fs = os.listdir(fdir)
-    fs = [os.path.abspath(f) for f in fs]
-    fs = sorted(fs)
-    return(fs)
-    
-
 def makepardir_data():
     """Returns the experiment/ folder path if you are in a data/movie folder."""
     return(os.path.dirname(os.path.abspath('../')))
@@ -79,24 +78,14 @@ def makepardir_subexpt():
     return(os.path.dirname(os.path.abspath('.')))
 
 
+### FUNCTIONS FOR LOADING DATA ###
+
 def load_keys(file):
     K = []
     with open(file) as f:
         for l in f:
             K = l.strip('\n').split(',')
     return(K)
-
-
-
-def batch_s(fdir):
-    os.chdir(fdir)
-    names = glob.iglob('*')
-    names = sorted([os.path.abspath(name) for name in names])
-    return(names)
-
-
-def myround(x, base=10):
-    return int(base * round(float(x)/base))
 
 
 def loadmeans(fname):
@@ -108,3 +97,20 @@ def loadmeans(fname):
             condition, mean, stdev, stderror, n = l.strip('\n').split(',')[0:5]
             dictmeans[condition] = map(float, [mean, stdev, stderror, n])
     return(dictmeans)
+
+
+### FUNCTIONS USED IN COMPUTATION ###
+
+def window(winlen):
+    
+    wind = list(np.ones(winlen)/winlen)
+    return(wind)
+
+def myround(x, base=10):
+    return int(base * round(float(x)/base))
+
+
+### FUNCTIONS FOR MANIPULATING STRINGS ###
+
+def var_str(name, value):
+    return name + ',' + value + '\n'
