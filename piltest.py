@@ -14,7 +14,7 @@ SUBMOVIEDIR = 'submoviedir/'
 #print(submoviedir)
 
 # Creates a background image.
-nframes = 200
+nframes = 50
 files = sorted(os.listdir('.'))
 moviel = len(files)
 

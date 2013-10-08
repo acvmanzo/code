@@ -17,8 +17,6 @@ WINLEN = 50
 
 
 orig_im = np.array(Image.open(imfile)).astype(float)
-img = np.array(Image.open(imfile)).astype(float)
-print(np.shape(orig_im))
 
 ## Plots histogram
 #hist, bin_edges = np.histogram(orig_im, bins=60)
@@ -45,30 +43,69 @@ print(np.shape(orig_im))
 plt.figure()
 plt.imshow(orig_im, cmap=plt.cm.gray)
 
-r = 70
-c = 358
+# Parameters for 20131006_movie1
+#r = 70
+#c = 358
+#rpad = 25
+#cpad = 22
+#nrows = 300
+#ncols = 300
+
+# Parameters for 20131006_movie2
+#r = 80
+#c = 325
+#rpad = 25
+#cpad = 22
+#nrows = 300
+#ncols = 300
+
+# Parameters for 20131006_movie3
+#r = 75
+#c = 315
+#rpad = 22
+#cpad = 20
+#nrows = 300
+#ncols = 300
+#scaling = 1
+
+# Parameters for 20131006_movie4
+#r = 73
+#c = 350
+#rpad = 22
+#cpad = 18
+#nrows = 300
+#ncols = 300
+#scaling = 1
+
+#Parameters for 20131006_movie5
+#r = 55
+#c = 310
+#rpad = 32
+#cpad = 30
+#nrows = 300
+#ncols = 300
+#scaling = 1.015
+#rshift = 3
+#cshift = -5
+
+#Parameters for 20131006_movie6
+r = 35
+c = 345
 rpad = 25
-cpad = 22
+cpad = 23
 nrows = 300
 ncols = 300
+scaling = 0.98
+rshift = 20
+cshift = -20
 
 for x in [0, 1, 2, 3]:
-    r1 = r
-    r2 = r1 + nrows
-    c1 = c + (ncols+cpad)*x
-    print(c1, r1)
-    c2 = c1 + ncols
-    plotrect([r1, r2, c1, c2])
-
-for y in [0, 1, 2]:
-    r1 = r + (nrows+rpad)*y
-    r2 = r1 + nrows
-    c1 = c
-    print(c1, r1)
-    c2 = c1 + ncols
-    plotrect([r1, r2, c1, c2])
-#plotrect([395, 695, 358, 658])
-#plotrect([70, 370, 680, 980])
+    for y in [0, 1, 2]:
+        r1 = r +(nrows+rpad)*y*scaling + rshift*x
+        r2 = r1 + nrows*scaling
+        c1 = c + (ncols+cpad)*x*scaling + cshift*y
+        c2 = c1 + ncols*scaling
+        plotrect([r1, r2, c1, c2])
 
 plt.savefig('wells.png')
 
