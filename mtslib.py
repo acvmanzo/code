@@ -1,4 +1,4 @@
-# This module defines functions useful for processing and converting .MTS 
+# This module defines functions useful for sorting, processing and converting .MTS 
 # files.
 
 import os
@@ -6,7 +6,6 @@ import os.path
 import glob
 import sys
 import cmn.cmn as cmn
-
 
 
 def sortmtsfile(mtsfile, wingdetdir):
