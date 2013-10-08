@@ -46,9 +46,28 @@ def batchdirs(fn_name, ftype, fdir='.'):
         print os.path.basename(d)
         fn_name(d)
 
+
 def defpardir(wdir='.'):
     """Returns the parent folder of the folder specified in wdir."""
     return(os.path.dirname(os.path.abspath(wdir)))
+
+
+def defsibdir(sibbase, wdir='.'):
+    '''Returns the pathname for a directory that is one branch up from wdir 
+    and have the name sibbase.
+    '''
+    pardir = defpardir(wdir)
+    sibdir = os.path.join(pardir, sibbase)
+    return(sibdir)
+    
+
+def listsortfs(fdir):
+    os.chdir(fdir)
+    fs = os.listdir(fdir)
+    fs = [os.path.abspath(f) for f in fs]
+    fs = sorted(fs)
+    return(fs)
+    
 
 def makepardir_data():
     """Returns the experiment/ folder path if you are in a data/movie folder."""

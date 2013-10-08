@@ -78,11 +78,7 @@ def convmovie(mtsfile, outfile, start, dur, specdur, ext='tif'):
 
 
 def convmovies(fdir, start, dur, specdur):
-    os.chdir(fdir)
-    dirs = os.listdir(fdir)
-    dirs = [os.path.abspath(d) for d in dirs]
-    dirs = sorted(dirs)
-    
+    dirs = cmn.listsortfs(fdir)
     for d in dirs:
         os.chdir(d)
         mtsfile = glob.glob('*{0}'.format('MTS'))[0]
