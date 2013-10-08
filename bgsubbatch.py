@@ -7,7 +7,8 @@ from bgsublib import *
 
 SUBMOVDIR = 'submovie'
 MOVDIR = 'movie'
+PICKLEDIR = 'pickled'
 NFRAMES = 3
 
-subbgmovies('.', SUBMOVDIR, MOVDIR, NFRAMES, fntype='median')
+subbgmovies('.', SUBMOVDIR, MOVDIR, PICKLEDIR, NFRAMES, fntype='median')
 

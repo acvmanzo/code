@@ -11,8 +11,9 @@ I. Directory structure:
         expts/
             movie1/
                 background.tif
-                bgarray
                 movie1.MTS
+                picklefiles/
+                    bgarray
                 movie/
                     mov_00001.tif
                     mov_00002.tif
@@ -54,4 +55,6 @@ number of frames and the method used to generate the background image
 (median, average) can be specified.
     a. Python files used: bgsubbatch.py (executable), bgsublib.py
 
-3. 
+3. Partitioning movie into individual wells:
+Each movie has multiple wells; the rows and columns corresponding to each 
+well must be identified. Initially, 

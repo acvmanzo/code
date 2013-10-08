@@ -1,24 +1,28 @@
 from partimlib import *
 
-#config = [3, 4]
-#r = 35
-#c = 345
-#rpad = 25
-#cpad = 23
-#nrows = 300
-#ncols = nrows # For a square ROI.
-#scaling = 0.98
-#rshift = 20
-#cshift = -20
-#bgfile = 'background.tif'
+d = {}
+d['config'] = [3, 4]
+d['r'] = 35
+d['c'] = 345
+d['rpad'] = 25
+d['cpad'] = 23
+d['nrows'] = 300
+d['ncols'] = d['nrows'] # For a square ROI.
+d['scaling'] = 0.98
+d['rshift'] = 20
+d['cshift'] = -20
+
+bgfile = 'background.tif'
+
+pickledir = 'pickled'
+#cmn.makenewdir(pickledir)
 
 
-d = loadparams('wellparams.txt')
-wp = WellParams(d)
-
-
-
+#wp = WellParams(d)
 #wells = wp.defwells()
 ##checkwells(wells, bgfile)
+#wp.savewells(pickledir)
+#wp.saveparams(pickledir)
 
-wp.savewells()
+picklefile = os.path.join(pickledir, 'wellparams')
+findwells(picklefile, bgfile, pickledir)
