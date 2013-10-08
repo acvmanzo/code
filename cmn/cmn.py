@@ -19,27 +19,36 @@ def var_str(name, value):
     return name + ',' + value + '\n'
 
 
-def batch(fn_name, ftype, params, fdir='.'):
-    """Carries out the function 'fn_name' recursively on files with extension 'itype' (e.g., 'jpg' or '*') in directory 'fdir'.
+def batchfiles(fn_name, params, ftype, fdir='.'):
+    """Carries out the function 'fn_name' recursively on files with 
+    extension 'itype' (e.g., 'jpg' or '*') in directory 'fdir'.
     """
-
-
     os.chdir(fdir)
     names = glob.iglob('*{0}'.format(ftype))
-    # Absolute path rather than relative path allows changing of directories in fn_name.
+    # Absolute path rather than relative path allows changing of directories 
+    # in fn_name.
     names = [os.path.abspath(name) for name in names]
     names = sorted(names)
     for name in names:
-        if ftype != params.itype:
-            t = time.strftime('%H:%M:%S')
-            print os.path.basename(name), t
-
+        print os.path.basename(name)
         fn_name(name, params)
 
+def batchdirs(fn_name, ftype, fdir='.'):
+    """Carries out the function 'fn_name' recursively on directories in directory 'fdir'.
+    """
+    os.chdir(fdir)
+    dirs = os.listdir(fdir)
+    # Absolute path rather than relative path allows changing of directories 
+    # in fn_name.
+    dirs = [os.path.abspath(d) for d in dirs]
+    dirs = sorted(d)
+    for d in dirs:
+        print os.path.basename(d)
+        fn_name(d)
 
-def makepardir():
-    """Returns the experiment/ folder path if you are in a phase_analysis/ folder."""
-    return(os.path.dirname(os.path.abspath('.')))
+def defpardir(wdir='.'):
+    """Returns the parent folder of the folder specified in wdir."""
+    return(os.path.dirname(os.path.abspath(wdir)))
 
 def makepardir_data():
     """Returns the experiment/ folder path if you are in a data/movie folder."""
