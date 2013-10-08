@@ -32,18 +32,33 @@ class WellParams():
     scaling = scalar multiple of each value; used if the zoom is altered
     '''
     
-    def __init__(self, config, r, c, rpad, cpad, nrows, ncols, scaling, rshift, 
-    cshift):
-        self.config = config
-        self.r = r
-        self.c = c
-        self.rpad = rpad
-        self.cpad = cpad
-        self.nrows = nrows
-        self.ncols = ncols
-        self.scaling = scaling
-        self.rshift = rshift
-        self.cshift = cshift
+    #def __init__(self, config, r, c, rpad, cpad, nrows, ncols, scaling, rshift, 
+    #cshift):
+    
+        #self.config = config
+        #self.r = r
+        #self.c = c
+        #self.rpad = rpad
+        #self.cpad = cpad
+        #self.nrows = nrows
+        #self.ncols = ncols
+        #self.scaling = scaling
+        #self.rshift = rshift
+        #self.cshift = cshift
+    
+    def __init__(self, welldict):
+    
+        d = welldict
+        self.config = d['config']
+        self.r = d['r']
+        self.c = d['c']
+        self.rpad = d['rpad']
+        self.cpad = d['cpad']
+        self.nrows = d['nrows']
+        self.ncols = d['ncols']
+        self.scaling = d['scaling']
+        self.rshift = d['rshift']
+        self.cshift = d['cshift']
     
     
     def defwells(self):    
@@ -58,6 +73,35 @@ class WellParams():
                 wells.append([r1, r2, c1, c2])
         return(wells)
 
+    def saveparams(self):
+        with open('wellparams.txt', 'w') as f:
+            pass
+        for attr, val in sorted(vars(self).iteritems()):
+            attr, val = [str(x) for x in [attr, val]]
+            with open('wellparams.txt', 'a') as f:
+                f.write(cmn.var_str(attr, val.strip('[]'), '\t'))
+    
+    def savewells(self):
+        wells = self.defwells()
+        with open('wellcoords.txt', 'w') as f:
+            f.write('Well coordinates: r1, r2, c1, c2\n')
+        for well in wells:
+            with open('wellcoords.txt', 'a') as f:
+                f.write('{0}\n'.format(str(well).strip('[]')))
+      
+            
+def loadparams(pfile):
+    d = {}
+    with open(pfile, 'r') as f:
+        for l in f:
+            try:
+                d[l.split('\t')[0]] = float(l.split('\t')[1])
+            except ValueError:
+                d[l.split('\t')[0]] = [float(x) for x in 
+                l.split('\t')[1].strip('\n').split(',')]
+                print(d[l.split('\t')[0]])
+    return(d)
+                
 
 def checkwells(wells, bgfile):
                      

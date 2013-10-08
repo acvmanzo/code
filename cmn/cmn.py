@@ -112,5 +112,5 @@ def myround(x, base=10):
 
 ### FUNCTIONS FOR MANIPULATING STRINGS ###
 
-def var_str(name, value):
-    return name + ',' + value + '\n'
+def var_str(name, value, delimiter):
+    return name + delimiter + value + '\n'
