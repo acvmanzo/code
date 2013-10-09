@@ -12,25 +12,36 @@ I. Directory structure:
             movie1/
                 background.tif
                 movie1.MTS
-                picklefiles/
-                    bgarray
                 movie/
                     mov_00001.tif
                     mov_00002.tif
+                picklefiles/
+                    bgarray
+                    wellcoords
+                    wellparams
                 submovie/
                     submov_00001.tif
                     submov_00002.tif
+                text/
+                    wellcoords.txt
+                    wellparams.txt
                 
             movie2/
                 background.tif
-                bgarray
                 movie2.MTS
                 movie/
                     mov_00001.tif
                     mov_00002.tif
+                picklefiles/
+                    bgarray
+                    wellcoords
+                    wellparams
                 submovie/
                     submov_00001.tif
                     submov_00002.tif
+                text/
+                    wellcoords.txt
+                    wellparams.txt
 
 
 
@@ -56,5 +67,13 @@ number of frames and the method used to generate the background image
     a. Python files used: bgsubbatch.py (executable), bgsublib.py
 
 3. Partitioning movie into individual wells:
-Each movie has multiple wells; the rows and columns corresponding to each 
-well must be identified. Initially, 
+Each movie has multiple wells; the rows and columns defining ROIs corresponding 
+to each well must be identified. After adding new movies, run autopart.py to 
+use the default parameters to partition the images. Manually alter the 
+parameter files and then run manpart.py to change the ROI positions. Pickled 
+parameters and coordinates are in the 'pickled' folder and text files with 
+parameters and coordinates are in the 'text' folder.
+    a. Python files used: autopart.py (executable), manpart.py (executable), 
+    partimlib.py
+
+

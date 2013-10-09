@@ -6,11 +6,12 @@ from PIL import Image
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage
 import cmn.cmn as cmn
 import pickle
 import genplotlib as gpl
 
+WELLPARAMSN = 'wellparams'
+WELLCOORDSN = 'wellcoords'
 
 class WellParams():
     
@@ -18,7 +19,8 @@ class WellParams():
     the image as an array (rows vs. columns) rather than in xy coordinates.
     '''
     
-    def __init__(self, welldict):
+    def __init__(self, d = {'config':[3, 4], 'r':70, 'c':358, 'rpad':25, 
+    'cpad':22, 'nrows':300, 'ncols':300, 'scaling':1, 'rshift':0, 'cshift':0}):
         '''Input: 
         Dictionary with the following items:
         config = 2-element list: [# wells in vertical direction, # wells in 
@@ -34,9 +36,7 @@ class WellParams():
         cshift = # columns to shift the ROI during each iteration in the vertical 
         direction; used if image is rotated
         scaling = scalar multiple of each value; used if the zoom is altered
-        '''
-    
-        d = welldict
+        '''       
         self.config = d['config']
         self.r = d['r']
         self.c = d['c']
@@ -47,11 +47,11 @@ class WellParams():
         self.scaling = d['scaling']
         self.rshift = d['rshift']
         self.cshift = d['cshift']
-   
+  
     
     def defwells(self):  
         '''Finds the row and column coordinate for each ROI.'''
-        vw, hw = self.config    
+        vw, hw = map(int, self.config)
         wells = []
         for x in range(hw):
             for y in range(vw):
@@ -63,32 +63,41 @@ class WellParams():
         return(wells)
 
 
-    def saveparams(self, pickledir):
-        '''Saves the parameters into a picklefile and a text file.
+    def saveparams(self, pickledir, textdir):
+        '''Saves the parameters into a picklefile in the pickledir and a
+        text file in the textdir.
         '''
+        cmn.makenewdir(pickledir)
+        cmn.makenewdir(textdir)
         
-        with open(os.path.join(pickledir, 'wellparams'), 'w') as e:
+        with open(os.path.join(pickledir, WELLPARAMSN), 'w') as e:
             pickle.dump(self, e)
         
-        with open('wellparams.txt', 'w') as f:
+        textfile = os.path.join(textdir, WELLPARAMSN+'.txt')
+        with open(textfile, 'w') as f:
             pass
         for attr, val in sorted(vars(self).iteritems()):
             attr, val = [str(x) for x in [attr, val]]
-            with open('wellparams.txt', 'a') as f:
+            with open(textfile, 'a') as f:
                 f.write(cmn.var_str(attr, val.strip('[]'), '\t'))
     
     
-    def savewells(self, pickledir):
-        '''Saves the well coordinates into a picklefile and a text file.
+    def savewells(self, pickledir, textdir):
+        '''Saves the well coordinates into a picklefile in the pickledir and a
+        text file in the textdir.
         '''
-        
         wells = self.defwells()
-        with open(os.path.join(pickledir, 'wellcoords'), 'w') as e:
+    
+        cmn.makenewdir(pickledir)
+        cmn.makenewdir(textdir)
+        with open(os.path.join(pickledir, WELLCOORDSN), 'w') as e:
             pickle.dump(wells, e)
-        with open('wellcoords.txt', 'w') as f:
+        
+        textfile = os.path.join(textdir, WELLCOORDSN+'.txt')
+        with open(textfile, 'w') as f:
             f.write('Well coordinates: r1, r2, c1, c2\n')
         for well in wells:
-            with open('wellcoords.txt', 'a') as f:
+            with open(textfile, 'a') as f:
                 f.write('{0}\n'.format(str(well).strip('[]')))
       
             
@@ -103,8 +112,7 @@ def loadptxt(pfile):
                 d[l.split('\t')[0]] = float(l.split('\t')[1])
             except ValueError:
                 d[l.split('\t')[0]] = [float(x) for x in 
-                l.split('\t')[1].strip('\n').split(',')]
-                print(d[l.split('\t')[0]])
+                l.split('\t')[1].strip('\n').split(',')]    
     return(d)
 
 
@@ -116,22 +124,74 @@ def loadppickle(pfile):
     return(m)
 
 
-def checkwells(wells, bgfile):
-                     
+def checkwells(wells, bgfile, wellsfig='wells.png'):
+    '''Plots the wells onto the background image file to check positions.
+    Inputs:
+    wells = list of well coordinates
+    bgfile = background image file
+    '''
+    
     bg = np.array(Image.open(bgfile)).astype(float)
     plt.figure()
     plt.imshow(bg, cmap=plt.cm.gray)
     for w in wells:
         gpl.plotrect(w)
-    plt.savefig('wells.png')
+    plt.savefig(wellsfig)
 
 
-def findwells(picklepfile, bgfile):
+def defaultwells(bgfile, pickledir, textdir):
+    '''Generates well coordinates using the default parameters; plots onto a 
+    the background image. Saves the parameter and well coordinates.
+    Inputs:
+    bgfile = name of background image file
+    pickledir = directory for picklefiles
+    textdir = directory for text parameter files
+    '''
     
-    p = loadppickle(picklepfile)
-    print(p)
-    #wp = WellParams(d)
-    #wells = wp.defwells()
-    #checkwells(wells, bgfile)
-    #wp.savewells(pickledir)
-    #wp.saveparams(pickledir)
+    wp = WellParams()
+    wells = wp.defwells()
+    checkwells(wells, bgfile)
+    
+    wp.savewells(pickledir, textdir)
+    wp.saveparams(pickledir, textdir)
+
+
+def b_defaultwells(fdir, bgfile, picklebase, textbase):
+    '''Batch function to run defaultwells() on multiple files. Does not run 
+    defaultwells() if a pickled wellsparam file is present.
+    Input:
+    dirlist = list of files on which to run defaultwells
+    bgfile = name of background image file
+    picklebase = basename for picklefile directory
+    textbase = basename for text file directory
+     '''
+     
+    dirlist = cmn.listsortfs(fdir)
+    for exptdir in dirlist:
+        print(exptdir)
+        os.chdir(exptdir)
+        pickledir = os.path.join(exptdir, picklebase)
+        textdir = os.path.join(exptdir, textbase)
+        if os.path.exists(os.path.join(pickledir, WELLPARAMSN)) == False:
+            defaultwells(bgfile, pickledir, textdir)
+            print('Generating default wells')
+
+
+def findwellstext(bgfile, ptextfile, pickledir):
+    '''Generates well coordinates using parameters in ptextfile. Plots onto 
+    the background image. Saves the parameter and well coordinates.
+    Input:
+    bgfile = name of background image file
+    ptextfile = name of parameter text file
+    pickledir = directory for picklefiles
+    '''
+    
+    d = loadptxt(ptextfile)
+    wp = WellParams(d)
+    wells = wp.defwells()
+    checkwells(wells, bgfile)
+    
+    textdir = os.path.dirname(os.path.abspath(ptextfile))
+    wp.savewells(pickledir, textdir)
+    wp.saveparams(pickledir, textdir)
+
