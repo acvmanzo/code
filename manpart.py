@@ -21,6 +21,8 @@
 #       direction; used if image is rotated
 #   scaling = scalar multiple of each value; used if the zoom is altered
 
+# DO NOT EDIT THE 'wellparams.txt' FILE IN GEANY; IT WILL BREAK THE TABS
+
 from partimlib import *
 
 BGFILE = 'background.tif'

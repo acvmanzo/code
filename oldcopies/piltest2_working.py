@@ -129,63 +129,7 @@ def findflies(imfile, t, outdir, plot='yes'):
     nb_labels = number of connected components (not including the background)
     coms = centers of mass of connected components
     '''
-    # Load the image. 
-    orig_im = np.array(Image.open(imfile)).astype(float)
-    img = np.array(Image.open(imfile)).astype(float)
     
-    # Thresholds the image based on the peaks in the intensity histogram.
-    low_values_indices = img < t  # Where values are low
-    #high_values_indices = img > 60
-    img[low_values_indices] = 0
-    #img[high_values_indices] = 0
-    
-    # Functions to smooth the connected components.
-    #open_img = ndimage.binary_opening(img)
-    close_img = ndimage.binary_closing(img, structure=np.ones((5,5)).astype(img.dtype))
-    
-    # Select the connected components.
-    label_im, nb_labels = ndimage.label(close_img)
-    sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
-    coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, np.arange(1, nb_labels+1)))
-    
-    
-    if plot == 'yes':
-        # Plots images into a figure.
-        plt.figure()
-        plt.subplot(231)
-        plt.imshow(orig_im, cmap=plt.cm.gray)
-        plt.axis('off')
-        plt.title('Original image')
-
-        # Plot a histogram of the intensities.
-        plt.subplot(232)
-        hist, bin_edges = np.histogram(orig_im, bins=60)
-        bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
-        plt.plot(bin_centers, hist, lw=2)
-        plt.ylim(0, 500)
-        plt.title('Histogram of intensities')
-
-        # Plot the threshholded image.
-        plt.subplot(233)
-        plt.imshow(img, cmap=plt.cm.gray)
-        plt.axis('off')
-        plt.title('Threshholded image')
-
-        # Plots the smoothed image.
-        plt.subplot(234)
-        plt.imshow(close_img, cmap=plt.cm.gray)
-        plt.axis('off')
-        plt.title('Binary closing')
-        
-        # Plot the connected components and their centers of mass.
-        plt.subplot(235)
-        plt.imshow(label_im, cmap=plt.cm.gray)
-        plt.plot(coms.T[1], coms.T[0], 'rx', lw=1)
-        plt.title('Connected comp = {0}'.format(nb_labels))
-        plt.axis((0, 300, 0, 300))
-        imgname = os.path.splitext(imfile)[0]
-        plt.savefig(outdir+imgname+'_fig.png')
-        plt.close()
 
     return(orig_im, label_im, nb_labels, coms)
 

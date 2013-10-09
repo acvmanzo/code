@@ -2,15 +2,23 @@ import os
 import bgsublib as bl
 import partimlib as pl
 
-EXPTDIR = os.path.abspath(os.getcwd())
-SUBMOVDIR = os.path.join(EXPTDIR, 'submovie')
-MOVDIR = os.path.join(EXPTDIR, 'movie')
-PICKLEDIR = os.path.join(EXPTDIR, 'pickled')
-
 NFRAMES = 10
 
-def an1movie():
+def an1movie(fdir, nframes):
     # Start in expt/moviexx directory.
     
-    bl.subbgmovie(imdir=MOVDIR, bgdir=EXPTDIR, pickledir=PICKLEDIR, 
-    submovdir=SUBMOVDIR, nframes=NFRAMES, fntype='median', overwrite='no')
+    # Defines directories.
+    exptdir = os.path.abspath(fdir)
+    submovdir = os.path.join(exptdir, 'submovie')
+    movdir = os.path.join(exptdir, 'movie')
+    pickledir = os.path.join(exptdir, 'pickled')
+    textdir = os.path.join(exptdir, 'text')
+    
+    # Generates background image and subtracts it from every image file.
+    bl.subbgmovie(imdir=movdir, bgdir=exptdir, pickledir=pickledir, 
+    submovdir=submovdir, nframes=nframes, fntype='median', overwrite='no')
+
+    # Finds ROIs surrounding wells.
+    pl.defaultwells('background.txt', pickledir, textdir, overwrite='no')
+
+an1movie('.', NFRAMES)

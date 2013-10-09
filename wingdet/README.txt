@@ -12,6 +12,7 @@ I. Directory structure:
             movie1/
                 background.tif
                 movie1.MTS
+                wells.png
                 movie/
                     mov_00001.tif
                     mov_00002.tif
@@ -29,6 +30,7 @@ I. Directory structure:
             movie2/
                 background.tif
                 movie2.MTS
+                wells.png
                 movie/
                     mov_00001.tif
                     mov_00002.tif
@@ -77,3 +79,15 @@ parameters and coordinates are in the 'text' folder.
     partimlib.py
 
 4. Finding flies.
+
+
+IV. Observations
+
+1. How matplotlib treats images and points:
+To display an array representing an image in matplotlib, the function imshow()
+is used, with the array as the argument. In this case, matplotlib plots the 
+array such that the top left corner is [0,0], the vertical (y) axis corresponds 
+to the rows of the array, and the horizontal (x) axis corresponds to the columns 
+of the array. When plotting points on the image using plot(), the normal 
+convention of giving the x coordinate followed by the y coordinate is 
+maintained, but the points are plotted on this image axis. The axis limits [xmin, xmax, ymin, ymax] of this plot is: [0, #cols, #rows, 0].

@@ -4,6 +4,7 @@
 
 from PIL import Image
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import cmn.cmn as cmn
@@ -50,7 +51,7 @@ class WellParams():
   
     
     def defwells(self):  
-        '''Finds the row and column coordinate for each ROI.'''
+        '''Finds the rounded row and column coordinate for each ROI.'''
         vw, hw = map(int, self.config)
         wells = []
         for x in range(hw):
@@ -59,7 +60,8 @@ class WellParams():
                 r2 = r1 + self.nrows*self.scaling
                 c1 = self.c + (self.ncols+self.cpad)*x*self.scaling + self.cshift*y
                 c2 = c1 + self.ncols*self.scaling
-                wells.append([r1, r2, c1, c2])
+                rounded = [cmn.myround(z, base=1) for z in [r1, r2, c1, c2]]
+                wells.append(rounded)
         return(wells)
 
 
@@ -139,7 +141,7 @@ def checkwells(wells, bgfile, wellsfig='wells.png'):
     plt.savefig(wellsfig)
 
 
-def defaultwells(bgfile, pickledir, textdir):
+def defaultwells(bgfile, pickledir, textdir, overwrite):
     '''Generates well coordinates using the default parameters; plots onto a 
     the background image. Saves the parameter and well coordinates.
     Inputs:
@@ -147,6 +149,10 @@ def defaultwells(bgfile, pickledir, textdir):
     pickledir = directory for picklefiles
     textdir = directory for text parameter files
     '''
+    
+    picklepfile = os.path.join(pickledir, WELLPARAMSN)
+    if os.path.exists(picklepfile) and overwrite == 'no':
+        sys.exit('wellparams file already exists')
     
     wp = WellParams()
     wells = wp.defwells()
@@ -156,7 +162,7 @@ def defaultwells(bgfile, pickledir, textdir):
     wp.saveparams(pickledir, textdir)
 
 
-def b_defaultwells(fdir, bgfile, picklebase, textbase):
+def b_defaultwells(fdir, bgfile, picklebase, textbase, boverwrite):
     '''Batch function to run defaultwells() on multiple files. Does not run 
     defaultwells() if a pickled wellsparam file is present.
     Input:
@@ -172,9 +178,12 @@ def b_defaultwells(fdir, bgfile, picklebase, textbase):
         os.chdir(exptdir)
         pickledir = os.path.join(exptdir, picklebase)
         textdir = os.path.join(exptdir, textbase)
-        if os.path.exists(os.path.join(pickledir, WELLPARAMSN)) == False:
-            defaultwells(bgfile, pickledir, textdir)
-            print('Generating default wells')
+        if os.path.exists(os.path.join(pickledir, WELLPARAMSN)) and \
+        boverwrite == 'no':
+            continue
+        print('Generating default wells')
+        defaultwells(bgfile, pickledir, textdir, overwrite='yes')
+
 
 
 def findwellstext(bgfile, ptextfile, pickledir):

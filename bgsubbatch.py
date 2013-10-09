@@ -10,7 +10,8 @@ SUBMOVDIR = 'submovie'
 MOVDIR = 'movie'
 PICKLEDIR = 'pickled'
 NFRAMES = sys.argv[1] # Number of frames for generating background image
+OVERWRITE = sys.argv[2] # Overwrite- 'yes' or 'no'
 
-print('1 - nframes')
-subbgmovies('.', SUBMOVDIR, MOVDIR, PICKLEDIR, NFRAMES, fntype='median')
+print('1-nframes, 2-overwrite? yes or no')
+subbgmovies('.', SUBMOVDIR, MOVDIR, PICKLEDIR, NFRAMES, 'median', OVERWRITE)
 

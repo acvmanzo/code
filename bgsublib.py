@@ -24,10 +24,14 @@ def genbgim(imdir, nframes, fntype):
     imdir = os.path.abspath(imdir)
     files = sorted(os.listdir(imdir))
     moviel = len(files)
+    nframes = int(nframes)
     
     bg = np.array(Image.open(files[0])).astype(float)
 
+    assert moviel > nframes
+    
     for x in np.linspace(1, moviel-1, nframes):
+        print(x)
         c = np.array(Image.open(files[int(x)])).astype(float)
         bg = np.dstack((bg, c))
 
@@ -107,20 +111,26 @@ fntype, overwrite='no'):
     
     
 def subbgmovies(fdir, submovbase, movbase, picklebase, nframes, fntype, 
-boverwrite='no'):
+boverwrite):
     '''Start in folder containing movie folders; see wingdet/README.txt.
     For each movie, generates background image and subtracts background from 
     each image.
     '''
     dirs = cmn.listsortfs(fdir)
     for exptdir in dirs: 
+        print(os.path.basename(exptdir))
         movdir = os.path.join(exptdir, movbase)
         submovdir = os.path.join(exptdir, submovbase)
+        pickledir = os.path.join(exptdir, picklebase)
+        
         if os.path.exists(submovdir) and boverwrite == 'no':
             print('Images are already background-subtracted')
             continue
-        pickledir = os.path.join(exptdir, picklebase)
+
         os.chdir(movdir)
-        subbgmovie(imdir=movdir, bgdir=exptdir, pickledir=pickledir, 
-        submovdir=submovdir, nframes=nframes, fntype=fntype, overwrite='yes')
-    
+        try:
+            subbgmovie(imdir=movdir, bgdir=exptdir, pickledir=pickledir, 
+            submovdir=submovdir, nframes=nframes, fntype=fntype, overwrite='yes')
+        except AssertionError:
+            print('AssertionError')
+            continue

@@ -10,4 +10,9 @@ BGFILE = 'background.tif'
 PICKLEBASE = 'pickled'
 TEXTBASE = 'text'
 
-b_defaultwells(fdir='.', bgfile=BGFILE, picklebase=PICKLEBASE, textbase=TEXTBASE)
+print('1-overwrite? yes or no')
+OVERWRITE = sys.argv[1] # Overwrite? 'yes' or 'no'
+
+
+b_defaultwells(fdir='.', bgfile=BGFILE, picklebase=PICKLEBASE, 
+textbase=TEXTBASE, boverwrite=OVERWRITE)
