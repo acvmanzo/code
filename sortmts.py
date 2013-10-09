@@ -6,14 +6,16 @@
 from mtslib import *
 
 #Run from aggression/newmovies/ folder.
-WINGDETDIR = os.path.join(cmn.defpardir(),'wingdet', 'expts')
+EXPTDIR = os.path.join(cmn.defpardir(),'wingdet', 'expts')
 
-print('1-start (s), 2-dur (s) 3-specdur; yes or no')
+print('1-start (s), 2-dur (s) 3-specdur; yes or no; 4-overwrite; yes or no')
 
 START = sys.argv[1] # Number of seconds into movie before conversion begins.
 DUR = sys.argv[2] # Duration of conversion in seconds.
 SPECDUR = sys.argv[3] # Duration of conversion specified? 'yes' or 'no'
+OVERWRITE = sys.argv[4] # Overwrite image sequence? 'yes' or 'no'
 
-sortmtsdir(params=WINGDETDIR)
-os.chdir(WINGDETDIR)
-convmovies(fdir=WINGDETDIR, start=START, dur=DUR, specdur=SPECDUR)
+sortmtsdir(params=EXPTDIR)
+os.chdir(EXPTDIR)
+convmovies(fdir=EXPTDIR, start=START, dur=DUR, specdur=SPECDUR, 
+overwrite=OVERWRITE)

@@ -3,9 +3,11 @@
 
 from PIL import Image
 import os
+import sys
+import pickle
 import numpy as np
 import cmn.cmn as cmn
-import pickle
+
 
 def genbgim(imdir, nframes, fntype):
     '''Generates a background image from a sequence of image files.
@@ -81,8 +83,8 @@ def subbgim(bg, submoviedir, imdir='.'):
 
 
 def subbgmovie(imdir, bgdir, pickledir, submovdir, nframes, 
-fntype):
-    '''Generates background image from nframes of movie and saves in bg. 
+fntype, overwrite='no'):
+    '''Generates background image from nframes of movie and saves in bgdir. 
     Subtracts background from each file in movie image sequence.
     Input:
     imdir = directory containing the sequence of image files
@@ -94,13 +96,18 @@ fntype):
     fntype = 'median, 'average'; method for combining nframes
     '''
     
+    bgfile = os.path.join(bgdir, 'background.tif')
+    if os.path.exists(bgfile) and overwrite == 'no':
+        sys.exit('Background image already generated.')
+
     os.chdir(imdir)
     bg = genbgim(imdir, nframes, fntype)
     savebg(bg, bgdir, pickledir)
     subbgim(bg, submovdir, imdir)
     
     
-def subbgmovies(fdir, submovbase, movbase, picklebase, nframes, fntype):
+def subbgmovies(fdir, submovbase, movbase, picklebase, nframes, fntype, 
+boverwrite='no'):
     '''Start in folder containing movie folders; see wingdet/README.txt.
     For each movie, generates background image and subtracts background from 
     each image.
@@ -109,8 +116,11 @@ def subbgmovies(fdir, submovbase, movbase, picklebase, nframes, fntype):
     for exptdir in dirs: 
         movdir = os.path.join(exptdir, movbase)
         submovdir = os.path.join(exptdir, submovbase)
+        if os.path.exists(submovdir) and boverwrite == 'no':
+            print('Images are already background-subtracted')
+            continue
         pickledir = os.path.join(exptdir, picklebase)
         os.chdir(movdir)
         subbgmovie(imdir=movdir, bgdir=exptdir, pickledir=pickledir, 
-        submovdir=submovdir, nframes=nframes, fntype=fntype)
+        submovdir=submovdir, nframes=nframes, fntype=fntype, overwrite='yes')
     
