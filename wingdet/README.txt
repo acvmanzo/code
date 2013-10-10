@@ -16,7 +16,7 @@ I. Directory structure:
                 movie/
                     mov_00001.tif
                     mov_00002.tif
-                picklefiles/
+                pickled/
                     bgarray
                     wellcoords
                     wellparams
@@ -34,7 +34,7 @@ I. Directory structure:
                 movie/
                     mov_00001.tif
                     mov_00002.tif
-                picklefiles/
+                pickled/
                     bgarray
                     wellcoords
                     wellparams

@@ -4,6 +4,7 @@ import mtslib as ml
 import glob
 import numpy as np
 from mtslib import *
+import subprocess
 
 wingdetdir = os.path.join(cmn.defpardir('.'), 'wingdet', 'expts')
 
@@ -104,13 +105,20 @@ def concattifs():
 #ml.b_mtstoim('.', 0, 0.5, 'yes', 'no')
 #ml.concatims('.')
 fdir = '.'
-mtsfile = 'cs_20130619_ag_A_l_1.MTS'
-start = 0
-dur = 0.5
+#mtsfile = 'cs_20130619_ag_A_l_1.MTS'
+mtsfile = 'R021613_CG30116_Ag.MTS'
+avifile = 'cs_20130619_ag_A_l_1.avi'
+start = 1
+dur = 5
 specdur = 'yes'
 ext = 'tif'
 overwrite = 'yes'
 #mtstoim(mtsfile, start, dur, specdur, ext='tif', overwrite='yes')
 #exptmtstoavi('.', start, dur, start, dur, specdur)
-#exptmtstoim(fdir, start, dur, start, dur, specdur, ext, overwrite)
-b_avitoim(fdir)
+#mtstoim(mtsfile, start, dur, specdur, ext, overwrite)
+##b_avitoim(fdir)
+#exptmtstoimconcat(fdir, start, dur, start, dur, specdur, ext, overwrite, 
+#removeavi='no', moviebase = 'movie')
+#mtstoavi(mtsfile, moviePath, start, dur, specdur)
+#print(getfps(avifile))
+getfpsffmpeg(mtsfile)

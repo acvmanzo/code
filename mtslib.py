@@ -6,7 +6,11 @@ import os.path
 import glob
 import sys
 import shutil
+import re
+import subprocess
+import numpy as np
 import cmn.cmn as cmn
+
 
 WINGDETBASE = 'wingdet'
 EXPTSBASE = 'expts'
@@ -16,7 +20,24 @@ class FileError(Exception):
        self.value = value
     def __str__(self):
        return repr(self.value)
-    
+
+
+def check(obj, overwrite):
+    """Checks whether obj (file, directory) exists.
+    Inputs:
+    moviedir = folder with sequence of image files
+    overwrite = 'yes' or 'no'; 'yes' to ovewrite image files
+    """
+    if os.path.exists(obj) and overwrite == 'no':
+        m = '{0} already exists'.format(obj)
+        raise FileError(m)
+    try:
+        if os.path.exists(obj) and overwrite == 'yes':
+            shutil.rmtree(obj)
+    except OSError as e:
+        if e.errno == 20:
+            os.remove(obj)
+
 def sortmtsfile(mtsfile, exptdir):
     """Moves an MTS file to a directory in the folder 'wingdet/expt'; new directory 
     has the same name as the MTS file.
@@ -39,7 +60,6 @@ def sortmtsexpt(mtsfile, exptsdir):
     For example, if the MTS file is called 'cs_20130619_ag_A_l_1.MTS' then it is 
     moved to the directory 'wingdet/expt/cs_20130619_ag_A_l_1/'.
     """
-    
     expt = os.path.splitext(os.path.basename(mtsfile))[0][:-2]
     cmn.makenewdir(os.path.join(exptsdir, expt))
     newmtsfile = os.path.join(exptsdir, expt, os.path.basename(mtsfile))
@@ -55,6 +75,22 @@ def b_sortmtsexpt():
     cmn.batchfiles(sortmtsexpt, exptsdir, ftype='MTS')
 
 
+def getfps(avifile):
+    pattern = re.compile(r'(\d{2}.\d{3}) fps')
+    mplayerOutput = subprocess.Popen(("mplayer", "-identify", "-frames", "0", 
+    avifile), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+    print(mplayerOutput)
+    fps = pattern.search(mplayerOutput).groups()[0]
+    return(fps) 
+
+def getfpsffmpeg(avifile):
+    pattern = re.compile(r'(\d{2}.\d{3}) fps')
+    mplayerOutput = subprocess.Popen(("ffplay", "-t", "1", "-an", avifile), \
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+    print(mplayerOutput)
+    #fps = pattern.search(mplayerOutput).groups()[0]
+    #return(fps) 
+    
 def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     """Converts a single MTS file to another file format such as 'avi' using 
     ffmpeg.
@@ -67,16 +103,14 @@ def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     overwrite = 'yes' or 'no'; 'yes' to ovewrite avifile
     """
     check(outfile, overwrite)
-    
     if specdur == 'no':
         cmd = 'ffmpeg -ss {0} -i "{1}" -pix_fmt gray \
-        -vf yadif -vcodec rawvideo -y -an "{2}"'.format(start, mtsfile, 
+        -vf yadif -vcodec rawvideo -y -an -v quiet "{2}"'.format(start, mtsfile, 
         outfile)
     if specdur == 'yes':
         cmd = 'ffmpeg -ss {0} -t {1} -i "{2}" -pix_fmt gray \
-        -vf yadif -vcodec rawvideo -y -an "{3}"'.format(start, dur, mtsfile, 
+        -vf yadif -vcodec rawvideo -y -an -v quiet "{3}"'.format(start, dur, mtsfile, 
         outfile)
-    
     exitcode = os.system(cmd)
     if exitcode != 0:
         sys.exit(0)
@@ -97,14 +131,12 @@ def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur='yes'):
     'exptxx_2.MTS'
     specdur - 'no' if duration is not specified (will convert the entire movie)
     """
-    
     names = glob.glob('*{0}'.format('MTS'))
     names = sorted(names)
     
     for n in names:
         root, ext = os.path.splitext(n)
         suff = root[-1]
-        print(suff)
         outfile = root + '.avi'
         if suff == '1':
             mtstoavi(n, outfile, start1, dur1, specdur)
@@ -120,7 +152,7 @@ def movietoim(infile, ext, num=5):
     num - number of placeholders in the numerical part of the image name, 
     default is 5
     """
-    cmd = 'ffmpeg -i {0} -f image2 mov%0{1}d.{2}'.format(infile, num, ext)
+    cmd = 'ffmpeg -i {0} -v quiet -f image2 mov%0{1}d.{2}'.format(infile, num, ext)
     exitcode = os.system(cmd)
     if exitcode != 0:
         sys.exit(0)
@@ -141,17 +173,15 @@ def avitoim(avifile, ext='tif', overwrite='no', num=5):
     moviedir = os.path.splitext(aviname)[0]
     check(moviedir, overwrite)
     cmn.makenewdir(moviedir)
-    print(os.getcwd())
     os.rename(avifile, os.path.join(moviedir, aviname))
     os.chdir(moviedir)
-    print(os.getcwd())
     movietoim(aviname, ext, num)
     os.rename(aviname, os.path.join(exptdir, aviname))
 
 
 def b_avitoim(fdir, ext='tif', overwrite='no', num=5):
     """Converts multiple avi files to multiple sequences of images using 
-    ffmpeg; images are placed in a older based on the names of the avi files.
+    ffmpeg; images are placed in a folder based on the names of the avi files.
     Inputs:
     fdir = directory containing avi files
     ext = extension of image files
@@ -167,19 +197,6 @@ def b_avitoim(fdir, ext='tif', overwrite='no', num=5):
         print('Converting avi to image sequence')
         avitoim(avifile, ext, overwrite, num)
         os.chdir(fdir)
-        print(os.getcwd())
-
-def check(obj, overwrite):
-    """Checks whether obj (file, directory) exists.
-    Inputs:
-    moviedir = folder with sequence of image files
-    overwrite = 'yes' or 'no'; 'yes' to ovewrite image files
-    """
-    if os.path.exists(obj) and overwrite == 'no':
-        m = '{0} already exists'.format(obj)
-        raise FileError(m)
-    if os.path.exists(obj) and overwrite == 'yes':
-        shutil.rmtree(obj)    
 
 
 def mtstoim(mtsfile, start, dur, specdur, ext='tif', overwrite='no'):
@@ -198,76 +215,87 @@ def mtstoim(mtsfile, start, dur, specdur, ext='tif', overwrite='no'):
     exptdir = os.path.abspath('.')
     moviename = os.path.splitext(os.path.basename(mtsfile))[0]
     moviedir = moviename + '_movie'
+    print(moviedir)
     # Checks to make sure the movie hasn't already been converted.
     check(moviedir, overwrite)
     print('Converting MTS file to avi')
     avifile = moviename + '.avi'
     # Converting MTS to avi file.
-    mtstoavi(mtsfile, avifile, start, dur, specdur)
+    mtstoavi(mtsfile, avifile, start, dur, specdur, overwrite)
+    print(os.getcwd())
     # Makes a new directory for image files and converts avi file to image 
     #files
-    cmn.makenewdir(moviedir)
-    os.rename(avifile, os.path.join(moviedir, avifile))
-    os.chdir(moviedir)
     print('Converting avi to image sequence')
-    avitoim(avifile, ext)
-    # Moves avi file to original directory.
-    os.rename(avifile, os.path.join(exptdir, os.path.basename(avifile)))
+    avitoim(avifile, ext, overwrite)
 
 
-def exptmtstoim(fdir, start1, dur1, start2, dur2, specdur, ext, overwrite):
-    """Converts MTS files in the expts/exptxx/ directories to a series of images 
-    using ffmpeg. 
-    Inputs:
-    fdir - expts/exptxx/ directory
-    start - time to start conversion, in seconds
-    dur - duration of movie to be converted, in seconds
-    ext - type of image file (default is tif)
-    boverwrite - 'yes' or 'no'; if 'no', then the for loop will continue to the 
-    next iteration if the movie/ folder already exists
-    """
-    os.chdir(fdir)
-    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur)
-    b_avitoim(fdir, ext, overwrite)
-
-
-def concatims(fdir):
+def concatims(fdir, moviebase='movie'):
     """Combines images from two image sequences into one image sequence; 
     renames the image files of the second image sequence to be continuous 
     with the first image sequence and places them in a single folder. Often 
     for one experiment, there will be two MTS files because of the SD card
     limit (2 GB). Run from the expts/exptxx/ directory.
     Inputs:
-    fdir = expts/exptxx folder containing MTS files
-    start1, dur1 = Start time and duration for conversion of MTS file 
-    'exptxx_1.MTS'
-    start2, dur2 = Start time and duration for conversion of MTS file 
-    'exptxx_2.MTS'
-    specdur - 'no' if duration is not specified (will convert the entire movie)
+    fdir = expts/exptxx folder containing folders with image sequences
+    moviebase = name of new folder with renamed image sequence
     """
     
-    exptdir = os.getcwd()
-    movies = sorted(glob.glob('*{0}'.format('avi')))
-    movies = [os.path.splitext(x)[0] for x in movies]
-    print(movies)
-    fd = os.path.abspath(fs[0])
-    print(fd)
-    #tiflist1 = sorted(os.listdir(fs[0]))
-    #tiflist2 = sorted(os.listdir(fs[1]))
+    exptdir = os.path.abspath(fdir)
+    movies = [os.path.splitext(x)[0] for x in 
+    sorted(glob.glob('*{0}'.format('MTS')))]
+    newmoviedir = 'movie'
+    cmn.makenewdir('movie')
 
+    imlist1 = sorted(os.listdir(movies[0]))
+    imlist2 = sorted(os.listdir(movies[1]))
     
-    #start = len(tiflist1)+1
-    #stop = len(tiflist1)+1 + len(tiflist2)
-    #x = np.arange(start, stop, 1)
-    #x = ['mov{0:05d}.tif'.format(n) for n in x]
+    # Finds the number of digits in the image names.
+    imn = imlist1[0] 
+    l = \
+    len((os.path.splitext(imn)[0].lstrip('mov').rstrip(os.path.splitext(imn)[1])))
     
+    # Generates new names for the movie files in the second image folder.
+    start = len(imlist1)+1
+    stop = start + len(imlist2)
+    newnums = ['mov{0:0{1}d}.tif'.format(n, l) for n in np.arange(start, stop, 1)]
 
-    #os.chdir(fs[1])
-    #for i, m in enumerate(tiflist2):
-        #newname = x[i]
-        #print(m)
-        #print(newname)
-        #os.rename(m, os.path.join(fd, newname))
+    # Renames movies in the second image folder and moves them to the first 
+    # image folder.
+    os.chdir(movies[1])
+    for i, imfile in enumerate(imlist2):
+        newname = newnums[i]
+        os.rename(imfile, os.path.join(exptdir, movies[0], newname))
+    # Renames first image folder as moviebase and removes second image folder.
+    os.chdir(exptdir)
+    os.renames(movies[0], moviebase)
+    os.rmdir(movies[1])
+
+
+def exptmtstoimconcat(fdir, start1, dur1, start2, dur2, specdur, ext, overwrite, 
+removeavi='no', moviebase = 'movie'):
+    """Converts MTS files in the expts/exptxx/ directories to a series of images 
+    using ffmpeg. Renames image files so they are contiguous and places them 
+    in the folder 'movie'.
+    Inputs:
+    fdir - expts/exptxx/ directory
+    start - time to start conversion, in seconds
+    dur - duration of movie to be converted, in seconds
+    ext - type of image file (default is tif)
+    overwrite - 'yes' or 'no'; if 'no', then the for loop will continue to the 
+    next iteration if the movie/ folder already exists
+    removeavi - 'yes' or 'no'; specifies whether to delete avifiles
+    """
+    fdir = os.path.abspath(fdir)
+    check(moviebase, overwrite)
+    os.chdir(fdir)
+    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur)
+    b_avitoim(fdir, ext, overwrite)
+    os.chdir(fdir)
+    concatims(fdir, moviebase)
     
-    #os.chdir(exptdir)
-    #os.rmdir(fs[1])
+    if removeavi == 'yes':
+        avifiles = glob.glob('*{0}'.format('avi'))
+        for avi in avifiles:
+            os.remove(avi)
+
+
