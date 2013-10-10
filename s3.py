@@ -98,4 +98,7 @@ def concattifs():
 #convfiles()
 #bconvimg()
 #concattifs()
-os.rename('cs_20130619_ag_A_l_1/', 'movie')
+#os.rename('cs_20130619_ag_A_l_1/', 'movie')
+#ml.b_sortmtsexpt()
+ml.b_mtstoim('.', 0, 0.5, 'yes', 'no')
+#ml.concatims('.')

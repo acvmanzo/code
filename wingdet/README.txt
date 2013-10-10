@@ -9,7 +9,7 @@ I. Directory structure:
         movie2.MTS
     wingdet/
         expts/
-            movie1/
+            genotype_date_A_side/
                 background.tif
                 movie1.MTS
                 wells.png
@@ -27,7 +27,7 @@ I. Directory structure:
                     wellcoords.txt
                     wellparams.txt
                 
-            movie2/
+            genotype_date_B_side/
                 background.tif
                 movie2.MTS
                 wells.png
