@@ -3,6 +3,7 @@ import cmn.cmn as cmn
 import mtslib as ml
 import glob
 import numpy as np
+from mtslib import *
 
 wingdetdir = os.path.join(cmn.defpardir('.'), 'wingdet', 'expts')
 
@@ -100,5 +101,16 @@ def concattifs():
 #concattifs()
 #os.rename('cs_20130619_ag_A_l_1/', 'movie')
 #ml.b_sortmtsexpt()
-ml.b_mtstoim('.', 0, 0.5, 'yes', 'no')
+#ml.b_mtstoim('.', 0, 0.5, 'yes', 'no')
 #ml.concatims('.')
+fdir = '.'
+mtsfile = 'cs_20130619_ag_A_l_1.MTS'
+start = 0
+dur = 0.5
+specdur = 'yes'
+ext = 'tif'
+overwrite = 'yes'
+#mtstoim(mtsfile, start, dur, specdur, ext='tif', overwrite='yes')
+#exptmtstoavi('.', start, dur, start, dur, specdur)
+#exptmtstoim(fdir, start, dur, start, dur, specdur, ext, overwrite)
+b_avitoim(fdir)
