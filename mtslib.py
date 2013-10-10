@@ -76,19 +76,21 @@ def b_sortmtsexpt():
 
 
 def getfps(avifile):
-    pattern = re.compile(r'(\d{2}.\d{3}) fps')
-    mplayerOutput = subprocess.Popen(("mplayer", "-identify", "-frames", "0", 
-    avifile), stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-    print(mplayerOutput)
-    fps = pattern.search(mplayerOutput).groups()[0]
-    return(fps) 
-
-def getfpsffmpeg(avifile):
-    pattern = re.compile(r'(\d{2}.\d{3}) fps')
-    mplayerOutput = subprocess.Popen(("ffplay", "-t", "1", "-an", avifile), \
+    #pattern = re.compile(r'Input')
+    mplayerOutput = subprocess.Popen(("mplayer", "-v", avifile), \
     stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
     print(mplayerOutput)
-    #fps = pattern.search(mplayerOutput).groups()[0]
+    #fps = pattern.search(mplayerOutput).group(0)
+    #return(fps) 
+
+def getfpsffmpeg(avifile):
+    pattern = re.compile(r'Duration: \d*(:\d*)*')
+    print(pattern)
+    mplayerOutput = subprocess.Popen(("ffplay", "-t", "1", "-an", "-vn", avifile), \
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
+    print(mplayerOutput)
+    fps = pattern.search(mplayerOutput).group(0)
+    print(fps)
     #return(fps) 
     
 def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):

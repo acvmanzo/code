@@ -105,8 +105,8 @@ def concattifs():
 #ml.b_mtstoim('.', 0, 0.5, 'yes', 'no')
 #ml.concatims('.')
 fdir = '.'
-#mtsfile = 'cs_20130619_ag_A_l_1.MTS'
-mtsfile = 'R021613_CG30116_Ag.MTS'
+mtsfile = 'cs_20130619_ag_A_l_1.MTS'
+#mtsfile = 'R021613_CG30116_Ag.MTS'
 avifile = 'cs_20130619_ag_A_l_1.avi'
 start = 1
 dur = 5
@@ -121,4 +121,5 @@ overwrite = 'yes'
 #removeavi='no', moviebase = 'movie')
 #mtstoavi(mtsfile, moviePath, start, dur, specdur)
 #print(getfps(avifile))
-getfpsffmpeg(mtsfile)
+#getfpsffmpeg(mtsfile)
+getfps(mtsfile)
