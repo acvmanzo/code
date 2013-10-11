@@ -1,7 +1,8 @@
 # This module contains functions that I wrote that aren't super useful right 
 #now but might be useful in the future.
 
-
+############### SORTMTS.PY ####################
+### regular expresions; piping ###
 # These functions acquire the output from the mplayer or ffplay process and 
 #searches them using regular expression syntax.
 #Processes have stdin, stdout, and stderr pipes that transmits into or out of 
@@ -11,7 +12,6 @@
 #subprocess.Popen((blah blah).communicate()[0] gives the stdout output and 
 #.communicate[1] gives the stderr output. More info can be found in the pages 
 #on the subprocess and re modules.
-
 import re
 import subprocess
 
@@ -32,6 +32,23 @@ def getfpsffmpeg(avifile):
     fps = pattern.search(mplayerOutput).group(0)
     print(fps)
     #return(fps) 
+    
+    
+### sorts by file name ###
+def sortmtsfile(mtsfile, exptdir):
+    """Moves an MTS file to a directory in the folder 'wingdet/expt'; new directory 
+    has the same name as the MTS file.
+    """
+    root, ext = os.path.splitext(os.path.basename(mtsfile))
+    newdir = cmn.makenewdir(os.path.join(exptdir, root))
+    os.rename(mtsfile, os.path.join(newdir, root+ext))
+
+
+def b_sortmtsfile(params):
+    """Run in a directory with multiple MTS files. Moves each MTS file to a new 
+    directory with the same name as the MTS file.
+    """
+    cmn.batchfiles(sortmtsfile, params, ftype='MTS')
 
 
 # Uses ffmpeg to convert MTS files to avi files. Now I will be using mencoder.
@@ -59,7 +76,7 @@ def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     if exitcode != 0:
         sys.exit(0)
 
-# This version uses mencoder, but I am forcing the ofps.
+# This version uses mencoder, but I am not forcing the ofps.
 def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     """Converts a single MTS file to another file format such as 'avi' using 
     mplayer. Can convert files recorded in telecine (e.g., PF24).
@@ -71,23 +88,18 @@ def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     specdur - 'no' if duration is not specified (will convert the whole movie)
     overwrite = 'yes' or 'no'; 'yes' to ovewrite avifile
     """
-    check(outfile, overwrite)
-    mtsinfo = mtsfile.split('_')
-      
-    if mtsinfo.count('PF24') == 1:
-        fps = 24
-    if mtsinfo.count('PF30') == 1:
-        fps = 30
-    
+    cmn.check(outfile, overwrite)
+         
     if specdur == 'yes':
         cmd = 'mencoder -ss {0} -endpos {1} {2} -noskip -nosound \
-        -vf pullup,softskip,hue=0:0 -ofps {3}/1001 -ovc raw -o \
-        {4}'.format(start, dur, mtsfile, fps*1000, outfile)
+        -vf pullup,softskip,hue=0:0 -ovc raw -o {3}'.format(start, dur, 
+        mtsfile, outfile)
     
     if specdur == 'no':
         cmd = 'mencoder {0} -noskip -nosound -vf pullup,softskip,hue=0:0 \
-        -ofps {1}/1001 -ovc raw -o {2}'.format(mtsfile, fps*1000, outfile)
+        -ovc raw -o {1}'.format(mtsfile, outfile)
 
     exitcode = os.system(cmd)
     if exitcode != 0:
         sys.exit(0)
+

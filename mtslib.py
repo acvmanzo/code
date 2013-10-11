@@ -15,47 +15,9 @@ import cmn.cmn as cmn
 WINGDETBASE = 'wingdet'
 EXPTSBASE = 'expts'
 
-class FileError(Exception):
-    def __init__(self, value):
-       self.value = value
-    def __str__(self):
-       return repr(self.value)
-
-
-def check(obj, overwrite):
-    """Checks whether obj (file, directory) exists.
-    Inputs:
-    moviedir = folder with sequence of image files
-    overwrite = 'yes' or 'no'; 'yes' to ovewrite image files
-    """
-    if os.path.exists(obj) and overwrite == 'no':
-        m = '{0} already exists'.format(obj)
-        raise FileError(m)
-    try:
-        if os.path.exists(obj) and overwrite == 'yes':
-            shutil.rmtree(obj)
-    except OSError as e:
-        if e.errno == 20:
-            os.remove(obj)
-
-def sortmtsfile(mtsfile, exptdir):
-    """Moves an MTS file to a directory in the folder 'wingdet/expt'; new directory 
-    has the same name as the MTS file.
-    """
-    root, ext = os.path.splitext(os.path.basename(mtsfile))
-    newdir = cmn.makenewdir(os.path.join(exptdir, root))
-    os.rename(mtsfile, os.path.join(newdir, root+ext))
-
-
-def b_sortmtsfile(params):
-    """Run in a directory with multiple MTS files. Moves each MTS file to a new 
-    directory with the same name as the MTS file.
-    """
-    cmn.batchfiles(sortmtsfile, params, ftype='MTS')
-
 
 def sortmtsexpt(mtsfile, exptsdir):
-    """Moves an MTS file to a directory in the folder 'wingdet/expts/'; new 
+    """Moves an MTS file to a directory in the expts/ folder; new 
     directory has the same name as the experiment that the MTS file refers to. 
     For example, if the MTS file is called 'cs_20130619_ag_A_l_1.MTS' then it is 
     moved to the directory 'wingdet/expt/cs_20130619_ag_A_l_1/'.
@@ -66,13 +28,19 @@ def sortmtsexpt(mtsfile, exptsdir):
     os.rename(mtsfile, newmtsfile)
     
 
-def b_sortmtsexpt():
-    """Run in a directory with multiple MTS files. Moves each MTS file to a new 
+def b_sortmtsexpt(fdir, wingdetbase, exptsbase):
+    """Moves each MTS file in a directory with multiple MTS files to a new 
     directory with the same name as the experiment referred to by the MTS 
     file (see sortmtsexpt()).
+    Input:
+    fdir = directory with multiple MTS files
+    wingdetbase = name of wingdet/ directory
+    exptsbase = name of expts/ directory
     """
-    exptsdir = os.path.join(cmn.defpardir('.'), WINGDETBASE, EXPTSBASE)
+    fdir = os.path.abspath(fdir)
+    exptsdir = os.path.join(cmn.defpardir(fdir), wingdetbase, exptsbase)
     cmn.batchfiles(sortmtsexpt, exptsdir, ftype='MTS')
+    return(exptsdir)
 
 
 def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
@@ -86,23 +54,29 @@ def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     specdur - 'no' if duration is not specified (will convert the whole movie)
     overwrite = 'yes' or 'no'; 'yes' to ovewrite avifile
     """
-    check(outfile, overwrite)
-         
+    cmn.check(outfile, overwrite)
+    mtsinfo = mtsfile.split('_')
+      
+    if mtsinfo.count('PF24') == 1:
+        fps = 24
+    if mtsinfo.count('PF30') == 1:
+        fps = 30
+    
     if specdur == 'yes':
         cmd = 'mencoder -ss {0} -endpos {1} {2} -noskip -nosound \
-        -vf pullup,softskip,hue=0:0 -ovc raw -o {3}'.format(start, dur, 
-        mtsfile, outfile)
+        -vf pullup,softskip,hue=0:0 -ofps {3}/1001 -ovc raw -o \
+        {4}'.format(start, dur, mtsfile, fps*1000, outfile)
     
     if specdur == 'no':
         cmd = 'mencoder {0} -noskip -nosound -vf pullup,softskip,hue=0:0 \
-        -ovc raw -o {1}'.format(mtsfile, outfile)
+        -ofps {1}/1001 -ovc raw -o {2}'.format(mtsfile, fps*1000, outfile)
 
     exitcode = os.system(cmd)
     if exitcode != 0:
         sys.exit(0)
 
    
-def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur, overwrite):
+def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, overwrite):
     """Converts two MTS files in the same experiment folder into avi files. 
     Often for one experiment, there will be two MTS files because of the SD 
     card limit (2 GB). The two MTS files can be converted with different 
@@ -125,9 +99,9 @@ def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur, overwrite):
         suff = root[-1]
         outfile = root + '.avi'
         if suff == '1':
-            mtstoavi(n, outfile, start1, dur1, specdur, overwrite)
+            mtstoavi(n, outfile, start1, dur1, specdur1, overwrite)
         if suff == '2':
-            mtstoavi(n, outfile, start2, dur2, specdur, overwrite)
+            mtstoavi(n, outfile, start2, dur2, specdur2, overwrite)
 
 
 def movietoim(infile, ext, qscale, num):
@@ -157,13 +131,13 @@ def avitoim(avifile, ext, overwrite, num, qscale):
     avifile = avifile to convert
     ext = extension of image file
     overwrite = 'yes' or 'no'; 'yes' to ovewrite image files
-    num = number of placeholders in the numerical part of the image name, 
-    default is 5
+    num = number of placeholders in the numerical part of the image name
+    qscale = quality of jpeg conversion (1-highest; use either 1 or 3)
     """
     exptdir = os.path.abspath('.')
     aviname = os.path.basename(avifile)
     moviedir = os.path.splitext(aviname)[0]
-    check(moviedir, overwrite)
+    cmn.check(moviedir, overwrite)
     cmn.makenewdir(moviedir)
     os.rename(avifile, os.path.join(moviedir, aviname))
     os.chdir(moviedir)
@@ -185,7 +159,7 @@ def b_avitoim(fdir, ext, overwrite, num, qscale):
     for x, avifile in enumerate(avis):
         print(x, avifile)
         moviedir = os.path.splitext(avifile)[0]
-        check(moviedir, overwrite)
+        cmn.check(moviedir, overwrite)
         print('Converting avi to image sequence')
         avitoim(avifile, ext, overwrite, num, qscale)
         os.chdir(fdir)
@@ -209,7 +183,7 @@ def mtstoim(mtsfile, start, dur, specdur, ext, overwrite):
     moviedir = moviename + '_movie'
     print(moviedir)
     # Checks to make sure the movie hasn't already been converted.
-    check(moviedir, overwrite)
+    cmn.check(moviedir, overwrite)
     print('Converting MTS file to avi')
     avifile = moviename + '.avi'
     # Converting MTS to avi file.
@@ -228,7 +202,7 @@ def concatims(fdir, ext, movbase):
     for one experiment, there will be two MTS files because of the SD card
     limit (2 GB). Run from the expts/exptxx/ directory.
     Inputs:
-    fdir = expts/exptxx folder containing folders with image sequences
+    fdir = expts/exptxx/ folder containing folders with image sequences
     movbase = name of new folder with renamed image sequence
     """
     
@@ -239,55 +213,98 @@ def concatims(fdir, ext, movbase):
     cmn.makenewdir(movbase)
 
     imlist1 = sorted(os.listdir(movies[0]))
-    imlist2 = sorted(os.listdir(movies[1]))
     
-    # Finds the number of digits in the image names.
-    imn = imlist1[0] 
-    l = \
-    len((os.path.splitext(imn)[0].lstrip('mov').rstrip(os.path.splitext(imn)[1])))
-    
-    # Generates new names for the movie files in the second image folder.
-    start = len(imlist1)+1
-    stop = start + len(imlist2)
-    newnums = ['mov{0:0{1}d}.{2}'.format(n, l, ext) for n in np.arange(start, stop, 1)]
+    try:
+        imlist2 = sorted(os.listdir(movies[1]))
+        # Finds the number of digits in the image names.
+        imn = imlist1[0] 
+        l = \
+        len((os.path.splitext(imn)[0].lstrip('mov').rstrip(os.path.splitext(imn)[1])))
+        
+        # Generates new names for the movie files in the second image folder.
+        start = len(imlist1)+1
+        stop = start + len(imlist2)
+        newnums = ['mov{0:0{1}d}.{2}'.format(n, l, ext) for n in np.arange(start, stop, 1)]
 
-    # Renames movies in the second image folder and moves them to the first 
-    # image folder.
-    os.chdir(movies[1])
-    for i, imfile in enumerate(imlist2):
-        newname = newnums[i]
-        os.rename(imfile, os.path.join(exptdir, movies[0], newname))
-    # Renames first image folder as movbase and removes second image folder.
-    os.chdir(exptdir)
+        # Renames movies in the second image folder and moves them to the first 
+        # image folder.
+        os.chdir(movies[1])
+        for i, imfile in enumerate(imlist2):
+            newname = newnums[i]
+            os.rename(imfile, os.path.join(exptdir, movies[0], newname))
+        # Removes second image folder.
+        os.chdir(exptdir)
+        os.rmdir(movies[1])
+    except NameError:
+        pass
+    
+    # Renames first image folder as movbase.
     os.renames(movies[0], movbase)
-    os.rmdir(movies[1])
+    
 
 
-def exptmtstoimconcat(fdir, start1, dur1, start2, dur2, specdur, ext, overwrite, 
-removeavi, movbase, num=5, qscale=3):
-    """Converts MTS files in the expts/exptxx/ directories to a series of images 
+def exptmtstoimconcat(fdir, start1, dur1, start2, dur2, specdur1, specdur2,
+ext, overwrite, removeavi, movbase, num=5, qscale=3):
+    """Converts MTS files in one expts/exptxx/ directory to a series of images 
     using ffmpeg. Renames image files so they are contiguous and places them 
     in the folder 'movie'.
     Inputs:
     fdir - expts/exptxx/ directory
-    start - time to start conversion, in seconds
-    dur - duration of movie to be converted, in seconds
+    start1, start2 - time to start conversion, in seconds, for movies 1 and 2
+    dur1, dur2 - duration of movie to be converted, in seconds, for movies 1 
+    and 2
+    specdur = 'yes' or 'no'; indicates whether duration is specified
     ext - type of image file
     overwrite - 'yes' or 'no'; if 'no', then the for loop will continue to the 
     next iteration if the movie/ folder already exists
     removeavi - 'yes' or 'no'; specifies whether to delete avifiles
+    movbase = name of 'extxx/movie/' directory
+    num = # digits for image name
+    qscale = quality of jpeg (1-highest; use either 1 or 3)
     """
     fdir = os.path.abspath(fdir)
-    check(movbase, overwrite)
+    cmn.check(movbase, overwrite)
     os.chdir(fdir)
-    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur, overwrite)
+    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, overwrite)
     b_avitoim(fdir, ext, overwrite, num, qscale)
     os.chdir(fdir)
-    concatims(fdir, ext, movbase)
+    try:
+        concatims(fdir, ext, movbase)
+        if removeavi == 'yes':
+            avifiles = glob.glob('*{0}'.format('avi'))
+            for avi in avifiles:
+                os.remove(avi)
+    except IndexError:
+        print('IndexError')
+        pass
+        
     
-    if removeavi == 'yes':
-        avifiles = glob.glob('*{0}'.format('avi'))
-        for avi in avifiles:
-            os.remove(avi)
 
+
+def convmovies(fdir, start1, dur1, start2, dur2, specdur1, specdur2,
+ext, overwrite, removeavi, movbase, num=5, qscale=3):
+    
+    """Converts MTS files in the expts/exptxx/ directories to a series of images 
+    using ffmpeg. Renames image files so they are contiguous and places them 
+    in the folder 'movie'.
+    Inputs:
+    fdir - expts/ directory
+    start1, start2 - time to start conversion, in seconds, for movies 1 and 2
+    dur1, dur2 - duration of movie to be converted, in seconds, for movies 1 
+    and 2
+    specdur = 'yes' or 'no'; indicates whether duration is specified
+    ext - type of image file
+    overwrite - 'yes' or 'no'; if 'no', then the for loop will continue to the 
+    next iteration if the movie/ folder already exists
+    removeavi - 'yes' or 'no'; specifies whether to delete avifiles
+    movbase = name of 'extxx/movie/' directory
+    num = # digits for image name
+    qscale = quality of jpeg (1-highest; use either 1 or 3)
+    """
+    
+    dirs = cmn.listsortfs(fdir)
+    for d in dirs:
+        os.chdir(d)
+        exptmtstoimconcat(d, start1, dur1, start2, dur2, specdur1, specdur2,
+        ext, overwrite, removeavi, movbase, num, qscale)
 

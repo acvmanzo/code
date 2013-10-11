@@ -3,6 +3,7 @@ import os
 import glob
 import time
 import math
+import shutil
 
 ### FUNCTIONS FOR FILE HANDLING ###
 
@@ -114,3 +115,29 @@ def myround(x, base=10):
 
 def var_str(name, value, delimiter):
     return name + delimiter + value + '\n'
+    
+
+### FUNCTIONS FOR CHECKING OVERWRITING ###
+
+class FileError(Exception):
+    def __init__(self, value):
+       self.value = value
+    def __str__(self):
+       return repr(self.value)
+
+
+def check(obj, overwrite):
+    """Checks whether obj (file, directory) exists.
+    Inputs:
+    obj = file or directory
+    overwrite = 'yes' or 'no'; 'yes' to ovewrite
+    """
+    if os.path.exists(obj) and overwrite == 'no':
+        m = '{0} already exists'.format(obj)
+        raise FileError(m)
+    try:
+        if os.path.exists(obj) and overwrite == 'yes':
+            shutil.rmtree(obj)
+    except OSError as e:
+        if e.errno == 20:
+            os.remove(obj)

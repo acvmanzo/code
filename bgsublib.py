@@ -64,6 +64,23 @@ def savebg(bg, bgext, bgdir, pickledir):
     # Save background image as a pickle file.
     with open(os.path.join(pickledir, 'bgarray'), 'w') as h:
         pickle.dump(bg, h)
+
+
+def genbgimexpt(exptdir, bgext, nframes, ftype):
+    '''Generates and saves background image for a single experiment. 
+    Input:
+    exptdir = expts/exptxx/ directory
+    nframes = # frames used to generate the background image; these are spread 
+    evenly throughout the image sequence
+    fntype = 'median, 'average'; method for combining nframes.
+    Output:
+    '''
+    
+    imdir = os.path.join(exptdir, MOVBASE)
+    pickledir = os.path.join(exptdir, PICKLEBASE)
+    
+    bg = genbgim(imdir, nframes, ftype)
+    savebg(bg, bgext, exptdir, pickledir)
     
 
 def subbgim(bg, subext, submoviedir, imdir='.'):
@@ -140,3 +157,28 @@ boverwrite):
         except AssertionError:
             print('AssertionError')
             continue
+
+def genbgmovies(fdir, movbase, bgext, nframes, fntype, overwrite):
+    
+    '''Start in folder containing movie folders; see wingdet/README.txt.
+    For each movie, generates background image.
+    
+    
+    '''
+    
+    dirs = cmn.listsortfs(fdir)
+    for exptdir in dirs:
+        bgfile = os.path.join(extpdir, 'background.{0}'.format(bgext))
+        cmn.check(bgfile, ovewrite)
+        print(os.path.basename(exptdir))
+        movdir = os.path.join(exptdir, movbase)
+        
+        os.chdir(movdir)
+        try:
+            subbgmovie(imdir=movdir, bgext=bgext, subext=subext, 
+            bgdir=exptdir, pickledir=pickledir, submovdir=submovdir, 
+            nframes=nframes, fntype=fntype, overwrite=boverwrite)
+        except AssertionError:
+            print('AssertionError')
+            continue
+

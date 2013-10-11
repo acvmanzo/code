@@ -9,31 +9,33 @@ I. Directory structure:
         movie2.MTS
     wingdet/
         expts/
-            genotype_date_A_side/
+            genotype_date_PFxx_A_side/
                 background.tif
-                movie1.MTS
-                wells.png
+                genotype_date_PFxx_A_side_1.MTS
+                genotype_date_PFxx_A_side_2.MTS
                 movie/
-                    mov_00001.tif
-                    mov_00002.tif
+                    mov00001.jpg
+                    mov00002.jpg
                 pickled/
                     bgarray
                     wellcoords
                     wellparams
                 submovie/
-                    submov_00001.tif
-                    submov_00002.tif
+                    submov_00001.jpg
+                    submov_00002.jpg
                 text/
                     wellcoords.txt
                     wellparams.txt
+                wells.png
                 
-            genotype_date_B_side/
+            genotype_date_PFxx_B_side/
                 background.tif
-                movie2.MTS
-                wells.png
+                genotype_date_PFxx_B_side_1.MTS
+                genotype_date_PFxx_B_side_2.MTS
+                
                 movie/
-                    mov_00001.tif
-                    mov_00002.tif
+                    mov_00001.jpg
+                    mov_00002.jpg
                 pickled/
                     bgarray
                     wellcoords
@@ -44,7 +46,7 @@ I. Directory structure:
                 text/
                     wellcoords.txt
                     wellparams.txt
-
+                wells.png
 
 
 
