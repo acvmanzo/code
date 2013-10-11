@@ -107,12 +107,16 @@ def concattifs():
 fdir = '.'
 mtsfile = 'cg30116_20130411_ag_PF24_A_l_1.MTS'
 #mtsfile = 'R021613_CG30116_Ag.MTS'
-avifile = 'cg30116_20130411_ag_PF24_A_l_1.avi'
+avifile = 'xx_20001313_ag_PF30_A_l_2.avi'
 start = 1
 dur = 4
 specdur = 'yes'
-ext = 'bmp'
+ext = 'jpeg'
 overwrite = 'yes'
+moviebase = 'movie'
+removeavi = 'no'
+qscale = 3
+num = 5
 #mtstoim(mtsfile, start, dur, specdur, ext='tif', overwrite='yes')
 #exptmtstoavi('.', start, dur, start, dur, specdur)
 #mtstoim(mtsfile, start, dur, specdur, ext, overwrite)
@@ -126,5 +130,6 @@ overwrite = 'yes'
 
 #mtstoavi(mtsfile, avifile, start, dur, specdur='yes', overwrite='yes')
 #exptmtstoavi(fdir, start, dur, start, dur, specdur='yes', overwrite=overwrite)
-exptmtstoimconcat(fdir, start, dur, start, dur, specdur, ext, overwrite, 
-removeavi='no', moviebase = 'movie')
+exptmtstoimconcat(fdir, start, dur, start, dur, specdur, ext, overwrite, \
+removeavi, moviebase, num=5, qscale=3)
+#avitoim(avifile, ext, overwrite, num, qscale)

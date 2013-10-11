@@ -1060,10 +1060,6 @@ http://eugenia.queru.com/2007/07/13/canon-hv20-24p-pulldown/
 .)
 \end_layout
 
-\begin_layout Subsection
-Re-encoding PF24 videos 
-\end_layout
-
 \begin_layout Standard
 The above page suggests the following code to use:
 \end_layout
@@ -1274,8 +1270,8 @@ lavc (−lavcopts) Many libavcodec (lavc for short) options are tersely document
 \end_layout
 
 \end_deeper
-\begin_layout Subsubsection
-Testing
+\begin_layout Subsection
+Re-encoding PF24 videos
 \end_layout
 
 \begin_layout Itemize
@@ -1355,8 +1351,8 @@ men_pu_5.avi (removed harddup, removed input fps and removed -mc):
 
 \begin_deeper
 \begin_layout LyX-Code
- mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -noskip -nosound
- -vf pullup,softskip -ofps 24000/1001 -ovc raw -o men_pu_5.avi
+mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -noskip -nosound -vf
+ pullup,softskip -ofps 24000/1001 -ovc raw -o men_pu_5.avi
 \end_layout
 
 \end_deeper
@@ -1368,6 +1364,88 @@ men_pu_o.avi (no processing)
 \begin_layout LyX-Code
 mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -noskip -nosound -ovc
  raw -o men_pu_o.avi 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_6.avi (same as men_pu_5.avi but removed ofps):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder cg30116_20130411_ag_PF24_A_l_1.MTS -ss 0 -endpos 4 -noskip -nosound
+ -vf pullup,softskip -ovc raw -o men_pu_6.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_7.avi (-endpos and -ss before filename; did tifs and jpegs)
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -ss 0 -endpos 4 cg30116_20130411_ag_PF24_A_l_1.MTS  -noskip -nosound
+ -vf pullup,softskip,hue=0:0 -ovc raw -o men_pu_7.avi 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_8 folder - encode into jpeg
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mplayer -vo jpeg cg30116_20130411_ag_PF24_A_l_1.MTS -ss 0 -endpos 4 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_9 folder - copied men_pu_7.avi into jpeg using ffmpeg; compared jpeg
+ quality
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 mov%05d_def.jpeg
+\end_layout
+
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 -qscale 5 mov%05d_q5.jpeg
+\end_layout
+
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 -qscale 1 mov%05d_q1.jpeg
+\end_layout
+
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 -qscale 2 mov%05d_q2.jpeg
+\end_layout
+
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 mov%05d.tif
+\end_layout
+
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 -qscale 3 mov%05d_q3.jpeg
+\end_layout
+
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 -qscale 4 mov%05d_q4.jpeg
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_10 folder - copied men_pu_7.avi into jpeg using mplayer; compared
+ jpeg quality
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mplayer -ss 0 -endpos 3 -vo jpeg,quality=100 men_pu_7.avi 
+\end_layout
+
+\begin_layout LyX-Code
+mplayer -ss 0 -endpos 3 -vo jpeg,quality=75 men_pu_7.avi 
 \end_layout
 
 \end_deeper
@@ -1391,6 +1469,38 @@ men_pu_2.avi to 5.avi: all seemed fine
 
 \begin_layout Itemize
 men_pu_o.avi: severe interlacing artifacts
+\end_layout
+
+\begin_layout Itemize
+men_pu_5.avi has fewer images than men_pu_6.avi upon conversion; looks like
+ with men_pu_5.avi, the 4 second duration meant 4 seconds of output (96 frames)
+ and with men_pu_6.avi, output fps was set at 29.970 which led to 120 frames.
+ Also men_pu_6.avi plays at 29.970 fps.
+ The images converted are the same, no duplicate frames etc., but the numbers
+ are different.
+\end_layout
+
+\begin_layout Itemize
+men_pu_7.avi: putting -ss and -endpos before filename didn't change anything.
+ Also, comparison of tifs and jpegs show that there are some minor artifacts
+ in the jpeg images but nothing too different.
+ And the compression savings is large.
+ Maybe the default jpeg quality in ffmpeg is low.
+\end_layout
+
+\begin_layout Itemize
+menpu8: can't apply -vf filters and convert to jpeg in one step
+\end_layout
+
+\begin_layout Itemize
+menpu9: ffmpeg jpeg comparison - qscale = 1 and tif are similar.
+ -qscale = 3 looks fine; below that is bad.
+ 
+\end_layout
+
+\begin_layout Itemize
+menpu10: mplayer jpeg comparison: q=100 vs q=75 aren't that different; q=100
+ worse than ffmpeg's q=3: use ffmpeg
 \end_layout
 
 \end_deeper
@@ -1540,7 +1650,7 @@ Results
 \end_layout
 
 \begin_layout Itemize
-6PF30 looks the same as PF30o-ff.avi
+6PF30 looks the same as PF30o-ff.avi and 7PF30
 \end_layout
 
 \begin_layout Itemize
@@ -1580,7 +1690,6 @@ Specify PF24 or PF30 in the MTS filename.
 
 \begin_layout Itemize
 I think that for consistency, I should use mencoder for both kinds of videos.
- 
 \end_layout
 
 \begin_layout Itemize
@@ -1590,7 +1699,7 @@ For PF24:
 \begin_deeper
 \begin_layout LyX-Code
 mencoder -ss 0 -endpos 4 cg30116_20130411_ag_A_l_1.MTS -noskip -nosound -vf
- pullup,softskip,hue=0:0 -ofps 24000/1001 -ovc raw -o men_pu_5.avi
+ pullup,softskip,hue=0:0 -ovc raw -o men_pu_5.avi
 \end_layout
 
 \end_deeper
@@ -1601,13 +1710,24 @@ For PF30:
 \begin_deeper
 \begin_layout LyX-Code
 mencoder -ss 0 -endpos 4 cs_20130619_ag_A_l_1.MTS -noskip -nosound -vf pullup,sof
-tskip,hue=0:0 -ofps 30000/1001 -ovc raw -o 8PF30-bw-ofps.avi
+tskip,hue=0:0 -ovc raw -o 8PF30-bw-ofps.avi
 \end_layout
 
 \end_deeper
-\begin_layout LyX-Code
-
+\begin_layout Itemize
+Looking at tifs vs jpegs, I think that ffmpeg's high quality jpeg conversion
+ is comparable to tifs while being smaller.
+ Mplayer's jpeg conversion is low quality.
+ For image conversion use the following (can try qscale 3 for now, but can
+ also see if algorithm improves with qscale 1) (Also looked at tifs and
+ bmps and they are identical; I think tifs just can carry metadata).
 \end_layout
 
+\begin_deeper
+\begin_layout LyX-Code
+ffmpeg -i men_pu_7.avi -f image2 -qscale 3 mov%05d_q3.jpeg
+\end_layout
+
+\end_deeper
 \end_body
 \end_document
