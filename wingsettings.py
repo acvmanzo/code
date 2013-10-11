@@ -3,4 +3,4 @@ EXPTSBASE = 'expts'
 MOVBASE = 'movie'
 SUBMOVBASE = 'submovie'
 PICKLEBASE = 'pickled'
-
+BGFILE = 'background.bmp'

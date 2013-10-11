@@ -44,7 +44,7 @@ def genbgim(imdir, nframes, fntype):
     return(bgnew)
 
 
-def savebg(bg, bgext, bgdir, pickledir):
+def savebg(bg, bgfile, bgdir, pickledir):
     '''Saves background image as an image file and as a pickled array.
     Input:
     bg = array of background image
@@ -59,14 +59,14 @@ def savebg(bg, bgext, bgdir, pickledir):
     
     # Save background image.
     bgnew = Image.fromarray(np.uint8(np.absolute(bg)))
-    bgnew.save(os.path.join(bgdir, 'background.{0}'.format(bgext)))
+    bgnew.save(os.path.join(bgdir, bgfile))
     
     # Save background image as a pickle file.
     with open(os.path.join(pickledir, 'bgarray'), 'w') as h:
         pickle.dump(bg, h)
 
 
-def genbgimexpt(exptdir, movbase, picklebase, bgext, nframes, ftype):
+def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype):
     '''Generates and saves background image for a single experiment. 
     Input:
     exptdir = expts/exptxx/ directory
@@ -83,10 +83,10 @@ def genbgimexpt(exptdir, movbase, picklebase, bgext, nframes, ftype):
     pickledir = os.path.join(exptdir, picklebase)
     
     bg = genbgim(imdir, nframes, ftype)
-    savebg(bg, bgext, exptdir, pickledir)
+    savebg(bg, bgfile, exptdir, pickledir)
     
 
-def genbgmovies(fdir, movbase, picklebase, bgext, nframes, fntype, overwrite):
+def genbgmovies(fdir, movbase, picklebase, bgfile, nframes, fntype, overwrite):
     
     '''Generates and saves background image for multiple experiments in fdir 
     (see wingdet/README.txt).
@@ -102,13 +102,13 @@ def genbgmovies(fdir, movbase, picklebase, bgext, nframes, fntype, overwrite):
     
     dirs = cmn.listsortfs(fdir)
     for exptdir in dirs:
-        bgfile = os.path.join(exptdir, 'background.{0}'.format(bgext))
+        bgfile = os.path.join(exptdir, bgfile)
         cmn.check(bgfile, overwrite)
         print(os.path.basename(exptdir))
         movdir = os.path.join(exptdir, movbase)
         os.chdir(movdir)
         try:
-            genbgimexpt(exptdir, movbase, picklebase, bgext, nframes, fntype)
+            genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, fntype)
         except AssertionError:
             print('Movie length > nframes')
             continue

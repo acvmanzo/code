@@ -6,9 +6,7 @@
 
 from partimlib import *
 
-BGFILE = 'background.tif'
-PICKLEBASE = 'pickled'
-TEXTBASE = 'text'
+BGFILE = BGBASE+BGEXT
 
 print('1-overwrite? yes or no')
 OVERWRITE = sys.argv[1] # Overwrite? 'yes' or 'no'
