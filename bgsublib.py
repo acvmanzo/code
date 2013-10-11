@@ -66,119 +66,50 @@ def savebg(bg, bgext, bgdir, pickledir):
         pickle.dump(bg, h)
 
 
-def genbgimexpt(exptdir, bgext, nframes, ftype):
+def genbgimexpt(exptdir, movbase, picklebase, bgext, nframes, ftype):
     '''Generates and saves background image for a single experiment. 
     Input:
     exptdir = expts/exptxx/ directory
+    movbase = name of exptxx/movie directory
+    picklebase = name of exptxx/pickle directory
+    bgext = extension of background image ('tif' or 'jpeg')
     nframes = # frames used to generate the background image; these are spread 
     evenly throughout the image sequence
-    fntype = 'median, 'average'; method for combining nframes.
+    fntype = 'median, 'average'; method for combining nframes
     Output:
     '''
     
-    imdir = os.path.join(exptdir, MOVBASE)
-    pickledir = os.path.join(exptdir, PICKLEBASE)
+    imdir = os.path.join(exptdir, movbase)
+    pickledir = os.path.join(exptdir, picklebase)
     
     bg = genbgim(imdir, nframes, ftype)
     savebg(bg, bgext, exptdir, pickledir)
     
 
-def subbgim(bg, subext, submoviedir, imdir='.'):
-    '''Subtracts background from each file in an image sequence.
-    bg = numpy array of background image
-    subext = extension of subtracted movie images
-    imdir = directory containing the sequence of image files; default is 
-    current directory
-    submoviedir = directory to deposit the background-subtracted image files
-    '''
+def genbgmovies(fdir, movbase, picklebase, bgext, nframes, fntype, overwrite):
     
-    imdir = os.path.abspath(imdir)
-    files = sorted(os.listdir(imdir))
-    cmn.makenewdir(submoviedir)
-    
-    # Loads each image, subtracts the background then saves new image into 
-    # submovie folder.
-    for x in np.arange(0, len(files), 1):
-        outbase = 'sub{0}.{1}'.format(files[int(x)], subext)
-        outfile = os.path.join(submoviedir, outbase)
-        c = np.array(Image.open(files[int(x)])).astype(float)
-        print('c', np.shape(c))
-        subarr = c-bg
-        subim = Image.fromarray(np.uint8(np.absolute(subarr)))
-        subim.save(outfile)
-
-
-def subbgmovie(imdir, bgext, subext, bgdir, pickledir, submovdir, nframes, 
-fntype, overwrite='no'):
-    '''Generates background image from nframes of movie and saves in bgdir. 
-    Subtracts background from each file in movie image sequence.
+    '''Generates and saves background image for multiple experiments in fdir 
+    (see wingdet/README.txt).
     Input:
-    imdir = directory containing the sequence of image files
-    bgdir = directory in which to save background image
-    pickledir = directory in which to save pickled background image
-    submoviedir = directory to deposit the background-subtracted image files
+    fdir = extpts/ directory
+    movbase = name of exptxx/movie directory
+    picklebase = name of exptxx/pickle directory
     nframes = # frames used to generate the background image; these are spread 
     evenly throughout the image sequence
     fntype = 'median, 'average'; method for combining nframes
-    '''
-    
-    files = glob.glob('background*')
-    if len(files)>0 and overwrite == 'no':
-        sys.exit('Background image already generated.')
-
-    os.chdir(imdir)
-    bg = genbgim(imdir, nframes, fntype)
-    savebg(bg, bgext, bgdir, pickledir)
-    subbgim(bg, subext, submovdir, imdir)
-    
-    
-def subbgmovies(fdir, submovbase, movbase, picklebase, bgext, subext, nframes, fntype, 
-boverwrite):
-    '''Start in folder containing movie folders; see wingdet/README.txt.
-    For each movie, generates background image and subtracts background from 
-    each image.
-    '''
-    dirs = cmn.listsortfs(fdir)
-    for exptdir in dirs: 
-        print(os.path.basename(exptdir))
-        movdir = os.path.join(exptdir, movbase)
-        submovdir = os.path.join(exptdir, submovbase)
-        pickledir = os.path.join(exptdir, picklebase)
-        
-        if os.path.exists(submovdir) and boverwrite == 'no':
-            print('Images are already background-subtracted')
-            continue
-
-        os.chdir(movdir)
-        try:
-            subbgmovie(imdir=movdir, bgext=bgext, subext=subext, 
-            bgdir=exptdir, pickledir=pickledir, submovdir=submovdir, 
-            nframes=nframes, fntype=fntype, overwrite=boverwrite)
-        except AssertionError:
-            print('AssertionError')
-            continue
-
-def genbgmovies(fdir, movbase, bgext, nframes, fntype, overwrite):
-    
-    '''Start in folder containing movie folders; see wingdet/README.txt.
-    For each movie, generates background image.
-    
-    
+    overwrite = 'yes' or 'no'; overwrite background image and bgarray
     '''
     
     dirs = cmn.listsortfs(fdir)
     for exptdir in dirs:
-        bgfile = os.path.join(extpdir, 'background.{0}'.format(bgext))
-        cmn.check(bgfile, ovewrite)
+        bgfile = os.path.join(exptdir, 'background.{0}'.format(bgext))
+        cmn.check(bgfile, overwrite)
         print(os.path.basename(exptdir))
         movdir = os.path.join(exptdir, movbase)
-        
         os.chdir(movdir)
         try:
-            subbgmovie(imdir=movdir, bgext=bgext, subext=subext, 
-            bgdir=exptdir, pickledir=pickledir, submovdir=submovdir, 
-            nframes=nframes, fntype=fntype, overwrite=boverwrite)
+            genbgimexpt(exptdir, movbase, picklebase, bgext, nframes, fntype)
         except AssertionError:
-            print('AssertionError')
+            print('Movie length > nframes')
             continue
 
