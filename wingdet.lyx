@@ -1,0 +1,1613 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section
+9/26/2013 - Testing Ctrax and JAABA
+\end_layout
+
+\begin_layout Subsection
+Purpose
+\end_layout
+
+\begin_layout Standard
+\align left
+Scoring videos is tedious.
+ I am finally going to try some stuff to see if I can automate any part
+ of it.
+ First, I will crop a video so that it only shows one well and then I will
+ feed it to ctrax/jaaba.
+\end_layout
+
+\begin_layout Subsection
+Location of files
+\end_layout
+
+\begin_layout Itemize
+\align left
+Files are in behavior_automate>Ctrax>2013-0926_test3
+\end_layout
+
+\begin_layout Itemize
+\align left
+Example videos: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Video 1: cs_20130613_ag_A_l_1.MTS; well 3
+\end_layout
+
+\begin_layout Itemize
+\align left
+Video 2: cs_20130613_ag_A_l_2.MTS; well 4 (charge is very obvious and not
+ dependent on the wing phenotype)
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+File conversion and crop
+\end_layout
+
+\begin_layout Itemize
+Get coordinates for video cropping by positioning a rectangle (http://www.incenp.o
+rg/notes/2012/video-cropping.html): - mplayer -vf rectangle -input conf=crop
+ input.avi
+\end_layout
+
+\begin_layout Itemize
+\align left
+Video 1
+\end_layout
+
+\begin_layout LyX-Code
+\align left
+ffmpeg -ss 360 -t 60 -i "cs_20130613_ag_A_l_1.MTS" -pix_fmt gray -vf yadif,crop=3
+00:290:1000:80 -vcodec rawvideo -y -an "20130926ag.avi"
+\end_layout
+
+\begin_layout Itemize
+\align left
+Video 2
+\end_layout
+
+\begin_layout LyX-Code
+\align left
+ffmpeg -ss 120 -t 60 -i "cs_20130613_ag_A_l_2.MTS" -pix_fmt gray -vf yadif,crop=3
+00:290:1330:90 -vcodec rawvideo -y -an "20130926ag2.avi"
+\end_layout
+
+\begin_layout Subsection
+Ctrax
+\end_layout
+
+\begin_layout Subsubsection
+Installation
+\end_layout
+
+\begin_layout Itemize
+\align left
+Had some trouble installing ctrax.
+ A package for Ubuntu 12.04 exists (download from Sourceforge (
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://sourceforge.net/projects/ctrax/files/Ctrax%20in%20Linux/
+\end_layout
+
+\end_inset
+
+) or add Andrew Straw’s repository (
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://ctrax.sourceforge.net/install.html#ubuntu-package
+\end_layout
+
+\end_inset
+
+).
+ However, some of the dependencies were missing and I had to do some weird
+ hack to install them (
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://syatsin.blogspot.com/2012/01/installing-ctrax-on-ubuntu-1104-natty.html
+\end_layout
+
+\end_inset
+
+); also saved into the References folder.
+ Fake packages are in ~/software/Ctrax-0.3.16/fakes.
+ It worked; also installed from source but some problems.
+\end_layout
+
+\begin_layout Itemize
+\align left
+Also need to install the Matlab toolboxes (http://ctrax.sourceforge.net/).
+ I just downloaded them into the software/Matlab/toolboxes folder.
+ Added these folders to the Matlab path.
+\end_layout
+
+\begin_layout Subsubsection
+Performance 
+\end_layout
+
+\begin_layout Itemize
+gave it the cropped file and it performed pretty well; settings that deviate
+ from the default ones are in the screenshot: 2013-0926_test3/Screenshot
+ from 2013-09-26 12:17:34.png; saved the annotation file, matlab file, and
+ csv file in the ‘test2’ folder.
+\end_layout
+
+\begin_layout Subsection
+Matlab
+\end_layout
+
+\begin_layout Subsubsection
+Installation
+\end_layout
+
+\begin_layout Itemize
+We now have a volume license for matlab.
+ It is in the greenspanlab.ucsd.edu server, in the ‘software’ folder.
+ Username/password are in the email from Bob Buffington sent June 12, 2013.
+ - Followed instructions in ‘install_guide.pdf’ - Made a symbolic link in
+ the /usr/local/bin directory pointing to /usr/local/MATLAB/R2013a/bin/matlab
+\end_layout
+
+\begin_layout Subsection
+JAABA 
+\end_layout
+
+\begin_layout Subsubsection
+Installation
+\end_layout
+
+\begin_layout Standard
+Cloned the git repository into /home/andrea/software: https://github.com/kristinb
+ranson/JAABA - Added software/JAABA to the MATLAB path - Run JAABA in Matlab.
+\end_layout
+
+\begin_layout Subsubsection
+Preparing data for use in JAABA
+\end_layout
+
+\begin_layout Itemize
+While running Ctrax, write as a .sbfmf file.
+ 
+\end_layout
+
+\begin_layout Itemize
+After running Ctrax, export as annotation file, new avi file, and mat file.
+ 
+\end_layout
+
+\begin_layout Itemize
+Start Matlab.
+ 
+\end_layout
+
+\begin_layout Itemize
+Run load_tracks function from the BehavioralMicroarray Matlab toolbox as
+ follows: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+[trx, matname, succeeded] = load_tracks
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Save trx variable into a mat file: save(‘trx.mat’, ‘trx’)
+\end_layout
+
+\begin_layout Itemize
+Run PrepareJaabaData in Matlab environment.
+ 
+\end_layout
+
+\begin_layout Itemize
+Input data type = Ctrax 
+\end_layout
+
+\begin_layout Itemize
+Guesstimated the stuff on the bottom (arena size, etc.)
+\end_layout
+
+\begin_layout Subsubsection
+Using JAABA
+\end_layout
+
+\begin_layout Itemize
+\align left
+Run StartJAABA from the Matlab environment.
+\end_layout
+
+\begin_layout Itemize
+\align left
+Tried to train the classifier but ran into some difficulty.
+\end_layout
+
+\begin_layout Section
+9/27/2013 - Further testing of JAABA
+\end_layout
+
+\begin_layout Standard
+\align left
+Went back to revisit the JAABA issue.
+ It turns out that some of the perframe features in the perframe folder
+ has data associated with it (ex., du features, phi).
+ Then went back and looked at the trx.mat file created by load_tracks and
+ found that it is missing the arena information (position, size) which is
+ probably why JAABA could not calculate some of the perframe features.
+ So, I decided to go back and do the whole shebang with the second video
+ I was playing with yesterday, and so I started to run the fixerrors gui.
+ And it turns out there are a ton of errors, blargh.
+ So I am re-running Ctrax with different parameters.
+ So, it doesn’t seem that robust and frankly this was only with a 60 second
+ video so doing it for longer may not be feasible.
+ (see Ctrax>20130926ag_vid2>run5 to run9) 
+\end_layout
+
+\begin_layout Standard
+\align left
+Harrumph, I have tried tweaking several parameters but Ctrax is still crap.
+ 
+\end_layout
+
+\begin_layout Standard
+\align left
+Blarghdiblargh.
+ Ok, so finally in /home/andrea/Documents/lab/behavior_automate/Ctrax/2013-0926_
+test3/20130926ag_vid2/run8 I was able to get some tracking that was reasonably
+ ok.
+ Ran the fixerrors script in Matlab and fixed errors as well as I could.
+ Often just interpolated tracks when the flies were bouncing around.
+ Ok, then used load_tracks to save the file into trx.
+ mat Next, I used PrepareJAABAdata to put everything into the right format.
+ Used ‘overwrite arena’ to overwrite the nonexistent arena info in the trx.mat
+ file.
+ Used StartJAABA.
+ Note that you have to select a fly first before labeling frames.
+ Appears to be some weird errors, argh.
+\end_layout
+
+\begin_layout Standard
+\align left
+I think these videos aren’t good for JAABA.
+ Too much fly bouncing and such.
+\end_layout
+
+\begin_layout Section
+9/28/2013 - 10/3/2013 - Making a wing threat detector in python
+\end_layout
+
+\begin_layout Subsection
+Purpose
+\end_layout
+
+\begin_layout Standard
+Tried my hand at making a wing extension/ wing threat detector.
+\end_layout
+
+\begin_layout Subsection
+Code
+\end_layout
+
+\begin_layout Itemize
+\align left
+/home/andrea/Documents/lab/code/behavior/piltest.py - Subtracts background
+ from a movie.
+ Starts from an image sequence generated by imagej.
+\end_layout
+
+\begin_layout Itemize
+\align left
+/home/andrea/Documents/lab/code/piltest2.py - Module with functions for wing
+ detection.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+/home/andrea/Documents/lab/code/t.py - File for executing wing detection
+ code.
+\end_layout
+
+\begin_layout Subsection
+General idea
+\end_layout
+
+\begin_layout Itemize
+\align left
+Convert MTS file to avi using code like above.
+\end_layout
+
+\begin_layout Itemize
+\align left
+Convert avi file to sequence of images using ImageJ or ffmpeg (ffmpeg code:
+ ffmpeg -i 20130926ag2.avi -f image2 m-%05d.tif) 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Subtract background (median of many images) from each image in the sequence
+ - piltest.py 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Flies are brighter in the subtracted image.
+ For each image, apply a threshhold to pick out fly bodies.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Label each connected component and apply binary closing to remove any holes
+ (piltest2.py>findflies()) 
+\end_layout
+
+\begin_layout Itemize
+\align left
+For each connected component, find the two axes of maximal variation using
+ SVD; these will define the axes of an ellipse fit to the fly.
+ Use the transformation matrix calculated using SVD to rotate the flies
+ to the same approximate orientations (in the images, the flies are shown
+ pointing either up or down; the transformation matrix does not distinguish
+ head and abdomen) (piltest2.py>orientflies()) 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Thresshold the oriented fly so that only the wings are visible (findwings()).
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Define 8 ROIs around the fly: center_a: directly anterior center_p: directly
+ posterior side_al, side_ar: anterior left medial, anterior right medial
+ side_pl, side_pl: posterior left medial, posterior right medial med_l,
+ med_r: lateral ROI bisected by mediolateral axis
+\end_layout
+
+\begin_layout Itemize
+\align left
+In practice, I define these ROIs using “fly coordinates” where x is along
+ the AP axis, with anterior being positive; y is along the mediolateral
+ axis, with left lateral being positive.
+ These coordinates are then transformed into the original image axes.
+ Each ROI is defined by the two opposite corners of the ROI, and selection
+ of the rows and columns for image analysis is defined in a separate function.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Measure the mean intensity in each ROI.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Add the mean intensities of the left and right sides of the side_a, side_p,
+ and med ROIs.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+From these ROIs, determine: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Fly Orientation: faces forward if center_p > center_a 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Wings extended: extended if side_p > center_p 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Wings hyperextended (like during a charge): hyperextension if med > center_p
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+In practice, I plot the max values of side_p - center_p and med - center_p
+ per frame to follow wing extension.
+ I also apply a moving average to this trace to smooth out noise for easier
+ visualization.
+ The graphs are used to pick out frames where wing threat might be occuring.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Refinement of certain parameters are necessary
+\end_layout
+
+\begin_layout Itemize
+# frames used for background subtraction 
+\end_layout
+
+\begin_layout Itemize
+threshold for fly bodies 
+\end_layout
+
+\begin_layout Itemize
+threshold for wings 
+\end_layout
+
+\begin_layout Itemize
+scaling of ROI parameters to fly length 
+\end_layout
+
+\begin_layout Itemize
+scaling of oriented image size to fly length 
+\end_layout
+
+\begin_layout Itemize
+final parameter for wing threat detection
+\end_layout
+
+\begin_layout Subsection
+Things tried that have not worked out well: 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Tried picking out wing extension by detecting the # connected components
+ (1 for closed wings and 2 for extended wings) → too noisy; sometimes wings
+ from other fly are in the image.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Tried determining the orientation by seeing how the center of mass shifts
+ in a thresholded image including the wings and excluding the wings.
+ Again, rather noisy because of the presence of other fly’s wings.
+\end_layout
+
+\begin_layout Subsection
+File locations
+\end_layout
+
+\begin_layout Itemize
+\align left
+Work: behavior_automate>wingdet 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Home (laptop): ~/Documents>auto
+\end_layout
+
+\begin_layout Section
+10/3/2013 - Testing wing detector
+\end_layout
+
+\begin_layout Subsection
+Videos
+\end_layout
+
+\begin_layout Itemize
+\align left
+Video 1: cs_20130613_ag_A_l_2.MTS well 4
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Convert to avi (from start of video to end of scoring period; 200 sec; changed
+ to a square image): 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -t 200 -i "cs_20130613_ag_A_l_2.MTS" -pix_fmt gray -vf yadif,crop=300:300:
+1330:90 -vcodec rawvideo -y -an "20131003_1.avi"
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Convert to image files:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131003_1.avi -f image2 mov%05d.tif
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+\align left
+Video 2: cs_20130613_ag_A_l_1.MTS well 2
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i "cs_20130613_ag_A_l_1.MTS" -pix_fmt gray -vf yadif,crop=300:300:680:80
+ -vcodec rawvideo -y -an "20131003_2.avi"
+\end_layout
+
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131003_2.avi -f image2 mov%05d.tif
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\end_deeper
+\begin_layout Section
+10/04/2013 - Refining wing detector
+\end_layout
+
+\begin_layout Standard
+\align left
+So far, the code seems to work, but I need to clean up the code and do more
+ rigorous testing.
+\end_layout
+
+\begin_layout Itemize
+\align left
+Things to do: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Figure out a way to divide the image into each well for the analysis.
+ Threshold background image and pick out COMs and then define a square based
+ on that? 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Clean up code so that it is nice and pretty.
+ Do some testing on a subset of frames.
+\end_layout
+
+\end_deeper
+\begin_layout Section
+10/7/2013 - Initial image processing 
+\end_layout
+
+\begin_layout Subsection
+Videos
+\end_layout
+
+\begin_layout Itemize
+Files are in /home/andrea/Documents/lab/behavior_automate/wingdet/2013-1007_well
+split
+\end_layout
+
+\begin_layout Itemize
+\align left
+Video 1: cs_20130613_ag_A_l_2.MTS
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Convert to avi (from start of video to end of scoring period; 200 sec; no
+ cropping): 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -t 200 -i "cs_20130613_ag_A_l_2.MTS" -pix_fmt gray -vf yadif -vcodec
+ rawvideo -y -an "20131007_1.avi" 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Convert to image files: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131007_1.avi -f image2 mov%05d.tif 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Generate the background: piltest.py; selected 200 frames throughout the movie
+ and took the median of these frames as the background.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Video 2: cs_20130619_ag_A_l_1.MTS
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Convert to avi (from start of video to end of scoring period; 5 sec; no
+ cropping): 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -t 5 -i "cs_20130619_ag_A_l_2.MTS" -pix_fmt gray -vf yadif -vcodec
+ rawvideo -y -an "20131007_2.avi" 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Convert to image files: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131007_3.avi -f image2 mov%05d.tif 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Generate the background: piltest.py; selected 50 frames throughout the movie
+ and took the median of these frames as the background.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Video 3: cs_20130625_ag_A_r_1.MTS
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Convert to avi (from start of video to end of scoring period; 5 sec; no
+ cropping): 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -t 5 -i "cs_20130625_ag_A_r_2.MTS" -pix_fmt gray -vf yadif -vcodec
+ rawvideo -y -an "20131007_3.avi" 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Convert to image files: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131007_3.avi -f image2 mov%05d.tif 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Generate the background: piltest.py; selected 50 frames throughout the movie
+ and took the median of these frames as the background.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Video 4: cs_20130627_ag_A_r_1.MTS
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Convert to avi (from start of video to end of scoring period; 5 sec; no
+ cropping): 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -t 5 -i "cs_20130627_ag_A_r_2.MTS" -pix_fmt gray -vf yadif -vcodec
+ rawvideo -y -an "20131007_4.avi" 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Convert to image files: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131007_4.avi -f image2 mov%05d.tif 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Generate the background: piltest.py; selected 50 frames throughout the movie
+ and took the median of these frames as the background.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Video 5: cg30116_20130416_ag_A_l_1.MTS
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Convert to avi (from start of video to end of scoring period; 5 sec; no
+ cropping): 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -t 5 -i "cg30116_20130416_ag_A_l_1.MTS" -pix_fmt gray -vf yadif -vcodec
+ rawvideo -y -an "20131007_5.avi" 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Convert to image files: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131007_5.avi -f image2 mov%05d.tif 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Generate the background: piltest.py; selected 50 frames throughout the movie
+ and took the median of these frames as the background.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Video 6: cg30116_20130411_ag_C_l_1.MTS
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\align left
+Convert to avi (from start of video to end of scoring period; 5 sec; no
+ cropping): 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -t 5 -i "cg30116_20130411_ag_C_l_1.MTS" -pix_fmt gray -vf yadif -vcodec
+ rawvideo -y -an "20131007_6.avi" 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Convert to image files: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+\align left
+ffmpeg -i 20131007_6.avi -f image2 mov%05d.tif 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+\align left
+Generate the background: File piltest.py; selected 50 frames throughout the
+ movie and took the median of these frames as the background.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Determining how to partition the original image 
+\end_layout
+
+\begin_layout Standard
+\align left
+For these tests, I used the background image to see how best to automatically
+ subdivide the image into wells.
+ Results are in 20131007_movie1.
+\end_layout
+
+\begin_layout Standard
+\align left
+Things I’ve tried: 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Thresholding the image so that only the wells are visible, finding connected
+ components and then finding the centers of mass for each component.
+ Impossible because the wells are the same intensity as the background in
+ the rest of the chamber.
+ I can threshold the image so that the edges of the wells are mostly visible,
+ but these images are noisy and produce too many connected components.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Plotting the intensity in rows and columns bisecting the wells.
+ I can get peaks that correspond to the well edges, but there’s no way to
+ know if I’m hitting the centers of each well on every image.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Specifying coordinates for the top left well and generating wells from that.
+ This seems to work pretty well.
+ I just have to manually determine the spacing between the wells in between
+ rows and columns.
+ 
+\end_layout
+
+\begin_layout Itemize
+\align left
+Hans’s idea: specify coordinates for each well in a chamber coordinate system
+ and then transform into image coordinates to get the new coordinates.
+\end_layout
+
+\begin_layout Standard
+\align left
+Tried #3 above with several other files (movies 2-6).
+ Seems to work well, even if the chamber is rotated and the wells are offset;
+ just need to adjust the necessary parameters.
+\end_layout
+
+\begin_layout Subsection
+Code for organizing and converting MTS files.
+ 
+\end_layout
+
+\begin_layout Standard
+\align left
+Code is in the files mtslib.py and sortmts.py (executable)
+\end_layout
+
+\begin_layout Section
+10/8/2013 - Cleaning up code
+\end_layout
+
+\begin_layout Subsection
+Code edits
+\end_layout
+
+\begin_layout Itemize
+Added more functions to mtslib.py.
+\end_layout
+
+\begin_layout Itemize
+Added following libraries:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+bgsublib.py - Code for background subtraction.
+\end_layout
+
+\begin_layout Itemize
+partimlib.py - Code for dividing the movie up to wells.
+\end_layout
+
+\begin_layout Itemize
+winglib.py - Code for wing extension detection.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Also added the executable scripts bgsubbatch.py, autopart.py, manpart.py
+\end_layout
+
+\begin_layout Itemize
+Still in the process of refining things.
+\end_layout
+
+\begin_layout Subsection
+Other ideas
+\end_layout
+
+\begin_layout Itemize
+Fly tracking: Use COM.
+ From frame to frame, choose the closest COM as the same fly.
+ Probably won't work that well.
+\end_layout
+
+\begin_layout Itemize
+Disambiguating flies when they are touching: Use watershed segmentation.
+\end_layout
+
+\begin_layout Itemize
+Display movie: Find a stretch of video where one fly exhibits wing threat/charge.
+ Make many plots showing the video frame on the left, the oriented/wing-
+ thresholded fly in the middle, and the intensity difference plot on the
+ right up until that frame.
+ Combine the images into a movie.
+\end_layout
+
+\begin_layout Section
+10/9/2013 - More cleanup
+\end_layout
+
+\begin_layout Subsection
+MTS video conversion
+\end_layout
+
+\begin_layout Standard
+\align left
+Videos taken in PF30 are fine.
+ They do not even really need to be deinterlaced.
+ Videos taken in PF24 pose a problem because of the way they are recorded.
+ (See this page: 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://eugenia.queru.com/2007/07/13/canon-hv20-24p-pulldown/
+\end_layout
+
+\end_inset
+
+.)
+\end_layout
+
+\begin_layout Subsection
+Re-encoding PF24 videos 
+\end_layout
+
+\begin_layout Standard
+The above page suggests the following code to use:
+\end_layout
+
+\begin_layout LyX-Code
+mencoder INPUT_FILENAME.m2t -mc 0 -noskip -fps 30000/1001 -delay -0.222 -oac
+ pcm -vf pullup,softskip,harddup,scale=1920:1080 -ofps 24000/1001 -ovc lavc
+ -lavcopts vcodec=huffyuv:pred=2:format=422P:vstrict=-1 -o OUTPUT_FILENAME.avi
+\end_layout
+
+\begin_layout Standard
+The code can be parsed as follows:
+\end_layout
+
+\begin_layout Description
+−mc <seconds/frame> maximum A-V sync correction per frame (in seconds) −mc
+ 0 should always be combined with −noskip for mencoder, otherwise it will
+ almost certainly cause A-V desync.
+\end_layout
+
+\begin_layout Description
+−noskip Do not skip frames.
+\end_layout
+
+\begin_layout Description
+−fps <float value> Override video framerate.
+ Useful if the original value is wrong or missing.
+\end_layout
+
+\begin_layout Description
+−delay <sec> audio delay in seconds (positive or negative float value) Negative
+ values delay the audio, and positive values delay the video.
+ Note that this is the exact opposite of the −audio−delay MEncoder option.
+ NOTE: When used with MEncoder, this is not guaranteed to work correctly
+ with −ovc copy; use −audio−delay instead.
+\end_layout
+
+\begin_layout Description
+−oac <codec name> Encode with the given audio codec (no default set).
+ NOTE: Use −oac help to get a list of available audio codecs.
+\end_layout
+
+\begin_layout Description
+−vf <filter1[=parameter1:parameter2:...],filter2,...> Setup a chain of video filters.
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+pullup[=jl:jr:jt:jb:sb:mp] Third-generation pulldown reversal (inverse telecine)
+ filter, capable of handling mixed hard-telecine, 24000/1001 fps progressive,
+ and 30000/1001 fps progressive content.
+ The pullup filter is designed to be much more robust than detc or ivtc,
+ by taking advantage of future context in making its decisions.
+ Like ivtc, pullup is stateless in the sense that it does not lock onto
+ a pattern to follow, but it instead looks forward to the following fields
+ in order to identify matches and rebuild progressive frames.
+ It is still under development, but believed to be quite accurate.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\series bold
+jl, jr, jt, and jb
+\series default
+ - These options set the amount of "junk" to ignore at the left, right,
+ top, and bottom of the image, respectively.
+ Left/right are in units of 8 pixels, while top/bottom are in units of 2
+ lines.
+ The default is 8 pixels on each side.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+sb (strict breaks)
+\series default
+ - Setting this option to 1 will reduce the chances of pullup generating
+ an occasional mismatched frame, but it may also cause an excessive number
+ of frames to be dropped during high motion sequences.
+ Conversely, setting it to −1 will make pullup match fields more easily.
+ This may help processing of video where there is slight blurring between
+ the fields, but may also cause there to be interlaced frames in the output.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+mp (metric plane) -
+\series default
+ This option may be set to 1 or 2 to use a chroma plane instead of the luma
+ plane for doing pullup’s computations.
+ This may improve accuracy on very clean source material, but more likely
+ will decrease accuracy, especially if there is chroma noise (rainbow effect)
+ or any grayscale video.
+ The main purpose of setting mp to a chroma plane is to reduce CPU load
+ and make pullup usable in realtime on slow machines.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+NOTE: Always follow pullup with the softskip filter when encoding to ensure
+ that pullup is able to see each frame.
+ 
+\series default
+Failure to do so will lead to incorrect output and will usually crash, due
+ to design limitations in the codec/filter layer.
+\end_layout
+
+\end_deeper
+\begin_layout Description
+softskip Only useful with MEncoder.
+ Softskip moves the frame skipping (dropping) step of encoding from before
+ the filter chain to some point during the filter chain.
+ This allows filters which need to see all frames (inverse telecine, temporal
+ denoising, etc.) to function properly.
+ Should be placed after the filters which need to see all frames and before
+ any subsequent filters that are CPU-intensive.
+\end_layout
+
+\begin_layout Description
+harddup Only useful with MEncoder.
+ If harddup is used when encoding, it will force duplicate frames to be
+ encoded in the output.
+ This uses slightly more space, but is necessary for output to MPEG files
+ or if you plan to demux and remux the video stream after encoding.
+ Should be placed at or near the end of the filter chain unless you have
+ a good reason to do otherwise.
+\end_layout
+
+\begin_layout Description
+scale[=w:h[:interlaced[:chr_drop[:par[:par2[:presize[:noup[:arnd]]]]]]]]
+ Scales the image with the software scaler (slow) and performs a YUV<−>RGB
+ colorspace conversion (also see −sws).
+ <w>,<h> scaled width/height (default: original width/height) NOTE: If −zoom
+ is used, and underlying filters (including libvo) are incapable of scaling,
+ it defaults to d_width/d_height! 0: scaled d_width/d_height −1: original
+ width/height −2: Calculate w/h using the other dimension and the prescaled
+ aspect ratio.
+ −3: Calculate w/h using the other dimension and the original aspect ratio.
+ −(n+8): Like −n above, but rounding the dimension to the closest multiple
+ of 16.
+ <interlaced> Toggle interlaced scaling.
+ 0: off (default) 1: on <chr_drop> chroma skipping 0: Use all available
+ input lines for chroma.
+ 1: Use only every 2.
+ input line for chroma.
+ 2: Use only every 4.
+ input line for chroma.
+ 3: Use only every 8.
+ input line for chroma.
+ <par>[:<par2>] (also see −sws) Set some scaling parameters depending on
+ the type of scaler selected with −sws.
+ −sws 2 (bicubic): B (blurring) and C (ringing) 0.00:0.60 default 0.00:0.75
+ VirtualDub’s "precise bicubic" 0.00:0.50 Catmull-Rom spline 0.33:0.33 Mitchell-Netr
+avali spline 1.00:0.00 cubic B-spline −sws 7 (gaussian): sharpness (0 (soft)
+ − 100 (sharp)) −sws 9 (lanczos): filter length (1−10) <presize> Scale to
+ preset sizes.
+ qntsc: 352x240 (NTSC quarter screen) qpal: 352x288 (PAL quarter screen)
+ ntsc: 720x480 (standard NTSC) pal: 720x576 (standard PAL) sntsc: 640x480
+ (square pixel NTSC) spal: 768x576 (square pixel PAL) <noup> Disallow upscaling
+ past the original dimensions.
+ 0: Allow upscaling (default).
+ 1: Disallow upscaling if one dimension exceeds its original value.
+ 2: Disallow upscaling if both dimensions exceed their original values.
+ <arnd> Accurate rounding for the vertical scaler, which may be faster or
+ slower than the default rounding.
+ 0: Disable accurate rounding (default).
+ 1: Enable accurate rounding.
+\end_layout
+
+\end_deeper
+\begin_layout Description
+−ofps <fps> Specify a frames per second (fps) value for the output file,
+ which can be different from that of the source material.
+ Must be set for variable fps (ASF, some MOV) and progressive (30000/1001
+ fps telecined MPEG) files.
+\end_layout
+
+\begin_layout Description
+−ovc <codec name> Encode with the given video codec (no default set).
+ NOTE: Use −ovc help to get a list of available video codecs.
+ 
+\end_layout
+
+\begin_layout Quote
+−ovc copy : no encoding, just streamcopy 
+\end_layout
+
+\begin_layout Quote
+−ovc raw: Encode to an arbitrary uncompressed format (use ’−vf format’ to
+ select).
+\end_layout
+
+\begin_layout Quote
+−ovc lavc: Encode with a libavcodec codec.
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+lavc (−lavcopts) Many libavcodec (lavc for short) options are tersely documented.
+ Read the source for full details.
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+Testing
+\end_layout
+
+\begin_layout Itemize
+Video for testing: cg30116_20130411_ag_A_l_1.MTS
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+encoded in PF24, 1920x1080
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Conversion code tried:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+ff_yadif.avi:
+\end_layout
+
+\begin_layout LyX-Code
+ffmpeg -t 4 -i cg30116_20130411_ag_A_l_1.MTS -vf yadif -vcodec rawvideo -y
+ -an "ff_yadif.avi" 
+\end_layout
+
+\begin_layout Itemize
+men_removepullup.avi:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -mc 0 -noskip -fps
+ 30000/1001 -nosound -vf pullup,softskip,harddup -ofps 24000/1001 -ovc raw
+ -o men_removepulldown.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_2.avi (removed harddup option):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -mc 0 -noskip -fps
+ 30000/1001 -nosound -vf pullup,softskip -ofps 24000/1001 -ovc raw -o men_pu_2.av
+i
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_3.avi (removed harddup and changed fps to 60000/1001):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+ mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -mc 0 -noskip -fps
+ 60000/1001 -nosound -vf pullup,softskip -ofps 24000/1001 -ovc raw -o men_pu_3.av
+i
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_4.avi (removed harddup and removed input fps):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+ mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -mc 0 -noskip -nosound
+ -vf pullup,softskip -ofps 24000/1001 -ovc raw -o men_pu_4.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_5.avi (removed harddup, removed input fps and removed -mc):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+ mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -noskip -nosound
+ -vf pullup,softskip -ofps 24000/1001 -ovc raw -o men_pu_5.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+men_pu_o.avi (no processing)
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -endpos 4 -noskip -nosound -ovc
+ raw -o men_pu_o.avi 
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Results:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+ff-yadif.avi had several repeated frames
+\end_layout
+
+\begin_layout Itemize
+men_removepullup.avi did not have any repeated frames
+\end_layout
+
+\begin_layout Itemize
+men_pu_2.avi to 5.avi: all seemed fine
+\end_layout
+
+\begin_layout Itemize
+men_pu_o.avi: severe interlacing artifacts
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Conclusions:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+For PF24 videos, use 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder cg30116_20130411_ag_A_l_1.MTS -ss 0 -noskip -nosound -vf pullup,softskip
+,hue=0:0 -ofps 24000/1001 -ovc raw -o men_pu_5.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+yadif=[mode[:field_dominance]] Yet another deinterlacing filter <mode> 0:
+ Output 1 frame for each frame.
+ 1: Output 1 frame for each field.
+ 2: Like 0 but skips spatial interlacing check.
+ 3: Like 1 but skips spatial interlacing check.
+ <field_dominance> (DEPRECATED) Operates like tfields.
+ NOTE: This option will possibly be removed in a future version.
+ Use −field−dominance instead.
+\end_layout
+
+\begin_layout Itemize
+gray grayscale only encoding (faster)
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Re-encoding PF30 videos 
+\end_layout
+
+\begin_layout Itemize
+PF30.avi - seems ok
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -ss 0 -endpos 4 cs_20130619_ag_A_l_1.MTS -noskip -nosound -vf pullup,sof
+tskip,hue=0:0 -ofps 30000/1001 -ovc raw -o PF30.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+PF30o.avi - no processing --> frames duplicated
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -endpos 4 cs_20130619_ag_A_l_1.MTS -nosound -ovc raw -o PF30o.avi
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+PF30o-ofps.avi no processing, forced output fps --> frames still duplicated
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -endpos 4 cs_20130619_ag_A_l_1.MTS -nosound -ovc raw -ofps 30000/1001-o
+ PF30o-ofps.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+PF30o-ff.avi - ffmplayer no processing --> plays very fast, but frames not
+ duplicated
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+ffmpeg -t 4 -i cs_20130619_ag_A_l_1.MTS -an -vcodec rawvideo "PF30o-ff.avi"
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+5PF30-ffyadif.avi - ffmplayer with yadif
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+ffmpeg -t 4 -i cs_20130619_ag_A_l_1.MTS -vf yadif -vcodec rawvideo -an "5PF30-ffy
+adif.avi"
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+6PF30-col - like PF30 but with color
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -endpos 4 cs_20130619_ag_A_l_1.MTS  -noskip -nosound -vf pullup,softskip
+ -ovc raw -o 6PF30-col.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+7PF30-col-ofps: give output fps
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -endpos 4 cs_20130619_ag_A_l_1.MTS  -noskip -nosound -vf pullup,softskip
+ -ofps 30000/1001 -ovc raw -o 7PF30-col-ofps.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+8PF30-bw-ofps: black and white
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -ss 0 -endpos 4 cs_20130619_ag_A_l_1.MTS  -noskip -nosound -vf pullup,so
+ftskip,hue=0:0 -ofps 30000/1001 -ovc raw -o 8PF30-bw-ofps.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+9PF30-yadif: mplayer with yadif
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -ss 0 -endpos 4 cs_20130619_ag_PF30_A_l_1.MTS  -noskip -nosound
+ -vf yadif,hue=0:0 -ovc raw -o 9PF30-yadif.avi
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+Results
+\end_layout
+
+\begin_layout Itemize
+6PF30 looks better than 5PF30 (in close up, can see that some of the fly
+ leg detail is lost)
+\end_layout
+
+\begin_layout Itemize
+6PF30 looks the same as PF30o-ff.avi
+\end_layout
+
+\begin_layout Itemize
+8PF30 looks better than 9PF30 (in close up, can see stripes going through
+ fly legs)
+\end_layout
+
+\begin_layout Itemize
+ffmpeg and mencoder have different ways of encoding duration; mencoder starts
+ 3 frames later than ffmpeg
+\end_layout
+
+\begin_layout Itemize
+mencoder with yadif leads to tifs that are one frame ahead than mencoder
+ with pullup
+\end_layout
+
+\begin_layout Subsection
+Identifying PF24 vs PF30
+\end_layout
+
+\begin_layout Standard
+No easy way to tell from the MTS file.
+ Both show up as 60000/1001 fps.
+ I thought movie duration could make a difference but that is due differences
+ in the pixel area of the images in each movie.
+ I guess I will put it in the name of the MTS file.
+\end_layout
+
+\begin_layout Subsection
+Conclusions
+\end_layout
+
+\begin_layout Itemize
+Specify PF24 or PF30 in the MTS filename.
+\end_layout
+
+\begin_layout Itemize
+I think that for consistency, I should use mencoder for both kinds of videos.
+ 
+\end_layout
+
+\begin_layout Itemize
+For PF24: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -ss 0 -endpos 4 cg30116_20130411_ag_A_l_1.MTS -noskip -nosound -vf
+ pullup,softskip,hue=0:0 -ofps 24000/1001 -ovc raw -o men_pu_5.avi
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+For PF30:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mencoder -ss 0 -endpos 4 cs_20130619_ag_A_l_1.MTS -noskip -nosound -vf pullup,sof
+tskip,hue=0:0 -ofps 30000/1001 -ovc raw -o 8PF30-bw-ofps.avi
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+
+\end_layout
+
+\end_body
+\end_document

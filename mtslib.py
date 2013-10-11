@@ -75,27 +75,9 @@ def b_sortmtsexpt():
     cmn.batchfiles(sortmtsexpt, exptsdir, ftype='MTS')
 
 
-def getfps(avifile):
-    #pattern = re.compile(r'Input')
-    mplayerOutput = subprocess.Popen(("mplayer", "-v", avifile), \
-    stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-    print(mplayerOutput)
-    #fps = pattern.search(mplayerOutput).group(0)
-    #return(fps) 
-
-def getfpsffmpeg(avifile):
-    pattern = re.compile(r'Duration: \d*(:\d*)*')
-    print(pattern)
-    mplayerOutput = subprocess.Popen(("ffplay", "-t", "1", "-an", "-vn", avifile), \
-    stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
-    print(mplayerOutput)
-    fps = pattern.search(mplayerOutput).group(0)
-    print(fps)
-    #return(fps) 
-    
 def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     """Converts a single MTS file to another file format such as 'avi' using 
-    ffmpeg.
+    mplayer. Can convert files recorded in telecine (e.g., PF24).
     Inputs:
     mtsfile - name of MTS file
     outfile - name of output file, including extension
@@ -105,20 +87,29 @@ def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     overwrite = 'yes' or 'no'; 'yes' to ovewrite avifile
     """
     check(outfile, overwrite)
-    if specdur == 'no':
-        cmd = 'ffmpeg -ss {0} -i "{1}" -pix_fmt gray \
-        -vf yadif -vcodec rawvideo -y -an -v quiet "{2}"'.format(start, mtsfile, 
-        outfile)
+    mtsinfo = mtsfile.split('_')
+      
+    if mtsinfo.count('PF24') == 1:
+        fps = 24
+    if mtsinfo.count('PF30') == 1:
+        fps = 30
+    
     if specdur == 'yes':
-        cmd = 'ffmpeg -ss {0} -t {1} -i "{2}" -pix_fmt gray \
-        -vf yadif -vcodec rawvideo -y -an -v quiet "{3}"'.format(start, dur, mtsfile, 
-        outfile)
+        cmd = 'mencoder -ss {0} -endpos {1} {2} -noskip -nosound \
+        -vf pullup,softskip,hue=0:0 -ofps {3}/1001 -ovc raw -o \
+        {4}'.format(start, dur, mtsfile, fps*1000, outfile)
+    
+    if specdur == 'no':
+        cmd = 'mencoder {0} -noskip -nosound -vf pullup,softskip,hue=0:0 \
+        -ofps {1}/1001 -ovc raw -o {2}'.format(mtsfile, fps*1000, outfile)
+
     exitcode = os.system(cmd)
     if exitcode != 0:
         sys.exit(0)
 
-
-def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur='yes'):
+   
+def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur='yes', 
+overwrite='no'):
     """Converts two MTS files in the same experiment folder into avi files. 
     Often for one experiment, there will be two MTS files because of the SD 
     card limit (2 GB). The two MTS files can be converted with different 
@@ -141,9 +132,9 @@ def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur='yes'):
         suff = root[-1]
         outfile = root + '.avi'
         if suff == '1':
-            mtstoavi(n, outfile, start1, dur1, specdur)
+            mtstoavi(n, outfile, start1, dur1, specdur, overwrite)
         if suff == '2':
-            mtstoavi(n, outfile, start2, dur2, specdur)
+            mtstoavi(n, outfile, start2, dur2, specdur, overwrite)
 
 
 def movietoim(infile, ext, num=5):
@@ -290,7 +281,7 @@ removeavi='no', moviebase = 'movie'):
     fdir = os.path.abspath(fdir)
     check(moviebase, overwrite)
     os.chdir(fdir)
-    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur)
+    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur, overwrite)
     b_avitoim(fdir, ext, overwrite)
     os.chdir(fdir)
     concatims(fdir, moviebase)
