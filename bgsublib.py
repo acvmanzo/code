@@ -7,6 +7,7 @@ import sys
 import pickle
 import numpy as np
 import cmn.cmn as cmn
+import glob
 
 
 def genbgim(imdir, nframes, fntype):
@@ -31,7 +32,7 @@ def genbgim(imdir, nframes, fntype):
     assert moviel > nframes
     
     for x in np.linspace(1, moviel-1, nframes):
-        print(x)
+        #print(x)
         c = np.array(Image.open(files[int(x)])).astype(float)
         bg = np.dstack((bg, c))
 
@@ -43,10 +44,11 @@ def genbgim(imdir, nframes, fntype):
     return(bgnew)
 
 
-def savebg(bg, bgdir, pickledir):
-    '''Saves background image as a tif file and as a pickled array.
+def savebg(bg, bgext, bgdir, pickledir):
+    '''Saves background image as an image file and as a pickled array.
     Input:
     bg = array of background image
+    bgext = extension of background image (e.g., 'tif' or 'jpeg')
     bgdir = directory in which to save background image
     pickledir = directory in which to save the pickled background array
     '''
@@ -57,16 +59,17 @@ def savebg(bg, bgdir, pickledir):
     
     # Save background image.
     bgnew = Image.fromarray(np.uint8(np.absolute(bg)))
-    bgnew.save(os.path.join(bgdir, 'background.tif'))
+    bgnew.save(os.path.join(bgdir, 'background.{0}'.format(bgext)))
     
     # Save background image as a pickle file.
     with open(os.path.join(pickledir, 'bgarray'), 'w') as h:
         pickle.dump(bg, h)
+    
 
-
-def subbgim(bg, submoviedir, imdir='.'):
+def subbgim(bg, subext, submoviedir, imdir='.'):
     '''Subtracts background from each file in an image sequence.
     bg = numpy array of background image
+    subext = extension of subtracted movie images
     imdir = directory containing the sequence of image files; default is 
     current directory
     submoviedir = directory to deposit the background-subtracted image files
@@ -79,14 +82,16 @@ def subbgim(bg, submoviedir, imdir='.'):
     # Loads each image, subtracts the background then saves new image into 
     # submovie folder.
     for x in np.arange(0, len(files), 1):
-        outfile = os.path.join(submoviedir, 'sub'+files[int(x)])
+        outbase = 'sub{0}.{1}'.format(files[int(x)], subext)
+        outfile = os.path.join(submoviedir, outbase)
         c = np.array(Image.open(files[int(x)])).astype(float)
+        print('c', np.shape(c))
         subarr = c-bg
         subim = Image.fromarray(np.uint8(np.absolute(subarr)))
         subim.save(outfile)
 
 
-def subbgmovie(imdir, bgdir, pickledir, submovdir, nframes, 
+def subbgmovie(imdir, bgext, subext, bgdir, pickledir, submovdir, nframes, 
 fntype, overwrite='no'):
     '''Generates background image from nframes of movie and saves in bgdir. 
     Subtracts background from each file in movie image sequence.
@@ -100,17 +105,17 @@ fntype, overwrite='no'):
     fntype = 'median, 'average'; method for combining nframes
     '''
     
-    bgfile = os.path.join(bgdir, 'background.tif')
-    if os.path.exists(bgfile) and overwrite == 'no':
+    files = glob.glob('background*')
+    if len(files)>0 and overwrite == 'no':
         sys.exit('Background image already generated.')
 
     os.chdir(imdir)
     bg = genbgim(imdir, nframes, fntype)
-    savebg(bg, bgdir, pickledir)
-    subbgim(bg, submovdir, imdir)
+    savebg(bg, bgext, bgdir, pickledir)
+    subbgim(bg, subext, submovdir, imdir)
     
     
-def subbgmovies(fdir, submovbase, movbase, picklebase, nframes, fntype, 
+def subbgmovies(fdir, submovbase, movbase, picklebase, bgext, subext, nframes, fntype, 
 boverwrite):
     '''Start in folder containing movie folders; see wingdet/README.txt.
     For each movie, generates background image and subtracts background from 
@@ -129,8 +134,9 @@ boverwrite):
 
         os.chdir(movdir)
         try:
-            subbgmovie(imdir=movdir, bgdir=exptdir, pickledir=pickledir, 
-            submovdir=submovdir, nframes=nframes, fntype=fntype, overwrite='yes')
+            subbgmovie(imdir=movdir, bgext=bgext, subext=subext, 
+            bgdir=exptdir, pickledir=pickledir, submovdir=submovdir, 
+            nframes=nframes, fntype=fntype, overwrite=boverwrite)
         except AssertionError:
             print('AssertionError')
             continue

@@ -657,6 +657,11 @@ Clean up code so that it is nice and pretty.
  Do some testing on a subset of frames.
 \end_layout
 
+\begin_layout Itemize
+Instead of hard-coding positions for ROIs, scale them to something (like
+ image or fly size).
+\end_layout
+
 \end_deeper
 \begin_layout Section
 10/7/2013 - Initial image processing 
@@ -1034,11 +1039,11 @@ Display movie: Find a stretch of video where one fly exhibits wing threat/charge
 \end_layout
 
 \begin_layout Section
-10/9/2013 - More cleanup
+10/10/2013 - MTS conversion
 \end_layout
 
 \begin_layout Subsection
-MTS video conversion
+Issues
 \end_layout
 
 \begin_layout Standard
@@ -1057,11 +1062,25 @@ http://eugenia.queru.com/2007/07/13/canon-hv20-24p-pulldown/
 
 \end_inset
 
-.)
+.) It's still not 100% clear at this point, but it is possible that PF24
+ and PF30 record progressive frames and then re-encode the data as a 60i
+ stream, rather than recording in 60i.
+ I asked Canon about this issue and they seemed to indicate that the camera
+ records in 60i, but Hans is skeptical that the person answering the question
+ was knowledgeable.
+ Several websites (like the one above) suggests that the camera is filming
+ in true progressive, and also, when I use reverse telecine to re-encode
+ the files, the interlacing artifacts disappear, so it is possible that
+ the movies are recorded in true progressive.
+ I initially switched to PF30 rather than 60i on the chance that this could
+ be true and also because I reasoned that if the camera were recording in
+ 60i, the Canon deinterlacing algorithm would be better tailored to their
+ interlacing algorithm rather than some general deinterlacing algorithm
+ like yadif.
 \end_layout
 
 \begin_layout Standard
-The above page suggests the following code to use:
+The above page suggests the following code to use for reverse telecine:
 \end_layout
 
 \begin_layout LyX-Code
@@ -1729,5 +1748,21 @@ ffmpeg -i men_pu_7.avi -f image2 -qscale 3 mov%05d_q3.jpeg
 \end_layout
 
 \end_deeper
+\begin_layout Section
+10/11/2013 - Code cleanup
+\end_layout
+
+\begin_layout Subsection
+bgsub.py
+\end_layout
+
+\begin_layout Standard
+I think I should rewrite the code in the following way.
+ I will generate a background image and array as before.
+ I will do the image subtraction, etc.
+ all at once so that I won't have to deal with constantly saving them and
+ reopening them as jpegs.
+\end_layout
+
 \end_body
 \end_document

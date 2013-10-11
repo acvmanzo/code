@@ -221,7 +221,7 @@ def mtstoim(mtsfile, start, dur, specdur, ext, overwrite):
     avitoim(avifile, ext, overwrite)
 
 
-def concatims(fdir, ext, moviebase):
+def concatims(fdir, ext, movbase):
     """Combines images from two image sequences into one image sequence; 
     renames the image files of the second image sequence to be continuous 
     with the first image sequence and places them in a single folder. Often 
@@ -229,14 +229,14 @@ def concatims(fdir, ext, moviebase):
     limit (2 GB). Run from the expts/exptxx/ directory.
     Inputs:
     fdir = expts/exptxx folder containing folders with image sequences
-    moviebase = name of new folder with renamed image sequence
+    movbase = name of new folder with renamed image sequence
     """
     
     exptdir = os.path.abspath(fdir)
     movies = [os.path.splitext(x)[0] for x in 
     sorted(glob.glob('*{0}'.format('MTS')))]
-    newmoviedir = moviebase
-    cmn.makenewdir(moviebase)
+    newmoviedir = movbase
+    cmn.makenewdir(movbase)
 
     imlist1 = sorted(os.listdir(movies[0]))
     imlist2 = sorted(os.listdir(movies[1]))
@@ -257,14 +257,14 @@ def concatims(fdir, ext, moviebase):
     for i, imfile in enumerate(imlist2):
         newname = newnums[i]
         os.rename(imfile, os.path.join(exptdir, movies[0], newname))
-    # Renames first image folder as moviebase and removes second image folder.
+    # Renames first image folder as movbase and removes second image folder.
     os.chdir(exptdir)
-    os.renames(movies[0], moviebase)
+    os.renames(movies[0], movbase)
     os.rmdir(movies[1])
 
 
 def exptmtstoimconcat(fdir, start1, dur1, start2, dur2, specdur, ext, overwrite, 
-removeavi, moviebase, num=5, qscale=3):
+removeavi, movbase, num=5, qscale=3):
     """Converts MTS files in the expts/exptxx/ directories to a series of images 
     using ffmpeg. Renames image files so they are contiguous and places them 
     in the folder 'movie'.
@@ -278,12 +278,12 @@ removeavi, moviebase, num=5, qscale=3):
     removeavi - 'yes' or 'no'; specifies whether to delete avifiles
     """
     fdir = os.path.abspath(fdir)
-    check(moviebase, overwrite)
+    check(movbase, overwrite)
     os.chdir(fdir)
     exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur, overwrite)
     b_avitoim(fdir, ext, overwrite, num, qscale)
     os.chdir(fdir)
-    concatims(fdir, ext, moviebase)
+    concatims(fdir, ext, movbase)
     
     if removeavi == 'yes':
         avifiles = glob.glob('*{0}'.format('avi'))

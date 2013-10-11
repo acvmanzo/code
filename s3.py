@@ -5,6 +5,7 @@ import glob
 import numpy as np
 from mtslib import *
 import subprocess
+import bgsublib as bl
 
 wingdetdir = os.path.join(cmn.defpardir('.'), 'wingdet', 'expts')
 
@@ -113,10 +114,17 @@ dur = 4
 specdur = 'yes'
 ext = 'jpeg'
 overwrite = 'yes'
-moviebase = 'movie'
-removeavi = 'no'
+removeavi = 'yes'
 qscale = 3
 num = 5
+submovbase = 'submovie'
+movbase = 'movie'
+picklebase = 'pickled'
+bgext = 'jpeg'
+subext = 'jpeg'
+nframes = 10
+fntype = 'median'
+boverwrite = 'yes'
 #mtstoim(mtsfile, start, dur, specdur, ext='tif', overwrite='yes')
 #exptmtstoavi('.', start, dur, start, dur, specdur)
 #mtstoim(mtsfile, start, dur, specdur, ext, overwrite)
@@ -130,6 +138,9 @@ num = 5
 
 #mtstoavi(mtsfile, avifile, start, dur, specdur='yes', overwrite='yes')
 #exptmtstoavi(fdir, start, dur, start, dur, specdur='yes', overwrite=overwrite)
-exptmtstoimconcat(fdir, start, dur, start, dur, specdur, ext, overwrite, \
-removeavi, moviebase, num=5, qscale=3)
+#exptmtstoimconcat(fdir, start, dur, start, dur, specdur, ext, overwrite, \
+#removeavi, moviebase, num=5, qscale=3)
 #avitoim(avifile, ext, overwrite, num, qscale)
+
+#bl.subbgmovies(fdir, submovbase, movbase, picklebase, bgext, subext, nframes, fntype, 
+#boverwrite)
