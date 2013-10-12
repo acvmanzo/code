@@ -17,11 +17,10 @@ def loadwells(wcfile):
         wells = pickle.load(f)
     return(wells)
 
-def array2image(a):
+def scaledarr(a):
+    a=np.abs(a.min()-a)
     a=a/a.max()*255.0 #optional.
-    im=Image.Image()
-    im=Image.fromarray(np.uint8(a))
-    return im
+    return a
 
 
 def bgsub(bgpickle, imfile):
@@ -42,8 +41,9 @@ def bgsub(bgpickle, imfile):
         im = np.array(Image.open(imfile)).astype(float)
     
     c = im-bg
-    return(c)
-
+    carr = np.uint8(scaledarr(np.absolute(c)))
+    #carr = scaledarr(c)
+    return(carr)
 
 
 def findflies(subimarray, imname, well, t, savepickle='no'):
@@ -87,8 +87,21 @@ def findflies(subimarray, imname, well, t, savepickle='no'):
     # Select the connected components.
     label_im, nb_labels = ndimage.label(close_im)
     sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
+    lsizes = []
+    for snum, size in enumerate(sizes):
+        sd = (size, snum+1)
+        lsizes.append(sd)
+    print(lsizes)
+    slsizes = sorted(lsizes, reverse=True)
+    print(slsizes[:2])
+    uselab = []
+    for size, snum in slsizes[:2]:
+        uselab.append(snum)
+    print(uselab)
+    
     coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
     np.arange(1, nb_labels+1)))
+    
     
     d = {'imname': imname, 'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
     'label_im':label_im, 'nb_labels':nb_labels, 'coms':coms, 
@@ -125,6 +138,7 @@ def plotfindflies(d, wellnum, figdir):
     bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
     plt.plot(bin_centers, hist, lw=2)
     plt.ylim(0, 400)
+    plt.xlim(0, 300)
     plt.title('Intensity histogram')
 
     # Plot the threshholded image.
@@ -151,8 +165,9 @@ def plotfindflies(d, wellnum, figdir):
     
     cmn.makenewdir(figdir)
     exptname = os.path.splitext(d['imname'])[0]
-    plt.savefig(os.path.join(figdir, '{0}_{1}_thfig.png'.format(exptname, 
-    wellnum)))
+    welldir = os.path.join(figdir, 'well{0:02d}'.format(wellnum))
+    cmn.makenewdir(welldir)
+    plt.savefig('{0}/{1}_thfig.png'.format(welldir, exptname))
     plt.close()
 
 

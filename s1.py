@@ -55,25 +55,35 @@ def find_roi_ints(img, comp_labels, outwingdir):
 #pl.defaultwells(BGFILE, pickledir, textdir, overwrite='yes')
 #print(cmn.myround(129.923, base=1))
 
-bgpickle = os.path.join(PICKLEBASE, 'bgarray')
-imname = 'mov00009.tif'
-subimname = 'submov00009.tif'
-imfile = os.path.join(MOVBASE, imname)
-subimfile = os.path.join(SUBMOVBASE, subimname)
+bgpickle = os.path.join(PICKLEDIR, 'bgarray')
+#imname = 'mov00009.tif'
+#subimname = 'submov00009.tif'
+#imfile = os.path.join(MOVBASE, imname)
+#subimfile = os.path.join(SUBMOVBASE, subimname)
 bgfile = BGFILE
 
-#subim = wl.bgsub(bgpickle, imfile)
+
 wellcoordpickle = os.path.join(PICKLEBASE, WELLCOORDSN)
 wells = wl.loadwells(wellcoordpickle)
-for n, well in enumerate(wells):
-    print('Loop', n)
-    try:
-        subim = np.array(Image.open(subimfile)).astype(float)
-        d = wl.findflies(subim, imname, well, BODY_TH, 'no')
-        wl.plotfindflies(d, n, THFIGDIR)
-        plt.close()
-    except IndexError:
-        print('No connected components')
-        continue
+
+
+IMNUMS = [str(x) for x in [10]]
+IMAGES = ['mov000'+n+'.tif' for n in IMNUMS]
+
+
+for imfile in IMAGES:
+    os.chdir(MOVDIR)
+    print(imfile)
+    subim = wl.bgsub(bgpickle, imfile)
+    for n, well in enumerate(wells):
+        #print('Loop', n)
+        try:
+            #subim = np.array(Image.open(subimfile)).astype(float)
+            d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
+            wl.plotfindflies(d, n, THFIGDIR)
+            plt.close()
+        except IndexError:
+            print('No connected components')
+            continue
 
 #pl.showwellpos(wells, 'background.tif')
