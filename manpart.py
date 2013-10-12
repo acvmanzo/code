@@ -28,4 +28,4 @@ from wingsettings import *
 
 PTEXTFILE = os.path.join(TEXTBASE, WELLPARAMSN+'.txt')
 
-findwellstext(BGFILE, PTEXTFILE, PICKLEBASE)
+findwellstext(BGFILE, PTEXTFILE, WELLPARAMSN, WELLCOORDSN, PICKLEBASE)
