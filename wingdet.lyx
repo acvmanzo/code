@@ -1748,6 +1748,11 @@ ffmpeg -i men_pu_7.avi -f image2 -qscale 3 mov%05d_q3.jpeg
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+NOTE: Also tried doing grayscale conversion at ffmpeg step rather than mencoder
+ step by feeding the '-pix_fmt gray' option to ffmpeg, but did not work
+\end_layout
+
 \begin_layout Section
 10/11/2013 - Code cleanup
 \end_layout

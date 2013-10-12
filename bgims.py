@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 
-# This executable file subtracts the background from multiple movies. Start in 
+# This executable file generates the background image for multiple movies. Start in 
 #folder containing movie folders; see wingdet/README for the requisite file 
 #structure.
 
-from bglib import *
+from libs.bglib import *
 from wingsettings import *
 
 NFRAMES = sys.argv[1] # Number of frames for generating background image

@@ -3,12 +3,12 @@
 # This executable file sorts MTS files from the 'newmovies/' folder into 
 # individual folders in the directory WINGDETDIR.
 
-from mtslib import *
+from libs.mtslib import *
 from wingsettings import *
 
 #Run from aggression/newmovies/ folder.
 
-print('1-start (s), 2-dur (s) 3-specdur; yes or no; 4-overwrite; yes or no')
+print('1-image type; 2-overwrite; yes or no')
 
 EXT = sys.argv[1] # Extension of images
 OVERWRITE = sys.argv[2] # Overwrite image sequence? 'yes' or 'no'
@@ -22,6 +22,6 @@ print("Converting movies")
 #num=5, qscale=3)
 
 ##For testing code
-convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=1, specdur2='yes', 
-start2=0, dur2=1, ext=EXT, overwrite=OVERWRITE, removeavi='no', movbase=MOVBASE, 
+convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=60, specdur2='yes', 
+start2=0, dur2=60, ext=EXT, overwrite=OVERWRITE, removeavi='no', movbase=MOVBASE, 
 num=5, qscale=3)

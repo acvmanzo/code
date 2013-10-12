@@ -31,7 +31,7 @@ I. Directory structure:
             genotype_date_PFxx_B_side/
                 background.tif
                 genotype_date_PFxx_B_side_1.MTS
-                genotype_date_PFxx_B_side_2.MTS
+                genotype_date_PFxx_B_side_o2.MTS
                 
                 movie/
                     mov_00001.jpg

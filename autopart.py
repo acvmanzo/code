@@ -4,7 +4,7 @@
 # well using the default ROI parameters. This should be run 
 
 
-from partimlib import *
+from libs.partimlib import *
 from wingsettings import *
 
 print('1-overwrite? yes or no')

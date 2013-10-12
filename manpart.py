@@ -23,7 +23,7 @@
 
 # DO NOT EDIT THE 'wellparams.txt' FILE IN GEANY; IT WILL BREAK THE TABS
 
-from partimlib import *
+from libs.partimlib import *
 from wingsettings import *
 
 PTEXTFILE = os.path.join(TEXTBASE, WELLPARAMSN+'.txt')

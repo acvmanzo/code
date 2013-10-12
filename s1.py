@@ -3,31 +3,25 @@
 # This executable file determines the locations of an ROI surrounding each 
 # well using the default ROI parameters. This should be run 
 
-import cmn.cmn as cmn
-import partimlib as pl
-import mtslib as ml
-import bgsublib as bl
-import winglib as wl
-
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+import cmn.cmn as cmn
+import libs.partimlib as pl
+import libs.mtslib as ml
+import libs.bglib as bl
+import libs.winglib as wl
+import numpy as np
+from wingsettings import *
+from PIL import Image
 
-BGFILE = 'background.tif'
-PICKLEBASE = 'pickled'
-TEXTBASE = 'text'
-#exptdir = os.path.abspath('.')
-exptdir = cmn.defpardir('.')
-submovdir = os.path.join(exptdir, 'submovie')
-movdir = os.path.join(exptdir, 'movie')
-pickledir = os.path.join(exptdir, 'pickled')
-textdir = os.path.join(exptdir, 'text')
-plotdir = os.path.join(exptdir, 'plots')
-thfigdir = os.path.join(plotdir, '0_thfigs')
-wellcoordpickle = os.path.join(pickledir, 'wellcoords')
-
-BODY_TH = 120
-imfile = os.path.join(submovdir, 'submov00010.tif')
+EXPTDIR = os.path.abspath('.')
+MOVDIR = os.path.join(EXPTDIR, MOVBASE)
+SUBMOVDIR = os.path.join(EXPTDIR, SUBMOVBASE)
+PICKLEDIR = os.path.join(EXPTDIR, PICKLEBASE)
+TEXTDIR = os.path.join(EXPTDIR, TEXTBASE)
+PLOTDIR = os.path.join(EXPTDIR, PLOTBASE)
+THFIGDIR = os.path.join(EXPTDIR, THFIGBASE)
 
 def find_roi_ints(img, comp_labels, outwingdir):
     
@@ -61,9 +55,25 @@ def find_roi_ints(img, comp_labels, outwingdir):
 #pl.defaultwells(BGFILE, pickledir, textdir, overwrite='yes')
 #print(cmn.myround(129.923, base=1))
 
+bgpickle = os.path.join(PICKLEBASE, 'bgarray')
+imname = 'mov00009.tif'
+subimname = 'submov00009.tif'
+imfile = os.path.join(MOVBASE, imname)
+subimfile = os.path.join(SUBMOVBASE, subimname)
+bgfile = BGFILE
 
-
+#subim = wl.bgsub(bgpickle, imfile)
+wellcoordpickle = os.path.join(PICKLEBASE, WELLCOORDSN)
 wells = wl.loadwells(wellcoordpickle)
-d = wl.findflies(imfile, wells[0], BODY_TH, 
-'no')
-wl.plotfindflies(d, thfigdir)
+for n, well in enumerate(wells):
+    print('Loop', n)
+    try:
+        subim = np.array(Image.open(subimfile)).astype(float)
+        d = wl.findflies(subim, imname, well, BODY_TH, 'no')
+        wl.plotfindflies(d, n, THFIGDIR)
+        plt.close()
+    except IndexError:
+        print('No connected components')
+        continue
+
+#pl.showwellpos(wells, 'background.tif')
