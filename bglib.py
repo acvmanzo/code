@@ -101,6 +101,7 @@ def genbgmovies(fdir, movbase, picklebase, bgfile, nframes, fntype, overwrite):
     
     dirs = cmn.listsortfs(fdir)
     for exptdir in dirs:
+        print(os.path.basename(exptdir))
         os.chdir(exptdir)
         fullbgfile = os.path.join(exptdir, bgfile)
         cmn.check(bgfile, overwrite)
