@@ -81,7 +81,6 @@ def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype):
     
     imdir = os.path.join(exptdir, movbase)
     pickledir = os.path.join(exptdir, picklebase)
-    
     bg = genbgim(imdir, nframes, ftype)
     savebg(bg, bgfile, exptdir, pickledir)
     
@@ -102,14 +101,15 @@ def genbgmovies(fdir, movbase, picklebase, bgfile, nframes, fntype, overwrite):
     
     dirs = cmn.listsortfs(fdir)
     for exptdir in dirs:
-        bgfile = os.path.join(exptdir, bgfile)
+        os.chdir(exptdir)
+        fullbgfile = os.path.join(exptdir, bgfile)
         cmn.check(bgfile, overwrite)
-        print(os.path.basename(exptdir))
         movdir = os.path.join(exptdir, movbase)
         os.chdir(movdir)
         try:
-            genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, fntype)
+            genbgimexpt(exptdir, movbase, picklebase, fullbgfile, nframes, fntype)
         except AssertionError:
             print('Movie length > nframes')
             continue
+
 

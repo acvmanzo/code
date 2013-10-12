@@ -5,8 +5,7 @@
 
 
 from partimlib import *
-
-BGFILE = BGBASE+BGEXT
+from wingsettings import *
 
 print('1-overwrite? yes or no')
 OVERWRITE = sys.argv[1] # Overwrite? 'yes' or 'no'
