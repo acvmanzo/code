@@ -16,8 +16,8 @@ WELLPARAMSN = 'wellparams'
 WELLCOORDSN = 'wellcoords'
 
 
-BODY_TH = 150
-#BODY_TH = 120
+#BODY_TH = 150
+BODY_TH = 120
 WING_TH_LOW = 20
 WING_TH_HIGH = 90
 

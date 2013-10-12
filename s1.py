@@ -67,18 +67,19 @@ wellcoordpickle = os.path.join(PICKLEBASE, WELLCOORDSN)
 wells = wl.loadwells(wellcoordpickle)
 
 
-IMNUMS = [str(x) for x in [10]]
+IMNUMS = [str(x) for x in np.arange(10, 11, 1)]
 IMAGES = ['mov000'+n+'.tif' for n in IMNUMS]
 
 
 for imfile in IMAGES:
+    #subimfile = os.path.join('submovie', 'sub'+imfile)
+    #subim = np.array(Image.open(subimfile)).astype(float)
     os.chdir(MOVDIR)
     print(imfile)
     subim = wl.bgsub(bgpickle, imfile)
     for n, well in enumerate(wells):
         #print('Loop', n)
         try:
-            #subim = np.array(Image.open(subimfile)).astype(float)
             d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
             wl.plotfindflies(d, n, THFIGDIR)
             plt.close()

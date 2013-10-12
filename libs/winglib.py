@@ -17,9 +17,15 @@ def loadwells(wcfile):
         wells = pickle.load(f)
     return(wells)
 
-def scaledarr(a):
-    a=np.abs(a.min()-a)
-    a=a/a.max()*255.0 #optional.
+def arr2im(a):
+    a = np.absolute(a)
+    #a = -a
+    #print(a.min())
+    #a=a-a.min() # Adds the minimum value to each entry in the array.
+    #print(a.min())
+    #a=a/a.max()*255.0 # Scales each array so that the max value is 255.
+    #print(a.min())
+    #a = np.uint8(a)
     return a
 
 
@@ -40,10 +46,31 @@ def bgsub(bgpickle, imfile):
     except IndexError:
         im = np.array(Image.open(imfile)).astype(float)
     
-    c = im-bg
-    carr = np.uint8(scaledarr(np.absolute(c)))
-    #carr = scaledarr(c)
-    return(carr)
+    subim = im-bg
+    subimarr = arr2im(subim)
+    
+    return(subimarr)
+
+
+#def scaledarr(a):
+     #a=np.abs(a.min()-a)
+     #a=a/a.max()*255.0 #optional.
+
+     #return a
+ 
+ 
+#def bgsub(bgpickle, imfile):
+     #im = np.array(Image.open(imfile)).astype(float)
+     #with open(bgpickle) as f:
+        #bg = pickle.load(f)
+     #c = im-bg
+     #print(c)
+     ##return(c)
+ 
+     #carr = np.uint8(scaledarr(np.absolute(c)))
+     ##carr = scaledarr(c)
+     #return(carr)
+
 
 
 def findflies(subimarray, imname, well, t, savepickle='no'):
@@ -67,6 +94,8 @@ def findflies(subimarray, imname, well, t, savepickle='no'):
     '''
     # Load the image.
     r1, r2, c1, c2 = well
+    nrows = r2-r1
+    ncols = c2-c1
     #subimarray = np.array(array2image(subimarray))
     orig_im = subimarray[r1:r2, c1:c2]
     img = np.copy(orig_im)
@@ -87,25 +116,27 @@ def findflies(subimarray, imname, well, t, savepickle='no'):
     # Select the connected components.
     label_im, nb_labels = ndimage.label(close_im)
     sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
-    lsizes = []
-    for snum, size in enumerate(sizes):
-        sd = (size, snum+1)
-        lsizes.append(sd)
-    print(lsizes)
-    slsizes = sorted(lsizes, reverse=True)
-    print(slsizes[:2])
-    uselab = []
-    for size, snum in slsizes[:2]:
-        uselab.append(snum)
-    print(uselab)
-    
     coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
     np.arange(1, nb_labels+1)))
     
+    # Filter by size of connected component.
+    smsizefil = np.array(sizes) > np.tile(0.0011*(nrows*ncols), nb_labels)
+    usesizes = smsizefil*sizes
+    uselabs = []
+    for snum, size in enumerate(usesizes):
+        if size > 0:
+            uselabs.append(snum+1)
+    print(uselabs)
+    #uselab = []
+    #for size, snum in sorted(lsizes, reverse=True)[:2]:
+        #uselab.append(snum)
+    usecoms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
+    uselabs))
+
     
     d = {'imname': imname, 'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
-    'label_im':label_im, 'nb_labels':nb_labels, 'coms':coms, 
-    'dim':list(np.shape(orig_im))}
+    'label_im':label_im, 'nb_labels':nb_labels, 'uselab':uselabs, 'coms':coms,
+    'usecoms':usecoms, 'dim':list(np.shape(orig_im))}
     
     # Saves output into a picklefile.
     if savepickle == 'yes':
@@ -130,7 +161,7 @@ def plotfindflies(d, wellnum, figdir):
     plt.subplot2grid((2,3), (0,0), colspan=1)
     plt.imshow(Image.fromarray(d['orig_im']), cmap=plt.cm.gray)
     plt.axis('off')
-    plt.title('Original')
+    plt.title('Bb-sub')
 
     # Plot a histogram of the intensities.
     plt.subplot2grid((2,3), (0,1), colspan=2)
@@ -147,14 +178,14 @@ def plotfindflies(d, wellnum, figdir):
     plt.axis('off')
     plt.title('Thresholded')
 
-    # Plots the smoothed image.
-    plt.subplot2grid((2,3), (1,1), colspan=1)
-    plt.imshow(d['close_im'], cmap=plt.cm.gray)
-    plt.axis('off')
-    plt.title('Binary closing')
+    ## Plots the smoothed image.
+    #plt.subplot2grid((2,3), (1,1), colspan=1)
+    #plt.imshow(d['close_im'], cmap=plt.cm.gray)
+    #plt.axis('off')
+    #plt.title('Binary closing')
     
     # Plot the connected components and their centers of mass.
-    plt.subplot2grid((2,3), (1,2), colspan=1)
+    plt.subplot2grid((2,3), (1,1), colspan=1)
     plt.imshow(d['label_im'], cmap=plt.cm.gray)
     
     plt.plot(d['coms'].T[1], d['coms'].T[0], 'ro', mec='r', lw=1, ms=2)
@@ -163,12 +194,26 @@ def plotfindflies(d, wellnum, figdir):
     plt.axis((0, cols, rows, 0))
     plt.title('Comp = {0}'.format(d['nb_labels']))
     
+    # Plot the size-filtered connected components and their centers of mass.
+    plt.subplot2grid((2,3), (1,2), colspan=1)
+    plt.imshow(d['label_im'], cmap=plt.cm.gray)
+    
+    plt.plot(d['usecoms'].T[1], d['usecoms'].T[0], 'ro', mec='r', lw=1, ms=2)
+    #plt.plot([0, 290], [290, 0], 'ys', ms=5)
+    rows, cols = d['dim']
+    plt.axis((0, cols, rows, 0))
+    plt.title('Size-fil comp={0}'.format(len(d['uselab'])))
+    
+    
     cmn.makenewdir(figdir)
     exptname = os.path.splitext(d['imname'])[0]
     welldir = os.path.join(figdir, 'well{0:02d}'.format(wellnum))
     cmn.makenewdir(welldir)
     plt.savefig('{0}/{1}_thfig.png'.format(welldir, exptname))
     plt.close()
+
+
+
 
 
 
