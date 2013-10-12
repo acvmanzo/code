@@ -9,9 +9,10 @@ PIMAGEBASE = 'images'
 TEXTBASE = 'text'
 PLOTBASE = 'plots'
 THFIGBASE = '0_thfigs'
+ROTFIGBASE = '1_rotims'
 
-#BGFILE = 'background.bmp'
-BGFILE = 'background.tif'
+BGFILE = 'background.bmp'
+#BGFILE = 'background.tif'
 WELLPARAMSN = 'wellparams'
 WELLCOORDSN = 'wellcoords'
 

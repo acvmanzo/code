@@ -48,7 +48,7 @@ def bgsub(bgpickle, imfile):
 
 
 
-def findflies(subimarray, imname, well, t, savepickle='no'):
+def findflies(subimarray, imfile, well, t, savepickle='no'):
     '''
     Input:
     subimarray = array of subtracted image
@@ -67,6 +67,8 @@ def findflies(subimarray, imname, well, t, savepickle='no'):
     nb_labels = number of connected components (not including the background)
     coms = centers of mass of connected components
     '''
+    imname = os.path.splitext(imfile)[0]
+    
     # Load the image.
     r1, r2, c1, c2 = well
     nrows = r2-r1
@@ -101,7 +103,6 @@ def findflies(subimarray, imname, well, t, savepickle='no'):
     for snum, size in enumerate(usesizes):
         if size > 0:
             uselabs.append(snum+1)
-    print(uselabs)
     #uselab = []
     #for size, snum in sorted(lsizes, reverse=True)[:2]:
         #uselab.append(snum)
@@ -109,7 +110,8 @@ def findflies(subimarray, imname, well, t, savepickle='no'):
     uselabs))
 
     
-    d = {'imname': imname, 'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
+    d = {'imfile':imfile, 'imname': imname, 'orig_im':orig_im, 'th_im':th_im, 
+    'close_im':close_im, 
     'label_im':label_im, 'nb_labels':nb_labels, 'uselab':uselabs, 'coms':coms,
     'usecoms':usecoms, 'dim':list(np.shape(orig_im))}
     
@@ -121,7 +123,6 @@ def findflies(subimarray, imname, well, t, savepickle='no'):
         dpicklefile = os.path.join(dpickledir, 'findflies')
         with open(dpicklefile, 'w') as f:
             pickle.dump(d, f)
-    
     return(d)
 
 
@@ -136,7 +137,7 @@ def plotfindflies(d, wellnum, figdir):
     plt.subplot2grid((2,3), (0,0), colspan=1)
     plt.imshow(Image.fromarray(d['orig_im']), cmap=plt.cm.gray)
     plt.axis('off')
-    plt.title('Bb-sub')
+    plt.title('BGsub')
 
     # Plot a histogram of the intensities.
     plt.subplot2grid((2,3), (0,1), colspan=2)
@@ -215,6 +216,66 @@ def expt_findplotflies(bgpickle, movbase, wells):
                 continue  
 
 
+def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, rotimshape, 
+imname):
+    '''
+    Rotates image so that each fly (connected component) is positioned 
+    vertically along its AP axis.
+    Input:
+    orig_im = original image
+    label_im = array where connected components are labeled by integers 
+    (from findflies())
+    comp_label = label designating connected components; starts at 1
+    coms = centers of mass of the connected components
+    fly_offset = list of new center coordinates for the oriented image
+    rotimshape = tuple with size of the rotated image
+    imname = image name
+    plot = 'no' (does not plot figure) or 'yes'
+    
+    Output:
+    orient_im = rotated/translated image
+    ''' 
+    
+    # Create an array where each entry is the index.
+    origdim = np.shape(orig_im)
+    posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
+
+    # Find the coordinates of the points comprising each connected component.
+    comppos = posarray[label_im == comp_label]
+    centroid = np.mean(comppos, axis=0)
+
+    # Check that the centers of mass are equal to the mean of the detected 
+    # components.
+    assert np.all(centroid == coms[labellist.index(comp_label)])
+
+    # Mean subtract data.
+    comppos = comppos - centroid
+
+    # Singular value decomposition
+    u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
+    
+    # Plot points in the new axes.
+    #flypoints = [[0, 0], [10, 0], [0,5]]
+    #origpoints = np.dot(flypoints, eigenv) + centroid
+    
+    # Orient image.
+    flyoffset = fly_offset*-1
+    imgoffset = np.dot(flyoffset, 0.5*eigenv)
+    rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
+    centroid + imgoffset, output_shape = rotimshape)
+    
+    return(rotimage)
+
+def plotrotim(orient_im, rotimshape, fly_offset, well, comp_label, imname, outdir):
+    # Plot oriented image.
+    welldir = os.path.join(outdir, 'well{0:02d}'.format(well))
+    cmn.makenewdir(welldir)
+    plt.figure()
+    plt.imshow(orient_im, cmap=plt.cm.gray)
+    plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
+    plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
+    plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
+    comp_label)))
 
 def find_roi_ints(img, comp_labels, outwingdir):
     

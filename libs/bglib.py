@@ -10,38 +10,73 @@ import cmn.cmn as cmn
 import glob
 
 
-def genbgim(imdir, nframes, fntype):
+def genbgim(imdir, nframes, fntype, imext, split=5):
     '''Generates a background image from a sequence of image files.
     Input:
     imdir = directory containing the sequence of image files
     nframes = # frames used to generate the background image; these are spread 
     evenly throughout the image sequence
     fntype = 'median, 'average'; method for combining nframes.
+    imext = extension of image files
+    split = how many lists to split the job into
     Output:
     bgnew = numpy array of background image 
     '''
-    
+    print "Generating background"
     # Load frames for generating background image.
     imdir = os.path.abspath(imdir)
     files = sorted(os.listdir(imdir))
     moviel = len(files)
     nframes = int(nframes)
-    
-    bg = np.array(Image.open(files[0])).astype(float)
-
     assert moviel > nframes
     
-    for x in np.linspace(1, moviel-1, nframes):
-        #print(x)
-        c = np.array(Image.open(files[int(x)])).astype(float)
-        bg = np.dstack((bg, c))
-
-    if fntype == 'median':
-        bgnew = np.median(bg, 2)
-    if fntype == 'average':
-        bgnew = np.average(bg, 2)
+    nummov = np.linspace(1, moviel-1, nframes)
+    jobs = np.array_split(nummov, split)
+    
+    imarr = np.array(Image.open(files[0]))[:,:,0].astype(float)
+    medarrs = np.empty((nframes/split,)+np.shape(imarr))
+    print(np.shape(medarrs))
         
-    return(bgnew)
+    for m, job in enumerate(jobs):
+        #print(job)
+        cont = np.empty((nframes/split,)+np.shape(imarr))
+        for n, x in enumerate(job):
+            #print(n)
+            if imext == 'jpeg':
+                c = np.array(Image.open(files[int(x)]))[:,:,0].astype(float)
+                print('c', np.shape(c))
+            if (imext == 'bmp') or (imext== 'tif'):
+                c = np.array(Image.open(files[int(x)])).astype(float)
+            print(n)
+            cont[n,:,:] = c
+            #print('container shape after dstack', np.shape(cont[:,:,1:]))
+        if fntype == 'median':
+            newc = np.median(cont, 0)
+        if fntype == 'average':
+            newc = np.average(cont, 0)
+        #print('newc', np.shape(newc))
+        medarrs[:,:,m] = newc
+        
+    print('medarrs', np.shape(medarrs))
+    #print(medarrs)
+    #print(np.sort(medarrs, 2))
+    bg = np.median(medarrs, 0)
+    
+    print(np.shape(bg))
+    return(bg)
+        
+    
+            
+    #if imext == 'bmp' or "tif":
+        #bg = np.array(Image.open(files[0])).astype(float)   
+        #for x in np.linspace(1, moviel-1, nframes):
+            #c = np.array(Image.open(files[int(x)])).astype(float)
+            #bg = np.dstack((bg, c))      
+        
+
+    
+        
+    #return(medarrs)
 
 
 def savebg(bg, bgfile, bgdir, pickledir):
@@ -66,7 +101,7 @@ def savebg(bg, bgfile, bgdir, pickledir):
         pickle.dump(bg, h)
 
 
-def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype):
+def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype, imext):
     '''Generates and saves background image for a single experiment. 
     Input:
     exptdir = expts/exptxx/ directory
@@ -81,7 +116,7 @@ def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype):
     
     imdir = os.path.join(exptdir, movbase)
     pickledir = os.path.join(exptdir, picklebase)
-    bg = genbgim(imdir, nframes, ftype)
+    bg = genbgim(imdir, nframes, ftype, imext)
     savebg(bg, bgfile, exptdir, pickledir)
     
 

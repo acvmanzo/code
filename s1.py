@@ -22,6 +22,7 @@ PICKLEDIR = os.path.join(EXPTDIR, PICKLEBASE)
 TEXTDIR = os.path.join(EXPTDIR, TEXTBASE)
 PLOTDIR = os.path.join(EXPTDIR, PLOTBASE)
 THFIGDIR = os.path.join(EXPTDIR, THFIGBASE)
+ROTFIGDIR = os.path.join(EXPTDIR, ROTFIGBASE)
 
 def find_roi_ints(img, comp_labels, outwingdir):
     
@@ -79,12 +80,18 @@ for imfile in IMAGES:
     subim = wl.bgsub(bgpickle, imfile)
     for n, well in enumerate(wells):
         #print('Loop', n)
-        try:
-            d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
-            wl.plotfindflies(d, n, THFIGDIR)
-            plt.close()
-        except IndexError:
-            print('No connected components')
-            continue
+        #try:
+        d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
+        rotimshape = 0.5*np.array(d['dim'])
+        flyoffset = np.array(0.5*rotimshape)
+        rotim = wl.orientflies(d['orig_im'], d['label_im'], d['uselab'][0], 
+        d['uselab'], 
+        d['usecoms'], flyoffset, rotimshape, d['imname'])
+        wl.plotrotim(rotim, rotimshape, flyoffset, n, d['uselab'][0], d['imname'],
+        ROTFIGDIR)
+
+        #except IndexError:
+            #print('No connected components')
+            #continue
 
 #pl.showwellpos(wells, 'background.tif')
