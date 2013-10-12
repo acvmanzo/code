@@ -1765,7 +1765,26 @@ I think I should rewrite the code in the following way.
 \end_layout
 
 \begin_layout Subsection
+Updates
+\end_layout
 
+\begin_layout Standard
+Cleaned up the following code:
+\end_layout
+
+\begin_layout Itemize
+mtslib.py and sortmts.py - Edited so that it can deal with either 1 or 2 MTS
+ files in a folder.
+\end_layout
+
+\begin_layout Itemize
+bglib.py and bgims.py - Renamed from bgsub.py; removed functions for background
+ subtraction (will incorporate into main code).
+\end_layout
+
+\begin_layout Itemize
+partim.py, autopart.py and manpart.py - Edited so it can be used with movies
+ with multiple image resolutions.
 \end_layout
 
 \end_body
