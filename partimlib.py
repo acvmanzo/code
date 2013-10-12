@@ -14,14 +14,17 @@ import genplotlib as gpl
 WELLPARAMSN = 'wellparams'
 WELLCOORDSN = 'wellcoords'
 
+
+    
 class WellParams():
     
     '''Specifies the regions of the image array that contain wells. Think of 
     the image as an array (rows vs. columns) rather than in xy coordinates.
     '''
     
-    def __init__(self, d = {'config':[3, 4], 'r':70, 'c':358, 'rpad':25, 
-    'cpad':22, 'nrows':300, 'ncols':300, 'scaling':1, 'rshift':0, 'cshift':0}):
+    def __init__(self, bgfile, d = {'config':[3, 4], 'r':0.0648, 'c':0.186, 
+    'rpad':0.0231, 'cpad':0.0114, 'nrows':0.278, 'ncols':0.156, 'scaling':1, 'rshift':0, 
+    'cshift':0}):
         '''Input: 
         Dictionary with the following items:
         config = 2-element list: [# wells in vertical direction, # wells in 
@@ -37,19 +40,28 @@ class WellParams():
         cshift = # columns to shift the ROI during each iteration in the vertical 
         direction; used if image is rotated
         scaling = scalar multiple of each value; used if the zoom is altered
-        '''       
+        ''' 
+        
+        bg = np.array(Image.open(bgfile)).astype(float)
+        self.imrows = np.shape(bg)[0]
+        self.imcols = np.shape(bg)[1]
+        d['imsize'] = np.shape(bg)
+        print(self.imrows, self.imcols)
+        
         self.config = d['config']
-        self.r = d['r']
-        self.c = d['c']
-        self.rpad = d['rpad']
-        self.cpad = d['cpad']
-        self.nrows = d['nrows']
-        self.ncols = d['ncols']
+        self.r = d['r'] * self.imrows
+        self.c = d['c'] * self.imcols
+        self.rpad = d['rpad'] * self.imrows
+        self.cpad = d['cpad'] * self.imcols
+        self.ncols = d['ncols'] * self.imcols
+        self.nrows = d['nrows'] * self.imrows
         self.scaling = d['scaling']
-        self.rshift = d['rshift']
-        self.cshift = d['cshift']
-  
-    
+        self.rshift = d['rshift'] * self.imrows
+        self.cshift = d['cshift'] * self.imcols
+        self.imsize = d['imsize']
+        self.d = d
+     
+
     def defwells(self):  
         '''Finds the rounded row and column coordinate for each ROI.'''
         vw, hw = map(int, self.config)
@@ -154,7 +166,7 @@ def defaultwells(bgfile, pickledir, textdir, overwrite):
     if os.path.exists(picklepfile) and overwrite == 'no':
         sys.exit('wellparams file already exists')
     
-    wp = WellParams()
+    wp = WellParams(bgfile)
     wells = wp.defwells()
     checkwells(wells, bgfile)
     
@@ -196,7 +208,7 @@ def findwellstext(bgfile, ptextfile, pickledir):
     '''
     
     d = loadptxt(ptextfile)
-    wp = WellParams(d)
+    wp = WellParams(bgfile, d)
     wells = wp.defwells()
     checkwells(wells, bgfile)
     

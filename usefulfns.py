@@ -181,3 +181,17 @@ boverwrite):
             print('AssertionError')
             continue
 
+
+######## PARTIMLIB.PY ############
+
+def convparams(self, imsize):
+    '''Converts parameters from scaled chamber coordinates to image 
+    coordinates.
+    Inputs:
+    imsize = image size as list [nrows x ncols] (ex., [1080 x 1920])
+    '''
+    imrows, imcols = imsize
+    for y in [d['r'], d['rpad'], self.nrows, self.rshift]:
+        y = y*imrows
+    for x in [self.c, self.cpad, self.ncols, self.cshift]:
+        x = x*imcols 

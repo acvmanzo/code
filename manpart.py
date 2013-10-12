@@ -24,10 +24,8 @@
 # DO NOT EDIT THE 'wellparams.txt' FILE IN GEANY; IT WILL BREAK THE TABS
 
 from partimlib import *
+from wingsettings import *
 
-BGFILE = 'background.tif'
-PICKLEBASE = 'pickled'
-TEXTBASE = 'text'
 PTEXTFILE = os.path.join(TEXTBASE, WELLPARAMSN+'.txt')
 
 findwellstext(BGFILE, PTEXTFILE, PICKLEBASE)

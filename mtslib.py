@@ -163,6 +163,7 @@ def b_avitoim(fdir, ext, overwrite, num, qscale):
         print('Converting avi to image sequence')
         avitoim(avifile, ext, overwrite, num, qscale)
         os.chdir(fdir)
+    return(avis)
 
 
 def mtstoim(mtsfile, start, dur, specdur, ext, overwrite):
@@ -213,7 +214,7 @@ def concatims(fdir, ext, movbase):
     cmn.makenewdir(movbase)
 
     imlist1 = sorted(os.listdir(movies[0]))
-    
+    print('test')
     try:
         imlist2 = sorted(os.listdir(movies[1]))
         # Finds the number of digits in the image names.
@@ -266,18 +267,21 @@ ext, overwrite, removeavi, movbase, num=5, qscale=3):
     cmn.check(movbase, overwrite)
     os.chdir(fdir)
     exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, overwrite)
-    b_avitoim(fdir, ext, overwrite, num, qscale)
+    avifiles = b_avitoim(fdir, ext, overwrite, num, qscale)
     os.chdir(fdir)
     try:
         concatims(fdir, ext, movbase)
-        if removeavi == 'yes':
-            avifiles = glob.glob('*{0}'.format('avi'))
-            for avi in avifiles:
-                os.remove(avi)
     except IndexError:
-        print('IndexError')
-        pass
-        
+        print('Only one MTS file')
+        print(os.getcwd())
+        moviefold = os.path.splitext(avifiles[0])[0]
+        os.renames(moviefold, movbase)
+    
+    if removeavi == 'yes':
+        for avi in avifiles:
+            os.remove(avi)
+
+
     
 
 
@@ -305,6 +309,12 @@ ext, overwrite, removeavi, movbase, num=5, qscale=3):
     dirs = cmn.listsortfs(fdir)
     for d in dirs:
         os.chdir(d)
-        exptmtstoimconcat(d, start1, dur1, start2, dur2, specdur1, specdur2,
-        ext, overwrite, removeavi, movbase, num, qscale)
+        print(os.path.basename(d))
+        print(d)
+        try:
+            exptmtstoimconcat(d, start1, dur1, start2, dur2, specdur1, specdur2,
+            ext, overwrite, removeavi, movbase, num, qscale)
+        except cmn.FileError:
+            print('movie exists')
+            continue
 

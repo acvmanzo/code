@@ -13,13 +13,15 @@ print('1-start (s), 2-dur (s) 3-specdur; yes or no; 4-overwrite; yes or no')
 EXT = sys.argv[1] # Extension of images
 OVERWRITE = sys.argv[2] # Overwrite image sequence? 'yes' or 'no'
 
+print("Moving MTS files")
 exptsdir = b_sortmtsexpt('.', WINGDETBASE, EXPTSBASE)
 os.chdir(exptsdir)
-convmovies(fdir=exptsdir, specdur1='no', start1=0, start1=0, specdur2='yes', 
-start2=0, dur2=240, ext=EXT, removeavi='yes', movbase=MOVBASE, 
-num=5, qscale=3)
+print("Converting movies")
+#convmovies(fdir=exptsdir, specdur1='no', start1=0, dur1=0, specdur2='yes', 
+#start2=0, dur2=240, ext=EXT, removeavi='yes', movbase=MOVBASE, 
+#num=5, qscale=3)
 
 ##For testing code
-#convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=1, specdur2='yes', 
-#start2=0, dur2=1, ext=EXT, overwrite=OVERWRITE, removeavi='yes', movbase=MOVBASE, 
-#num=5, qscale=3)
+convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=1, specdur2='yes', 
+start2=0, dur2=1, ext=EXT, overwrite=OVERWRITE, removeavi='no', movbase=MOVBASE, 
+num=5, qscale=3)

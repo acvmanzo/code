@@ -104,7 +104,10 @@ def genbgmovies(fdir, movbase, picklebase, bgfile, nframes, fntype, overwrite):
         print(os.path.basename(exptdir))
         os.chdir(exptdir)
         fullbgfile = os.path.join(exptdir, bgfile)
-        cmn.check(bgfile, overwrite)
+        try:
+            cmn.check(bgfile, overwrite)
+        except cmn.FileError:
+            continue
         movdir = os.path.join(exptdir, movbase)
         os.chdir(movdir)
         try:
