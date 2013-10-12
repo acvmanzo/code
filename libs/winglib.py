@@ -20,11 +20,8 @@ def loadwells(wcfile):
 def arr2im(a):
     a = np.absolute(a)
     #a = -a
-    #print(a.min())
     #a=a-a.min() # Adds the minimum value to each entry in the array.
-    #print(a.min())
-    #a=a/a.max()*255.0 # Scales each array so that the max value is 255.
-    #print(a.min())
+    a=a/a.max()*255.0 # Scales each array so that the max value is 255.
     #a = np.uint8(a)
     return a
 
@@ -46,30 +43,8 @@ def bgsub(bgpickle, imfile):
     except IndexError:
         im = np.array(Image.open(imfile)).astype(float)
     
-    subim = im-bg
-    subimarr = arr2im(subim)
-    
+    subimarr = arr2im(im-bg)   
     return(subimarr)
-
-
-#def scaledarr(a):
-     #a=np.abs(a.min()-a)
-     #a=a/a.max()*255.0 #optional.
-
-     #return a
- 
- 
-#def bgsub(bgpickle, imfile):
-     #im = np.array(Image.open(imfile)).astype(float)
-     #with open(bgpickle) as f:
-        #bg = pickle.load(f)
-     #c = im-bg
-     #print(c)
-     ##return(c)
- 
-     #carr = np.uint8(scaledarr(np.absolute(c)))
-     ##carr = scaledarr(c)
-     #return(carr)
 
 
 
@@ -213,7 +188,31 @@ def plotfindflies(d, wellnum, figdir):
     plt.close()
 
 
-
+def expt_findplotflies(bgpickle, movbase, wells):
+    '''Start from experiment folder.
+    Input:
+    bgpickle = pickled file containing bgarray
+    movbase = name of movie/ directory
+    wells = list of well coordinates
+    '''
+    
+    os.chdir(movbase)
+    files = cmn.listsortfs(fdir)
+    for f in files:
+        # To compute for each image:
+        subim = wl.bgsub(bgpickle, f)
+        # To load from a saved image:
+        #subimfile = os.path.join('../'+SUBMOVBASE, 'sub'+f)
+        #subim = np.array(Image.open(subimfile)).astype(float)
+        for n, well in enumerate(wells):
+            print('Well', n)
+            try:
+                d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
+                wl.plotfindflies(d, n, THFIGDIR)
+                plt.close()
+            except IndexError:
+                print('No connected components')
+                continue  
 
 
 
