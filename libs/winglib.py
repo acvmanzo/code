@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import cmn.cmn as cmn
 import pickle
+import libs.genplotlib as gpl
 
 MIRRY = np.array([[-1, 0], [0, 1]])
 MIRRX = np.array([[1, 0], [0, -1]])
@@ -18,8 +19,8 @@ def loadwells(wcfile):
     return(wells)
 
 def arr2im(a):
-    a = np.absolute(a)
-    #a = -a
+    #a = np.absolute(a)
+    a = -a
     #a=a-a.min() # Adds the minimum value to each entry in the array.
     a=a/a.max()*255.0 # Scales each array so that the max value is 255.
     #a = np.uint8(a)
@@ -37,11 +38,14 @@ def bgsub(bgpickle, imfile):
     with open(bgpickle) as f:
         bg = pickle.load(f)
     
-    try:
-        im = np.array(Image.open(imfile))[:,:,0].astype(float) # When encoding jpegs with 
+    
+    im = np.array(Image.open(imfile))[:,:,0].astype(float) # When encoding jpegs with 
     #ffmpeg, this loads a 3D array with all the channels identical.
-    except IndexError:
-        im = np.array(Image.open(imfile)).astype(float)
+    print(np.shape(im))
+    #except IndexError:
+    #im = np.array(Image.open(imfile)).astype(float)
+    #print(im.shape)
+    #print(np.any(im[:,:,0] == im[:,:,1]))
     
     subimarr = arr2im(im-bg)   
     return(subimarr)
@@ -185,7 +189,8 @@ def plotfindflies(d, wellnum, figdir):
     exptname = os.path.splitext(d['imname'])[0]
     welldir = os.path.join(figdir, 'well{0:02d}'.format(wellnum))
     cmn.makenewdir(welldir)
-    plt.savefig('{0}/{1}_thfig.png'.format(welldir, exptname))
+    plt.savefig('{0}_{1}_thfig.png'.format(welldir, exptname))
+    #plt.savefig('{0}/{1}_thfig.png'.format(welldir, exptname))
     plt.close()
 
 
@@ -271,11 +276,102 @@ def plotrotim(orient_im, rotimshape, fly_offset, well, comp_label, imname, outdi
     welldir = os.path.join(outdir, 'well{0:02d}'.format(well))
     cmn.makenewdir(welldir)
     plt.figure()
-    plt.imshow(orient_im, cmap=plt.cm.gray)
+    plt.imshow(Image.fromarray(orient_im), cmap=plt.cm.gray)
+    print(rotimshape)
+    print(fly_offset)
     plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
     plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
-    plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
+    #plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
+    plt.savefig(os.path.join(outdir, '{0}_{1}_fly{2}.png'.format(imname, well,
     comp_label)))
+
+
+def findwings(orient_im, low_value, high_value):
+    ''' Thresholds image to pick out wings.
+    Input:
+    orient_im = image of oriented fly
+    low_value = scalar; values below this are set to 0
+    high_value = scalar; values above this set to 0
+    Output:
+    w_im = thresholded image
+    '''   
+    
+    w_im = orient_im
+    low_values_indices = w_im < low_value  # Where values are below low_value
+    high_values_indices = w_im > high_value
+    w_im[low_values_indices] = 0
+    w_im[high_values_indices] = 0
+    
+    return(w_im)
+
+def defrois(center_a, side_al, mid_l, tmat):
+    '''
+    Input: 
+    orient_im = image in which fly is aligned vertically along its AP axis; output of orientflies()
+    '''
+  
+    # Define regions of interest in fly coordinates.
+    #center_a = [[30, 65], [10, 85]] # In image coordinates
+    #side_al = [[40, 40], [20, 60]]
+
+    rois = region(center_a, side_al, mid_l) 
+    # center_a, center_p, side_al, side_ar, side_pl, side_pr  = rois
+    
+    # Convert regions of interest to fly image coordinates.
+    imrois = changecoord(tmat, rois)
+    
+    return(imrois)
+
+def region(center_a, side_al, mid_l):
+
+    ''' Input:
+    center: 2x2 numpy array with x, y coordinates of two opposite corners of center rectangle: [[x1, y1], [x2, y2]]
+    side: 2x2 numpy array with x, y coordinates of two opposite orners of side rectangle
+    
+    Ccoordinates are written so that AP axis is x (so that angle 0 is when the fly is pointing along x axis, positive is in the anterior direction), and the ML axis is y, positive is going to the left).
+'''
+    center_p = np.dot(center_a, MIRRY)
+    side_ar = np.dot(side_al, MIRRX)
+    side_pl = np.dot(side_al, MIRRY)
+    side_pr = np.dot(side_pl, MIRRX)
+    mid_r = np.dot(mid_l, MIRRX)
+    
+    return(center_a, center_p, side_al, side_ar, side_pl, side_pr, mid_l, mid_r)
+    
+
+def changecoord(tmat, pts):
+    '''
+    Inputs: 
+    tmat = transformation matrix (homogenous coordinates)
+        ex. tmat = np.array([
+        [0, 1, 0],
+        [-1, 0, 0],
+        [offsetx, offsety, 1]])
+        where offsetx, offsety are the center of the new axes. This matrix transforms points in fly coordinates to fly image coordinates.
+        
+    pts = coordinates in original axes (2x2 numpy array)
+    '''
+    return np.dot(pts, tmat[:-1, :-1]) + tmat[-1, :-1]
+
+    
+def plotrois(imrois):
+    cols = np.tile(['b', 'g', 'r', 'c', 'm', 'y', 'w'], 2)
+    cols = cols[:np.shape(imrois)[0]+1]
+    for x, ((r1,c1), (r2,c2)) in enumerate(np.sort(imrois, axis=1)):
+        gpl.plotrect([r1, r2, c1, c2], color=cols[x])
+        plt.text(c1, r1, '{0}'.format(x), color=cols[x])
+
+
+def plot_wingimage(w_im, imrois, img, comp_label, outdir, wellnum):
+    cmn.makenewdir(outdir)
+    plt.figure()
+    plt.imshow(w_im, cmap=plt.cm.gray)
+    plotrois(imrois)
+    figname = os.path.join(outdir, '{0}_well{1}_{2}'.format(img, wellnum, 
+    comp_label))
+    plt.savefig(figname)
+    
+
 
 def find_roi_ints(img, comp_labels, outwingdir):
     

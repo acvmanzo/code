@@ -10,6 +10,7 @@ TEXTBASE = 'text'
 PLOTBASE = 'plots'
 THFIGBASE = '0_thfigs'
 ROTFIGBASE = '1_rotims'
+WINGFIGBASE = '2_wingims'
 
 BGFILE = 'background.bmp'
 #BGFILE = 'background.tif'
@@ -19,8 +20,10 @@ WELLCOORDSN = 'wellcoords'
 
 #BODY_TH = 150
 BODY_TH = 120
-WING_TH_LOW = 20
-WING_TH_HIGH = 90
+#WING_TH_LOW = 20
+WING_TH_LOW = 50
+#WING_TH_HIGH = 90
+WING_TH_HIGH = 120
 
 COMP_LABEL = [1, 2]
 

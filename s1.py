@@ -23,6 +23,7 @@ TEXTDIR = os.path.join(EXPTDIR, TEXTBASE)
 PLOTDIR = os.path.join(EXPTDIR, PLOTBASE)
 THFIGDIR = os.path.join(EXPTDIR, THFIGBASE)
 ROTFIGDIR = os.path.join(EXPTDIR, ROTFIGBASE)
+WINGFIGDIR = os.path.join(EXPTDIR, WINGFIGBASE) 
 
 def find_roi_ints(img, comp_labels, outwingdir):
     
@@ -37,7 +38,7 @@ def find_roi_ints(img, comp_labels, outwingdir):
         plot_rotimage(orient_im, ROTIMSHAPE, FLY_OFFSET, comp_label, img, 
         OUTROTDIR)
         w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
-        plot_wingimage(w_im, imrois, img, comp_label, outwingdir)
+        plot_wingimage(w_im, imrois, img, comp_label, WINGFIGDIR)
         roi_int = np.array(roimeans(w_im, imrois))
         #fly_roi_int = np.vstack((fly_roi_int, roi_int[np.newaxis]))
         fly_roi_int.append(roi_int)
@@ -69,29 +70,38 @@ wells = wl.loadwells(wellcoordpickle)
 
 
 IMNUMS = [str(x) for x in np.arange(10, 11, 1)]
-IMAGES = ['mov000'+n+'.tif' for n in IMNUMS]
+IMAGES = ['mov000'+n+'.bmp' for n in IMNUMS]
 
-
+#pl.showeachwell(wells, 'background.bmp')
 for imfile in IMAGES:
     #subimfile = os.path.join('submovie', 'sub'+imfile)
     #subim = np.array(Image.open(subimfile)).astype(float)
     os.chdir(MOVDIR)
     print(imfile)
+    print(os.getcwd())
     subim = wl.bgsub(bgpickle, imfile)
     for n, well in enumerate(wells):
         #print('Loop', n)
         #try:
         d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
+        print(n)
+        if len(d['uselab']) == 0:
+            continue
+        wl.plotfindflies(d, n, THFIGDIR)
         rotimshape = 0.5*np.array(d['dim'])
         flyoffset = np.array(0.5*rotimshape)
-        rotim = wl.orientflies(d['orig_im'], d['label_im'], d['uselab'][0], 
-        d['uselab'], 
-        d['usecoms'], flyoffset, rotimshape, d['imname'])
-        wl.plotrotim(rotim, rotimshape, flyoffset, n, d['uselab'][0], d['imname'],
+        orient_im = wl.orientflies(d['orig_im'], d['label_im'], d['uselab'][0], 
+        d['uselab'], d['usecoms'], flyoffset, rotimshape, d['imname'])
+        wl.plotrotim(orient_im, rotimshape, flyoffset, n, d['uselab'][0], d['imname'],
         ROTFIGDIR)
-
+        imrois = wl.defrois(CENTER_A, SIDE_AL, MID_L, TMAT_FLY_IMG)
+        w_im = wl.findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
+        wl.plot_wingimage(w_im, imrois, d['imname'], d['uselab'][0], 
+        WINGFIGDIR, n)
+        wl.plotrois(imrois)
+        plt.close()
         #except IndexError:
             #print('No connected components')
             #continue
 
-#pl.showwellpos(wells, 'background.tif')
+

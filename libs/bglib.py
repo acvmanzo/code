@@ -8,9 +8,9 @@ import pickle
 import numpy as np
 import cmn.cmn as cmn
 import glob
+import scipy.stats as stats
 
-
-def genbgim(imdir, nframes, fntype, imext, split=5):
+def genbgimgrp(imdir, nframes, fntype, imext, split=5):
     '''Generates a background image from a sequence of image files.
     Input:
     imdir = directory containing the sequence of image files
@@ -34,7 +34,7 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
     jobs = np.array_split(nummov, split)
     
     imarr = np.array(Image.open(files[0]))[:,:,0].astype(float)
-    medarrs = np.empty((nframes/split,)+np.shape(imarr))
+    medarrs = np.empty((len(jobs),)+np.shape(imarr))
     print(np.shape(medarrs))
         
     for m, job in enumerate(jobs):
@@ -44,18 +44,19 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
             #print(n)
             if imext == 'jpeg':
                 c = np.array(Image.open(files[int(x)]))[:,:,0].astype(float)
-                print('c', np.shape(c))
+                #print('c', np.shape(c))
             if (imext == 'bmp') or (imext== 'tif'):
                 c = np.array(Image.open(files[int(x)])).astype(float)
             print(n)
             cont[n,:,:] = c
-            #print('container shape after dstack', np.shape(cont[:,:,1:]))
+            #print('container shape after addition', np.shape(cont[:,:,1:]))
         if fntype == 'median':
             newc = np.median(cont, 0)
         if fntype == 'average':
             newc = np.average(cont, 0)
         #print('newc', np.shape(newc))
-        medarrs[:,:,m] = newc
+        #print(m)
+        medarrs[m,:,:] = newc
         
     print('medarrs', np.shape(medarrs))
     #print(medarrs)
@@ -65,18 +66,51 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
     print(np.shape(bg))
     return(bg)
         
-    
-            
-    #if imext == 'bmp' or "tif":
-        #bg = np.array(Image.open(files[0])).astype(float)   
-        #for x in np.linspace(1, moviel-1, nframes):
-            #c = np.array(Image.open(files[int(x)])).astype(float)
-            #bg = np.dstack((bg, c))      
-        
 
+def genbgim(imdir, nframes, fntype, imext, split=5):
+    '''Generates a background image from a sequence of image files.
+    Input:
+    imdir = directory containing the sequence of image files
+    nframes = # frames used to generate the background image; these are spread 
+    evenly throughout the image sequence
+    fntype = 'median, 'average'; method for combining nframes.
+    imext = extension of image files
+    split = how many lists to split the job into
+    Output:
+    bgnew = numpy array of background image 
+    '''
+    print "Generating background"
+    # Load frames for generating background image.
+    imdir = os.path.abspath(imdir)
+    files = sorted(os.listdir(imdir))
+    moviel = len(files)
+    nframes = int(nframes)
+    assert moviel > nframes
     
-        
-    #return(medarrs)
+    nummov = np.linspace(1, moviel-1, nframes)
+    
+    imarr = np.array(Image.open(files[0]))[:,:,0].astype(float)
+    #if (imext == 'bmp'):
+        #imarr = np.array(Image.open(files[0])).astype(float)
+    cont = np.empty((len(nummov),)+np.shape(imarr))
+    #print(np.shape(cont))
+    for n, x in enumerate(nummov):
+        print(n)
+        #if imext == 'jpeg' or (imext== 'tif'):
+        c = np.array(Image.open(files[int(x)]))[:,:,0].astype(float)
+        print('c', np.shape(c))
+        #if (imext == 'bmp'):
+            #c = np.array(Image.open(files[int(x)])).astype(float)
+        cont[n,:,:] = c
+    print(np.shape(cont))
+    if fntype == 'median':
+        newc = np.median(cont, 0)
+    if fntype == 'average':
+        newc = np.average(cont, 0)
+    if fntype == 'mode':
+        newc = stats.mode(cont, 0)
+    return(newc)    
+    
 
 
 def savebg(bg, bgfile, bgdir, pickledir):

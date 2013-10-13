@@ -43,14 +43,18 @@ def b_sortmtsexpt(fdir, wingdetbase, exptsbase):
     return(exptsdir)
 
 
-def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
+def mtstoavi(mtsfile, outfile, start, dur, newxdim, newydim, 
+specdur='no', overwrite='no'):
     """Converts a single MTS file to another file format such as 'avi' using 
-    mplayer. Can convert files recorded in telecine (e.g., PF24).
+    mplayer. Can convert files recorded in telecine (e.g., PF24). Scales to 
+    newxdim, newydim.
     Inputs:
     mtsfile - name of MTS file
     outfile - name of output file, including extension
     start - time to start conversion, in seconds
     dur - duration of movie to be converted, in seconds
+    newxdim - new x dimension
+    newydim - new y dimension
     specdur - 'no' if duration is not specified (will convert the whole movie)
     overwrite = 'yes' or 'no'; 'yes' to ovewrite avifile
     """
@@ -64,19 +68,21 @@ def mtstoavi(mtsfile, outfile, start, dur, specdur='no', overwrite='no'):
     
     if specdur == 'yes':
         cmd = 'mencoder -ss {0} -endpos {1} {2} -noskip -nosound \
-        -vf pullup,softskip,hue=0:0 -ofps {3}/1001 -ovc raw -o \
-        {4}'.format(start, dur, mtsfile, fps*1000, outfile)
+        -vf pullup,softskip,hue=0:0,scale={3}:{4} -ofps {5}/1001 -ovc raw -o \
+        {6}'.format(start, dur, mtsfile, newxdim, newydim, fps*1000, outfile)
     
     if specdur == 'no':
-        cmd = 'mencoder {0} -noskip -nosound -vf pullup,softskip,hue=0:0 \
-        -ofps {1}/1001 -ovc raw -o {2}'.format(mtsfile, fps*1000, outfile)
+        cmd = 'mencoder {0} -noskip -nosound \
+        -vf pullup,softskip,hue=0:0,scale={1}:{2} -ofps {3}/1001 -ovc raw -o \
+        {4}'.format(mtsfile, newxdim, newydim, fps*1000, outfile)
 
     exitcode = os.system(cmd)
     if exitcode != 0:
         sys.exit(0)
 
    
-def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, overwrite):
+def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, 
+newxdim, newydim, overwrite):
     """Converts two MTS files in the same experiment folder into avi files. 
     Often for one experiment, there will be two MTS files because of the SD 
     card limit (2 GB). The two MTS files can be converted with different 
@@ -93,15 +99,15 @@ def exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, overwrite
     """
     names = glob.glob('*{0}'.format('MTS'))
     names = sorted(names)
-    
+
     for n in names:
         root, ext = os.path.splitext(n)
         suff = root[-1]
         outfile = root + '.avi'
         if suff == '1':
-            mtstoavi(n, outfile, start1, dur1, specdur1, overwrite)
+            mtstoavi(n, outfile, start1, dur1, newxdim, newydim, specdur1, overwrite)
         if suff == '2':
-            mtstoavi(n, outfile, start2, dur2, specdur2, overwrite)
+            mtstoavi(n, outfile, start2, dur2, newxdim, newydim, specdur2, overwrite)
 
 
 def movietoim(infile, ext, qscale, num):
@@ -166,7 +172,7 @@ def b_avitoim(fdir, ext, overwrite, num, qscale):
     return(avis)
 
 
-def mtstoim(mtsfile, start, dur, specdur, ext, overwrite):
+def mtstoim(mtsfile, start, dur, specdur, newxdim, newydim, ext, overwrite):
     """Converts a single MTS file to a series of images using ffmpeg. Run 
     from folder containing MTS file.
     Inputs:
@@ -188,7 +194,7 @@ def mtstoim(mtsfile, start, dur, specdur, ext, overwrite):
     print('Converting MTS file to avi')
     avifile = moviename + '.avi'
     # Converting MTS to avi file.
-    mtstoavi(mtsfile, avifile, start, dur, specdur, overwrite)
+    mtstoavi(mtsfile, avifile, start, dur, specdur, newxdim, newydim, overwrite)
     print(os.getcwd())
     # Makes a new directory for image files and converts avi file to image 
     #files
@@ -244,8 +250,8 @@ def concatims(fdir, ext, movbase):
     
 
 
-def exptmtstoimconcat(fdir, start1, dur1, start2, dur2, specdur1, specdur2,
-ext, overwrite, removeavi, movbase, num=5, qscale=3):
+def exptmtstoimconcat(fdir, start1, dur1, start2, dur2, specdur1, specdur2, 
+newxdim, newydim, ext, overwrite, removeavi, movbase, num=5, qscale=3):
     """Converts MTS files in one expts/exptxx/ directory to a series of images 
     using ffmpeg. Renames image files so they are contiguous and places them 
     in the folder 'movie'.
@@ -266,7 +272,8 @@ ext, overwrite, removeavi, movbase, num=5, qscale=3):
     fdir = os.path.abspath(fdir)
     cmn.check(movbase, overwrite)
     os.chdir(fdir)
-    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, overwrite)
+    exptmtstoavi(fdir, start1, dur1, start2, dur2, specdur1, specdur2, 
+    newxdim, newydim, overwrite)
     avifiles = b_avitoim(fdir, ext, overwrite, num, qscale)
     os.chdir(fdir)
     try:
@@ -285,8 +292,8 @@ ext, overwrite, removeavi, movbase, num=5, qscale=3):
     
 
 
-def convmovies(fdir, start1, dur1, start2, dur2, specdur1, specdur2,
-ext, overwrite, removeavi, movbase, num=5, qscale=3):
+def convmovies(fdir, start1, dur1, start2, dur2, specdur1, specdur2, newxdim, 
+newydim, ext, overwrite, removeavi, movbase, num=5, qscale=3):
     
     """Converts MTS files in the expts/exptxx/ directories to a series of images 
     using ffmpeg. Renames image files so they are contiguous and places them 
@@ -313,7 +320,7 @@ ext, overwrite, removeavi, movbase, num=5, qscale=3):
         print(d)
         try:
             exptmtstoimconcat(d, start1, dur1, start2, dur2, specdur1, specdur2,
-            ext, overwrite, removeavi, movbase, num, qscale)
+            newxdim, newydim, ext, overwrite, removeavi, movbase, num, qscale)
         except cmn.FileError:
             print('movie exists')
             continue
