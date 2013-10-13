@@ -18,30 +18,71 @@ from PIL import Image
 import time
 
 
-IMNUMS = [str(x) for x in np.arange(20, 22, 1)]
-IMAGES = ['mov000'+n+'.bmp' for n in IMNUMS]
 exptfiles = exptfiles(os.path.abspath('.'))
-
 exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
 rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
-os.chdir(movdir)
+
+
+#IMNUMS = [str(x) for x in np.arange(10, 60, 1)]
+#IMAGES = ['mov000'+n+'.bmp' for n in IMNUMS]
+#os.chdir(movdir)
 #START = time.time()
-movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, 'no', 'yes')
+#movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, 'no')
 
-#smcfile = os.path.join(pickledir, 'smc_5ims')
-#mmcfile = os.path.join(pickledir, 'mmc_5ims')
+exptint(exptfiles, 'no', 'yes')
 
-#with open(smcfile, 'r') as f:
-    #movsmc = pickle.load(f)
-#with open(mmcfile, 'r') as g:
-    #movmmc = pickle.load(g)  
+smcfile = os.path.join(pickledir, SMCFILE+'.npy')
+mmcfile = os.path.join(pickledir, MMCFILE+'.npy')
 
-#plt.figure()
-#print(np.shape(movsmc))
-#plt.plot(movsmc[:,1], 'r')
-#plt.savefig('Side-center.png')
+movsmc = np.load(smcfile)
+movmmc = np.load(mmcfile)
 
-            
+
+def window(winlen):    
+    wind = list(np.ones(winlen)/winlen)
+    return(wind)
+
+def getfps(exptdir):
+    info = os.path.basename(exptdir).split('_')
+    if info.count('PF24') == 1:
+        fps = 24
+    if info.count('PF30') == 1:
+        fps = 30
+    return(fps)
+
+def movavg(t, fps, trace):
+    frames = t*fps
+    wind = window(frames)
+    ctrace = np.convolve(trace/max(trace), wind, 'same')
+    return(ctrace)
+
+def plotextwell(smc, mmc, wellnum):
+    plt.figure()
+    smc = smc-np.mean(smc)
+    mmc = mmc-np.mean(mmc)
+    plt.plot(smc, 'r', label='side-center')
+    plt.plot(mmc, 'b', label='middle-center')
+    plt.title('Well {0}'.format(wellnum))
+    plt.legend()
+    plt.savefig('wingext_well{0:02d}.png'.format(wellnum))
+    plt.close()
+
+def plotextexpt(wells):
+    for well in range(wells):
+        smc = movsmc[:, well]
+        mmc = movmmc[:, well]
+        plotextwell(smc, mmc, well)
+
+
+fps = getfps(exptdir)
+#csmc = movavg(1, fps, movsmc[:,4])
+#cmmc = movavg(1, fps, movmmc[:,4])
+#plotwingext(csmc, cmmc)
+
+
+
+
+                
 
 
 

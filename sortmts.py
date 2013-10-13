@@ -22,6 +22,6 @@ print("Converting movies")
 #num=5, qscale=3)
 
 ##For testing code
-convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=4, specdur2='yes', 
+convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=120, specdur2='yes', 
 start2=0, dur2=4, newxdim=1920, newydim=1080, ext=EXT, overwrite=OVERWRITE, 
-removeavi='no', movbase=MOVBASE, num=5, qscale=3)
+scale = 'yes', removeavi='no', movbase=MOVBASE, num=5, qscale=3)
