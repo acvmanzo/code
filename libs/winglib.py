@@ -13,6 +13,23 @@ MIRRY = np.array([[-1, 0], [0, 1]])
 MIRRX = np.array([[1, 0], [0, -1]])
 
 
+######### FUNCTIONS FOR FILE HANDLING ##############
+def exptfiles(fdir):
+    exptdir = os.path.abspath(fdir)
+    movdir = os.path.join(exptdir, MOVBASE)
+    submovdir = os.path.join(exptdir, SUBMOVBASE)
+    pickledir = os.path.join(exptdir, PICKLEBASE)
+    textdir = os.path.join(exptdir, TEXTBASE)
+    plotdir = os.path.join(exptdir, PLOTBASE)
+    thfigdir = os.path.join(exptdir, THFIGBASE)
+    rotfigdir = os.path.join(exptdir, ROTFIGBASE)
+    wingfigdir = os.path.join(exptdir, WINGFIGBASE)
+    
+    bgpickle = os.path.join(pickledir, 'bgarray')
+    wcpickle = os.path.join(pickledir, WELLCOORDSN)
+    
+    return(exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, 
+    rotfigdir, wingfigdir, bgpickle, wcpickle)
 
 ######### FUNCTIONS FOR BACKGROUND SUBTRACTION ########
 
@@ -126,6 +143,7 @@ def findflies(subimarray, imfile, well, t, savepickle='no'):
         dpicklefile = os.path.join(dpickledir, 'findflies')
         with open(dpicklefile, 'w') as f:
             pickle.dump(d, f)
+
     return(d)
 
 
@@ -256,13 +274,13 @@ def plotfindflies(d, wellnum, figdir):
     
     
     cmn.makenewdir(figdir)
-    exptname = os.path.splitext(d['imname'])[0]
+    imname = os.path.splitext(d['imfile'])[0]
     welldir = os.path.join(figdir, 'well{0:02d}'.format(wellnum))
     cmn.makenewdir(welldir)
     # Saves figure in the exptdir/figdir/well##/ folder.
-    plt.savefig('{0}_{1}_thfig.png'.format(welldir, exptname))
+    #plt.savefig(os.path.join(welldir, '{0}_thfig.png'.format(imname)))
     # Saves figure in the exptdir/figdir folder; more convenient for testing.
-    #plt.savefig('{0}/{1}_thfig.png'.format(welldir, exptname))
+    plt.savefig('{0}_{1}_thfig.png'.format(welldir, imname))
     plt.close()
 
 
@@ -277,15 +295,15 @@ def expt_findplotflies(bgpickle, movbase, wells):
     files = cmn.listsortfs(fdir)
     for f in files:
         # To compute for each image:
-        subim = wl.bgsub(bgpickle, f)
+        subim = bgsub(bgpickle, f)
         # To load from a saved image:
         #subimfile = os.path.join('../'+SUBMOVBASE, 'sub'+f)
         #subim = np.array(Image.open(subimfile)).astype(float)
         for n, well in enumerate(wells):
             print('Well', n)
             try:
-                d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
-                wl.plotfindflies(d, n, THFIGDIR)
+                d = findflies(subim, imfile, well, BODY_TH, 'no')
+                plotfindflies(d, n, THFIGDIR)
                 plt.close()
             except IndexError:
                 print('No connected components')
@@ -297,16 +315,16 @@ def plotrotim(orient_im, rotimshape, fly_offset, wellnum, flynum, imname, outdir
     welldir = os.path.join(outdir, 'well{0:02d}'.format(wellnum))
     cmn.makenewdir(welldir)
     plt.figure()
-    plt.imshow(Image.fromarray(orient_im), cmap=plt.cm.gray)
+    plt.imshow(orient_im, cmap=plt.cm.gray)
     plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
     plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
     # Saves figure in the exptdir/figdir/well##/ folder.
-    plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
-    flynum)))
+    #plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
+    #flynum)))
     # Saves figure in the exptdir/figdir/ folder (more convenient for 
     #testing).
-    #plt.savefig(os.path.join(outdir, '{0}_{1:02d}_fly{2}.png'.format(imname, well,
-    #flynum)))
+    plt.savefig(os.path.join(outdir, '{0}_{1:02d}_fly{2}.png'.format(imname, 
+    wellnum, flynum)))
 
     
 def plotrois(imrois):
@@ -317,7 +335,7 @@ def plotrois(imrois):
         plt.text(c1, r1, '{0}'.format(x), color=cols[x])
 
 
-def plot_wingimage(w_im, imrois, img, flynum, outdir, wellnum):
+def plot_wingimage(w_im, imrois, imname, flynum, outdir, wellnum):
     cmn.makenewdir(outdir)
     plt.figure()
     plt.imshow(w_im, cmap=plt.cm.gray)
@@ -325,12 +343,11 @@ def plot_wingimage(w_im, imrois, img, flynum, outdir, wellnum):
     welldir = os.path.join(outdir, 'well{0:02d}'.format(wellnum))
     cmn.makenewdir(welldir)
     # Saves figure in the exptdir/figdir/well##/ folder.
-    figname = os.path.join(welldir, '{1}_{2}.png'.format(wellnum,
-    img, flynum))
+    #figname = os.path.join(welldir, '{0}_{1}.png'.format(imname, flynum))
     # Saves figure in the exptdir/figdir/ folder (more convenient for 
     #testing).
-    #figname = os.path.join(outdir, '{0}_{1:02d}_fly{2}.png'.format(imname, well,
-    #flynum))
+    figname = os.path.join(outdir, '{0}_{1:02d}_fly{2}.png'.format(imname, 
+    wellnum, flynum))
 
     plt.savefig(figname)
     plt.close()
@@ -403,11 +420,6 @@ def defrois(center_a, side_al, mid_l, tmat):
     
     return(imrois)
 
-
-
-
-
-
 ######### FUNCTIONS FOR ANALYZING ROI INTENSITIES #################
 
 def roimeans(w_im, imrois):
@@ -438,23 +450,162 @@ def subroi(roi_int):
     return(center_a, center_p, side_a, side_p, med)
 
 
+########### COMBINED FUNCTIONS FOR ANALYSIS ###################
 
-def find_roi_ints(img, comp_labels, outwingdir):
+def wellint(imfile, bgpickle, well, wellnum, plotfiles, thfigdir, rotfigdir, 
+wingfigdir):
+    '''Finds the difference in ROI intensities for each fly in one well of 
+    one movie frame.
+    Inputs:
+    imfile = image file from movie
+    bgpickle = pickled background movie array
+    well = coordinates of well
+    plotfile = 'yes' or 'no'; indicates whether to plot files
+    thfigdir = directory to plot threshold figures
     
-    imfile = img+EXT
-    orig_im, label_im, nb_labels, coms = findflies(imfile, BODY_TH, OUTSUBTH, 
-    plot='yes')
-    fly_roi_int = []
-    for comp_label in comp_labels:
-        orient_im = orientflies(orig_im, label_im, comp_label, coms, 
-        FLY_OFFSET, ROTIMSHAPE, img)
-        imrois = defrois(CENTER_A, SIDE_AL, TMAT_FLY_IMG)
-        plot_rotimage(orient_im, ROTIMSHAPE, FLY_OFFSET, comp_label, img, 
-        OUTROTDIR)
+    '''
+
+    subim = bgsub(bgpickle, imfile)
+    #subim = np.array(Image.open(os.path.join('submovie', 'sub'+imfile))).astype(float)
+    
+    # Finding flies.
+    d = findflies(subim, imfile, well, BODY_TH, 'no')
+    print(d['uselab'])
+    if len(d['uselab']) == 0:
+        print('No connected components')
+    # Plotting functions.
+    if plotfiles == 'yes':
+        plotfindflies(d, wellnum, thfigdir)
+        plt.close()
+    
+    flysmc = []
+    flymmc = []
+    flyroi = []
+    # Finds data for each fly in the well.
+    for flyn, comp_label in enumerate(d['uselab']):
+        
+        rotimshape = 0.5*np.array(d['dim'])
+        flyoffset = np.array(0.5*rotimshape)
+        # Orients flies.
+        orient_im = orientflies(d['orig_im'], d['label_im'], comp_label, 
+        d['uselab'], d['usecoms'], flyoffset, rotimshape, d['imname'])
+        
+        tmatflyim = tmatflyim(flyoffset)
+        # Defines roi coordinates.
+        imrois = defrois(CENTER_A, SIDE_AL, MID_L, tmatflyim)
+        # Thresholds fly image to find wings.
         w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
-        plot_wingimage(w_im, imrois, img, comp_label, outwingdir)
+        
+        # Plotting functions.
+        if plotfiles == 'yes':
+            plotrotim(orient_im, rotimshape, flyoffset, wellnum, flyn, 
+            d['imname'], rotfigdir)
+            plt.close()
+            plot_wingimage(w_im, imrois, d['imname'], flyn, 
+            wingfigdir, wellnum)
+            plt.close()
+
+        # Analyzing ROI intensities.
         roi_int = np.array(roimeans(w_im, imrois))
-        #fly_roi_int = np.vstack((fly_roi_int, roi_int[np.newaxis]))
-        fly_roi_int.append(roi_int)
-   
-    return(fly_roi_int)   
+        center_a, center_p, side_a, side_p, med = subroi(roi_int)
+        
+        if ((center_p+side_p) - (center_a+side_a)) > 0:
+            flysmc.append(side_p - center_p)
+            flymmc.append(med - center_p)
+
+        else:
+            flysmc.append(side_a - center_a)
+            flymmc.append(med - center_a)
+    
+        flyroi.append(roi_int)
+        
+    return(flysmc, flymmc, flyroi)
+    
+
+def frameint(exptdir, imfile, plotfiles):
+    '''Finds the difference in ROI intensities for each fly in each well 
+    in one movie frame. 
+    Inputs:
+    exptdir = expts/exptxxdir
+    imfile = image from movie
+    plotfiles = 'yes' or 'no'; whether or not to plot files
+    '''
+    exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles(exptdir)
+
+    subim = bgsub(bgpickle, imfile)
+    wells = loadwells(wcpickle)
+    framesmc = np.empty((1, len(wells)))
+    framemmc = np.empty((1, len(wells)))
+    frameroi = []
+    for n, well in enumerate(wells):
+        flysmc, flymmc, flyroi = wellint(imfile, bgpickle, well, n, plotfiles, 
+        thfigdir, rotfigdir, wingfigdir)
+        
+        print(n)
+        framesmc[0,n] = np.max(flysmc)
+        framemmc[0,n] = np.max(flymmc)
+        frameroi.append(flyroi)
+
+    return(framesmc, framemmc, frameroi)
+
+
+def multimint(exptdir, images, plotfiles, picklefiles):
+    '''Finds the difference in ROI intensities for each fly in each well 
+    in multiple images.
+    Inputs:
+    exptdir = expts/exptxxdir
+    images = list of image names
+    plotfiles = 'yes' or 'no'; whether or not to plot files
+    picklefiles = 'yes' or 'no'; whether or not to pickle output
+    '''
+    exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles(exptdir)
+    
+    movlen = len(images)
+    wells = loadwells(wcpickle)
+    movsmc = np.empty((len(images), len(wells)))
+    movmmc = np.empty((len(images), len(wells)))
+    movroi = []
+    
+    for frame, imfile in enumerate(images):
+        framesmc, framemmc, frameroi = frameint(exptdir, imfile, plotfiles)
+        movsmc[frame,:] = framesmc
+        movmmc[frame,:] = framemmc
+        movroi.append(frameroi)
+    
+    if picklefiles == 'yes':
+        smcfile = os.path.join(pickledir, 'smc_{0}ims'.format(movlen))
+        mmcfile = os.path.join(pickledir, 'mmc_{0}ims'.format(movlen))
+        roifile = os.path.join(pickledir, 'roiints_{0}ims'.format(movlen))
+        
+        with open(smcfile, 'w') as f:
+            pickle.dump(movsmc, f)
+        with open(mmcfile, 'w') as g:
+            pickle.dump(movmmc, g)
+        with open(roifile, 'w') as h:
+            pickle.dump(movroi, h)
+    
+    return(movsmc, movmmc, movroi)
+        
+
+def exptint(exptdir, plotfiles, picklefiles):
+    '''Finds the difference in ROI intensities for each fly in each well 
+    in multiple movieframes.
+    '''
+    exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, 
+    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles(exptdir)
+    
+    os.chdir(movdir)
+    frames = cmn.listsortfs()
+
+    movsmc, movmmc, movroi = multiimint(exptdir, frames, plotfiles)
+
+    return(movsmc, movmmc, movroi)
+
+
+def plotintd(exptdir, [movsmc,movmmc, movroi]):
+    
+    plt.figure()
+    plt.plot(movsmc, 'r')
+    plt.savefig('Side-center.png')

@@ -190,7 +190,7 @@ def checkwells(wells, bgfile, wellsfig='wells.png'):
     plt.savefig(wellsfig)
 
 
-def showeachwell(wells, bgfile):
+def showeachwell(wells, bgfile, welliddir):
     '''Shows position of each well in the movie.
     Input:
     wells = list of well coordinates
@@ -202,7 +202,7 @@ def showeachwell(wells, bgfile):
         plt.figure()
         plt.imshow(bg, cmap=plt.cm.gray)
         gpl.plotrect(well)
-        plt.savefig('well{0:02d}.png'.format(x))
+        plt.savefig(os.path.join(welliddir, 'well{0:02d}.png'.format(x)))
         plt.close()
 
 
@@ -225,9 +225,10 @@ def defaultwells(bgfile, pickledir, textdir, wellparamsn, wellcoordsn, overwrite
     
     wp.savewells(pickledir, textdir, wellcoordsn)
     wp.saveparams(pickledir, textdir, wellparamsn)
+    return(wells)
 
 
-def b_defaultwells(fdir, bgfile, picklebase, textbase, wellparamsn, 
+def b_defaultwells(fdir, bgfile, picklebase, textbase, wellidbase, wellparamsn, 
 wellcoordsn, boverwrite):
     '''Batch function to run defaultwells() on multiple files. Does not run 
     defaultwells() if a pickled wellsparam file is present.
@@ -244,12 +245,14 @@ wellcoordsn, boverwrite):
         os.chdir(exptdir)
         pickledir = os.path.join(exptdir, picklebase)
         textdir = os.path.join(exptdir, textbase)
+        welliddir = os.path.join(exptdir, welliddir)
         if os.path.exists(os.path.join(pickledir, wellparamsn)) and \
         boverwrite == 'no':
             continue
         print('Generating default wells')
-        defaultwells(bgfile, pickledir, textdir, wellparamsn, wellcoordsn,
+        wells = defaultwells(bgfile, pickledir, textdir, wellparamsn, wellcoordsn,
         overwrite='yes')
+        showeachwell(wells, bgfile, welliddir)
 
 
 

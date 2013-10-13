@@ -13,6 +13,7 @@ def an1movie(fdir, nframes):
     movdir = os.path.join(exptdir, 'movie')
     pickledir = os.path.join(exptdir, 'pickled')
     textdir = os.path.join(exptdir, 'text')
+    wellid = os.path.join(exptdir, 'wellid')
     
     # Generates background image and subtracts it from every image file.
     bl.subbgmovie(imdir=movdir, bgdir=exptdir, pickledir=pickledir, 
@@ -20,5 +21,6 @@ def an1movie(fdir, nframes):
 
     # Finds ROIs surrounding wells.
     pl.defaultwells('background.txt', pickledir, textdir, overwrite='no')
+    pl.showeachwell(
 
 an1movie('.', NFRAMES)
