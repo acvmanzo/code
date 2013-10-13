@@ -17,6 +17,8 @@ BGFILE = 'background.bmp'
 WELLPARAMSN = 'wellparams'
 WELLCOORDSN = 'wellcoords'
 
+CONFIG = (3,4)
+
 
 #BODY_TH = 150
 BODY_TH = 120

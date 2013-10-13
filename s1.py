@@ -47,62 +47,81 @@ def find_roi_ints(img, comp_labels, outwingdir):
 
 
 
-#defaultwells(bgfile=BGFILE, pickledir=PICKLEBASE, textdir=TEXTBASE)
-#ml.convmovies('.', 0, 1, 'yes', 'no')
-#ml.convmovie('cs_20130619_ag_A_l_1.MTS', 'cs_20130619_ag_A_l_1.MTS.avi', 0, 
-#60, 'yes')
-#bl.subbgmovies()
-#(fdir, submovbase, movbase, picklebase, nframes, fntype, 
-#boverwrite='no'):
-#pl.defaultwells(BGFILE, pickledir, textdir, overwrite='yes')
-#print(cmn.myround(129.923, base=1))
-
 bgpickle = os.path.join(PICKLEDIR, 'bgarray')
-#imname = 'mov00009.tif'
-#subimname = 'submov00009.tif'
-#imfile = os.path.join(MOVBASE, imname)
-#subimfile = os.path.join(SUBMOVBASE, subimname)
-bgfile = BGFILE
-
-
 wellcoordpickle = os.path.join(PICKLEBASE, WELLCOORDSN)
 wells = wl.loadwells(wellcoordpickle)
 
 
-IMNUMS = [str(x) for x in np.arange(10, 11, 1)]
+IMNUMS = [str(x) for x in np.arange(10, 12, 1)]
 IMAGES = ['mov000'+n+'.bmp' for n in IMNUMS]
 
 #pl.showeachwell(wells, 'background.bmp')
-for imfile in IMAGES:
+
+movsmc = {}
+movmmc = {}
+
+for n, well in enumerate(wells):
+    movsmc[n] = []
+    movmmc[n] = []
+
+for frame, imfile in enumerate(IMAGES):
     #subimfile = os.path.join('submovie', 'sub'+imfile)
     #subim = np.array(Image.open(subimfile)).astype(float)
     os.chdir(MOVDIR)
-    print(imfile)
-    print(os.getcwd())
     subim = wl.bgsub(bgpickle, imfile)
+    
     for n, well in enumerate(wells):
         d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
+        print(d['uselab'])
         if len(d['uselab']) == 0:
+            print('No connected components')
             continue
-        rotimshape = 0.5*np.array(d['dim'])
-        flyoffset = np.array(0.5*rotimshape)
-        
-        orient_im = wl.orientflies(d['orig_im'], d['label_im'], d['uselab'][0], 
-        d['uselab'], d['usecoms'], flyoffset, rotimshape, d['imname'])
-        
-        tmatflyim = wl.tmatflyim(flyoffset)
-        imrois = wl.defrois(CENTER_A, SIDE_AL, MID_L, tmatflyim)
-        w_im = wl.findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
-        roi_int = np.array(roimeans(w_im, imrois))
-
-
+        # Plotting functions.
         wl.plotfindflies(d, n, THFIGDIR)
-        wl.plotrotim(orient_im, rotimshape, flyoffset, n, d['uselab'][0], d['imname'],
-        ROTFIGDIR)
-        wl.plot_wingimage(w_im, imrois, d['imname'], d['uselab'][0], 
-        WINGFIGDIR, n)
-        #except IndexError:
-            #print('No connected components')
-            #continue
+        plt.close()
+        
+        flysmc = []
+        flymmc = []
+        for flyn, comp_label in enumerate(d['uselab']):
+            
+            rotimshape = 0.5*np.array(d['dim'])
+            flyoffset = np.array(0.5*rotimshape)
+            
+            orient_im = wl.orientflies(d['orig_im'], d['label_im'], comp_label, 
+            d['uselab'], d['usecoms'], flyoffset, rotimshape, d['imname'])
+            
+            tmatflyim = wl.tmatflyim(flyoffset)
+            imrois = wl.defrois(CENTER_A, SIDE_AL, MID_L, tmatflyim)
+            w_im = wl.findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
+            
+
+            # Plotting functions.
+            wl.plotrotim(orient_im, rotimshape, flyoffset, n, flyn, d['imname'],
+            ROTFIGDIR)
+            plt.close()
+            wl.plot_wingimage(w_im, imrois, d['imname'], flyn, 
+            WINGFIGDIR, n)
+            plt.close()
+
+            # Analyzing ROI intensities.
+            roi_int = np.array(wl.roimeans(w_im, imrois))
+            center_a, center_p, side_a, side_p, med = wl.subroi(roi_int)
+            
+            if ((center_p+side_p) - (center_a+side_a)) > 0:
+                flysmc.append(side_p - center_p)
+                flymmc.append(med - center_p)
+
+            else:
+                flysmc.append(side_a - center_a)
+                flymmc.append(med - center_a)
+    
+        movsmc[n].append(np.max(flysmc))
+        movmmc[n].append(np.max(flymmc))
+    
+            
 
 
+
+
+
+        
