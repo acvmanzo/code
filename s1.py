@@ -57,12 +57,14 @@ IMAGES = ['mov000'+n+'.bmp' for n in IMNUMS]
 
 #pl.showeachwell(wells, 'background.bmp')
 
-movsmc = {}
-movmmc = {}
+#movsmc = {}
+#movmmc = {}
 
-for n, well in enumerate(wells):
-    movsmc[n] = []
-    movmmc[n] = []
+#for n, well in enumerate(wells):
+    #movsmc[n] = []
+    #movmmc[n] = []
+
+movsmc = np.empty((len(IMAGES),len(wells)))
 
 for frame, imfile in enumerate(IMAGES):
     #subimfile = os.path.join('submovie', 'sub'+imfile)
@@ -115,8 +117,8 @@ for frame, imfile in enumerate(IMAGES):
                 flysmc.append(side_a - center_a)
                 flymmc.append(med - center_a)
     
-        movsmc[n].append(np.max(flysmc))
-        movmmc[n].append(np.max(flymmc))
+        movsmc[frame,n] = np.max(flysmc)
+print(movsmc)
     
             
 
