@@ -81,25 +81,26 @@ for imfile in IMAGES:
     print(os.getcwd())
     subim = wl.bgsub(bgpickle, imfile)
     for n, well in enumerate(wells):
-        #print('Loop', n)
-        #try:
         d = wl.findflies(subim, imfile, well, BODY_TH, 'no')
-        print(n)
         if len(d['uselab']) == 0:
             continue
-        wl.plotfindflies(d, n, THFIGDIR)
         rotimshape = 0.5*np.array(d['dim'])
         flyoffset = np.array(0.5*rotimshape)
+        
         orient_im = wl.orientflies(d['orig_im'], d['label_im'], d['uselab'][0], 
         d['uselab'], d['usecoms'], flyoffset, rotimshape, d['imname'])
+        
+        tmatflyim = wl.tmatflyim(flyoffset)
+        imrois = wl.defrois(CENTER_A, SIDE_AL, MID_L, tmatflyim)
+        w_im = wl.findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
+        roi_int = np.array(roimeans(w_im, imrois))
+
+
+        wl.plotfindflies(d, n, THFIGDIR)
         wl.plotrotim(orient_im, rotimshape, flyoffset, n, d['uselab'][0], d['imname'],
         ROTFIGDIR)
-        imrois = wl.defrois(CENTER_A, SIDE_AL, MID_L, TMAT_FLY_IMG)
-        w_im = wl.findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
         wl.plot_wingimage(w_im, imrois, d['imname'], d['uselab'][0], 
         WINGFIGDIR, n)
-        wl.plotrois(imrois)
-        plt.close()
         #except IndexError:
             #print('No connected components')
             #continue

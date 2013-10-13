@@ -12,11 +12,8 @@ import libs.genplotlib as gpl
 MIRRY = np.array([[-1, 0], [0, 1]])
 MIRRX = np.array([[1, 0], [0, -1]])
 
+### FUNCTIONS FOR BACKGROUND SUBTRACTION ###
 
-def loadwells(wcfile):
-    with open(wcfile, 'r') as f:
-        wells = pickle.load(f)
-    return(wells)
 
 def arr2im(a):
     #a = np.absolute(a)
@@ -51,6 +48,12 @@ def bgsub(bgpickle, imfile):
     return(subimarr)
 
 
+#### FUNCTIONS FOR DETECTING FLIES AND WINGS
+
+def loadwells(wcfile):
+    with open(wcfile, 'r') as f:
+        wells = pickle.load(f)
+    return(wells)
 
 def findflies(subimarray, imfile, well, t, savepickle='no'):
     '''
@@ -130,6 +133,138 @@ def findflies(subimarray, imfile, well, t, savepickle='no'):
     return(d)
 
 
+def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, rotimshape, 
+imname):
+    '''
+    Rotates image so that each fly (connected component) is positioned 
+    vertically along its AP axis.
+    Input:
+    orig_im = original image
+    label_im = array where connected components are labeled by integers 
+    (from findflies())
+    comp_label = label designating connected components; starts at 1
+    coms = centers of mass of the connected components
+    fly_offset = list of new center coordinates for the oriented image
+    rotimshape = tuple with size of the rotated image
+    imname = image name
+    plot = 'no' (does not plot figure) or 'yes'
+    
+    Output:
+    orient_im = rotated/translated image
+    ''' 
+    
+    # Create an array where each entry is the index.
+    origdim = np.shape(orig_im)
+    posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
+
+    # Find the coordinates of the points comprising each connected component.
+    comppos = posarray[label_im == comp_label]
+    centroid = np.mean(comppos, axis=0)
+
+    # Check that the centers of mass are equal to the mean of the detected 
+    # components.
+    assert np.all(centroid == coms[labellist.index(comp_label)])
+
+    # Mean subtract data.
+    comppos = comppos - centroid
+
+    # Singular value decomposition
+    u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
+    
+    # Plot points in the new axes.
+    #flypoints = [[0, 0], [10, 0], [0,5]]
+    #origpoints = np.dot(flypoints, eigenv) + centroid
+    
+    # Orient image.
+    flyoffset = fly_offset*-1
+    imgoffset = np.dot(flyoffset, 0.5*eigenv)
+    rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
+    centroid + imgoffset, output_shape = rotimshape)
+    
+    return(rotimage)
+
+
+def findwings(orient_im, low_value, high_value):
+    ''' Thresholds image to pick out wings.
+    Input:
+    orient_im = image of oriented fly
+    low_value = scalar; values below this are set to 0
+    high_value = scalar; values above this set to 0
+    Output:
+    w_im = thresholded image
+    '''   
+    
+    w_im = orient_im
+    low_values_indices = w_im < low_value  # Where values are below low_value
+    high_values_indices = w_im > high_value
+    w_im[low_values_indices] = 0
+    w_im[high_values_indices] = 0
+    
+    return(w_im)
+
+
+def tmatflyim(flyoffset):
+    
+    a = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [flyoffset[0], flyoffset[1], 1]])
+    return(a)
+
+
+def defrois(center_a, side_al, mid_l, tmat):
+    '''
+    Input: 
+    orient_im = image in which fly is aligned vertically along its AP axis; output of orientflies()
+    '''
+  
+    # Define regions of interest in fly coordinates.
+    #center_a = [[30, 65], [10, 85]] # In image coordinates
+    #side_al = [[40, 40], [20, 60]]
+
+    rois = region(center_a, side_al, mid_l) 
+    # center_a, center_p, side_al, side_ar, side_pl, side_pr  = rois
+    
+    # Convert regions of interest to fly image coordinates.
+    imrois = changecoord(tmat, rois)
+    
+    return(imrois)
+
+def region(center_a, side_al, mid_l):
+
+    ''' Input:
+    center: 2x2 numpy array with x, y coordinates of two opposite corners of center rectangle: [[x1, y1], [x2, y2]]
+    side: 2x2 numpy array with x, y coordinates of two opposite orners of side rectangle
+    
+    Ccoordinates are written so that AP axis is x (so that angle 0 is when the fly is pointing along x axis, positive is in the anterior direction), and the ML axis is y, positive is going to the left).
+'''
+    center_p = np.dot(center_a, MIRRY)
+    side_ar = np.dot(side_al, MIRRX)
+    side_pl = np.dot(side_al, MIRRY)
+    side_pr = np.dot(side_pl, MIRRX)
+    mid_r = np.dot(mid_l, MIRRX)
+    
+    return(center_a, center_p, side_al, side_ar, side_pl, side_pr, mid_l, mid_r)
+    
+
+def changecoord(tmat, pts):
+    '''
+    Inputs: 
+    tmat = transformation matrix (homogenous coordinates)
+        ex. tmat = np.array([
+        [0, 1, 0],
+        [-1, 0, 0],
+        [offsetx, offsety, 1]])
+        where offsetx, offsety are the center of the new axes. This matrix transforms points in fly coordinates to fly image coordinates.
+        
+    pts = coordinates in original axes (2x2 numpy array)
+    '''
+    return np.dot(pts, tmat[:-1, :-1]) + tmat[-1, :-1]
+
+
+
+
+############# FUNCTIONS FOR PLOTTING FLY IMAGES #############
 def plotfindflies(d, wellnum, figdir):
     '''Plots a figure showing different processing steps in findflies().
     Input:
@@ -201,7 +336,6 @@ def expt_findplotflies(bgpickle, movbase, wells):
     movbase = name of movie/ directory
     wells = list of well coordinates
     '''
-    
     os.chdir(movbase)
     files = cmn.listsortfs(fdir)
     for f in files:
@@ -221,56 +355,6 @@ def expt_findplotflies(bgpickle, movbase, wells):
                 continue  
 
 
-def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, rotimshape, 
-imname):
-    '''
-    Rotates image so that each fly (connected component) is positioned 
-    vertically along its AP axis.
-    Input:
-    orig_im = original image
-    label_im = array where connected components are labeled by integers 
-    (from findflies())
-    comp_label = label designating connected components; starts at 1
-    coms = centers of mass of the connected components
-    fly_offset = list of new center coordinates for the oriented image
-    rotimshape = tuple with size of the rotated image
-    imname = image name
-    plot = 'no' (does not plot figure) or 'yes'
-    
-    Output:
-    orient_im = rotated/translated image
-    ''' 
-    
-    # Create an array where each entry is the index.
-    origdim = np.shape(orig_im)
-    posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
-
-    # Find the coordinates of the points comprising each connected component.
-    comppos = posarray[label_im == comp_label]
-    centroid = np.mean(comppos, axis=0)
-
-    # Check that the centers of mass are equal to the mean of the detected 
-    # components.
-    assert np.all(centroid == coms[labellist.index(comp_label)])
-
-    # Mean subtract data.
-    comppos = comppos - centroid
-
-    # Singular value decomposition
-    u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
-    
-    # Plot points in the new axes.
-    #flypoints = [[0, 0], [10, 0], [0,5]]
-    #origpoints = np.dot(flypoints, eigenv) + centroid
-    
-    # Orient image.
-    flyoffset = fly_offset*-1
-    imgoffset = np.dot(flyoffset, 0.5*eigenv)
-    rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
-    centroid + imgoffset, output_shape = rotimshape)
-    
-    return(rotimage)
-
 def plotrotim(orient_im, rotimshape, fly_offset, well, comp_label, imname, outdir):
     # Plot oriented image.
     welldir = os.path.join(outdir, 'well{0:02d}'.format(well))
@@ -281,77 +365,10 @@ def plotrotim(orient_im, rotimshape, fly_offset, well, comp_label, imname, outdi
     print(fly_offset)
     plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
     plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
-    #plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
-    plt.savefig(os.path.join(outdir, '{0}_{1}_fly{2}.png'.format(imname, well,
+    plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
     comp_label)))
-
-
-def findwings(orient_im, low_value, high_value):
-    ''' Thresholds image to pick out wings.
-    Input:
-    orient_im = image of oriented fly
-    low_value = scalar; values below this are set to 0
-    high_value = scalar; values above this set to 0
-    Output:
-    w_im = thresholded image
-    '''   
-    
-    w_im = orient_im
-    low_values_indices = w_im < low_value  # Where values are below low_value
-    high_values_indices = w_im > high_value
-    w_im[low_values_indices] = 0
-    w_im[high_values_indices] = 0
-    
-    return(w_im)
-
-def defrois(center_a, side_al, mid_l, tmat):
-    '''
-    Input: 
-    orient_im = image in which fly is aligned vertically along its AP axis; output of orientflies()
-    '''
-  
-    # Define regions of interest in fly coordinates.
-    #center_a = [[30, 65], [10, 85]] # In image coordinates
-    #side_al = [[40, 40], [20, 60]]
-
-    rois = region(center_a, side_al, mid_l) 
-    # center_a, center_p, side_al, side_ar, side_pl, side_pr  = rois
-    
-    # Convert regions of interest to fly image coordinates.
-    imrois = changecoord(tmat, rois)
-    
-    return(imrois)
-
-def region(center_a, side_al, mid_l):
-
-    ''' Input:
-    center: 2x2 numpy array with x, y coordinates of two opposite corners of center rectangle: [[x1, y1], [x2, y2]]
-    side: 2x2 numpy array with x, y coordinates of two opposite orners of side rectangle
-    
-    Ccoordinates are written so that AP axis is x (so that angle 0 is when the fly is pointing along x axis, positive is in the anterior direction), and the ML axis is y, positive is going to the left).
-'''
-    center_p = np.dot(center_a, MIRRY)
-    side_ar = np.dot(side_al, MIRRX)
-    side_pl = np.dot(side_al, MIRRY)
-    side_pr = np.dot(side_pl, MIRRX)
-    mid_r = np.dot(mid_l, MIRRX)
-    
-    return(center_a, center_p, side_al, side_ar, side_pl, side_pr, mid_l, mid_r)
-    
-
-def changecoord(tmat, pts):
-    '''
-    Inputs: 
-    tmat = transformation matrix (homogenous coordinates)
-        ex. tmat = np.array([
-        [0, 1, 0],
-        [-1, 0, 0],
-        [offsetx, offsety, 1]])
-        where offsetx, offsety are the center of the new axes. This matrix transforms points in fly coordinates to fly image coordinates.
-        
-    pts = coordinates in original axes (2x2 numpy array)
-    '''
-    return np.dot(pts, tmat[:-1, :-1]) + tmat[-1, :-1]
+    #plt.savefig(os.path.join(outdir, '{0}_{1:02d}_fly{2}.png'.format(imname, well,
+    #comp_label)))
 
     
 def plotrois(imrois):
@@ -367,10 +384,34 @@ def plot_wingimage(w_im, imrois, img, comp_label, outdir, wellnum):
     plt.figure()
     plt.imshow(w_im, cmap=plt.cm.gray)
     plotrois(imrois)
-    figname = os.path.join(outdir, '{0}_well{1}_{2}'.format(img, wellnum, 
-    comp_label))
-    plt.savefig(figname)
+    welldir = os.path.join(outdir, 'well{0:02d}'.format(wellnum))
+    cmn.makenewdir(welldir)
+    figname = os.path.join(welldir, '{1}_{2}.png'.format(wellnum,
+    img, comp_label))
+    #figname = os.path.join(outdir, '{0}_well{1:02d}_{2}.png'.format(img, wellnum, 
     
+    plt.savefig(figname)
+    plt.close()
+
+
+######### FUNCTIONS FOR ANALYZING ROI INTENSITIES #################
+
+def roimeans(w_im, imrois):
+    '''
+    Input:
+    w_im = image of oriented fly, threshholded to isolate wings
+    imrois = list of points that define regions of interest in the image coordinates; returned by defrois(); the order or rois are: 
+        center_a, center_p, side_al, side_ar, side_pl, side_pr.
+    Output:
+    roi_int: list of mean intensities 
+    '''
+       
+    ## Measure mean intensity over each ROI.
+    roi_int = []
+    for (r1,c1), (r2,c2) in np.sort(imrois, axis=1):
+        roi_int.append(np.mean(w_im[r1:r2, c1:c2]))
+    return(roi_int)
+
 
 
 def find_roi_ints(img, comp_labels, outwingdir):
