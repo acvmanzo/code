@@ -14,7 +14,7 @@ THFIGDIR = os.path.join(EXPTDIR, THFIGBASE)
 ROTFIGDIR = os.path.join(EXPTDIR, ROTFIGBASE)
 
 
-avitoim('cs_20130619_ag_PF30_A_l_1.avi', 'bmp', 'yes', 5, 3)
+#avitoim('cs_20130619_ag_PF30_A_l_1.avi', 'bmp', 'yes', 5, 3)
 os.chdir(MOVDIR)
 genbgimexpt(EXPTDIR, MOVBASE, PICKLEBASE, BGFILE, 20, 'median', 'bmp')
 

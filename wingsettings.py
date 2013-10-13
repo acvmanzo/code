@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 WINGDETBASE = 'wingdet'
 EXPTSBASE = 'expts'
@@ -31,5 +32,24 @@ WING_TH_HIGH = 120
 CENTER_A = np.array([[45, 10], [65, -10]]) # top left corner and bottom diagonal corner of square
 SIDE_AL = np.array([[25, 40], [45, 25]]) # top left corner and bottom diagonal corner of square
 MID_L = np.array([[-15, 65], [15, 25]])
+
+
+def exptfiles(fdir):
+    exptdir = os.path.abspath(fdir)
+    movdir = os.path.join(exptdir, MOVBASE)
+    submovdir = os.path.join(exptdir, SUBMOVBASE)
+    pickledir = os.path.join(exptdir, PICKLEBASE)
+    textdir = os.path.join(exptdir, TEXTBASE)
+    plotdir = os.path.join(exptdir, PLOTBASE)
+    thfigdir = os.path.join(exptdir, THFIGBASE)
+    rotfigdir = os.path.join(exptdir, ROTFIGBASE)
+    wingfigdir = os.path.join(exptdir, WINGFIGBASE)
+    
+    bgpickle = os.path.join(pickledir, 'bgarray')
+    wcpickle = os.path.join(pickledir, WELLCOORDSN)
+    
+    return(exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, 
+    rotfigdir, wingfigdir, bgpickle, wcpickle)
+
 
 

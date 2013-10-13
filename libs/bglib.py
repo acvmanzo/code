@@ -131,8 +131,9 @@ def savebg(bg, bgfile, bgdir, pickledir):
     bgnew.save(os.path.join(bgdir, bgfile))
     
     # Save background image as a pickle file.
-    with open(os.path.join(pickledir, 'bgarray'), 'w') as h:
-        pickle.dump(bg, h)
+    #with open(os.path.join(pickledir, 'bgarray'), 'w') as h:
+        #pickle.dump(bg, h)
+    np.save(os.path.join(pickledir, 'bgarray'), bg)
 
 
 def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype, imext):

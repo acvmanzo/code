@@ -15,17 +15,32 @@ from libs.winglib import *
 import numpy as np
 from wingsettings import *
 from PIL import Image
+import time
 
 
-IMNUMS = [str(x) for x in np.arange(10, 12, 1)]
+IMNUMS = [str(x) for x in np.arange(20, 22, 1)]
 IMAGES = ['mov000'+n+'.bmp' for n in IMNUMS]
+exptfiles = exptfiles(os.path.abspath('.'))
 
-exptdir = os.path.abspath('.')
-os.chdir(movies)
-[movsmc, movmmc, movroi] = multimint('../', IMAGES, 'yes')
-os.chdir(exptdir)
-plotintd([movsmc, movmmc, movroi])
-    
+exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
+os.chdir(movdir)
+#START = time.time()
+movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, 'no', 'yes')
+
+#smcfile = os.path.join(pickledir, 'smc_5ims')
+#mmcfile = os.path.join(pickledir, 'mmc_5ims')
+
+#with open(smcfile, 'r') as f:
+    #movsmc = pickle.load(f)
+#with open(mmcfile, 'r') as g:
+    #movmmc = pickle.load(g)  
+
+#plt.figure()
+#print(np.shape(movsmc))
+#plt.plot(movsmc[:,1], 'r')
+#plt.savefig('Side-center.png')
+
             
 
 

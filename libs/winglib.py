@@ -5,38 +5,24 @@ from scipy import ndimage
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import time
 import cmn.cmn as cmn
 import pickle
 import libs.genplotlib as gpl
+from wingsettings import *
 
 MIRRY = np.array([[-1, 0], [0, 1]])
 MIRRX = np.array([[1, 0], [0, -1]])
-
-
-######### FUNCTIONS FOR FILE HANDLING ##############
-def exptfiles(fdir):
-    exptdir = os.path.abspath(fdir)
-    movdir = os.path.join(exptdir, MOVBASE)
-    submovdir = os.path.join(exptdir, SUBMOVBASE)
-    pickledir = os.path.join(exptdir, PICKLEBASE)
-    textdir = os.path.join(exptdir, TEXTBASE)
-    plotdir = os.path.join(exptdir, PLOTBASE)
-    thfigdir = os.path.join(exptdir, THFIGBASE)
-    rotfigdir = os.path.join(exptdir, ROTFIGBASE)
-    wingfigdir = os.path.join(exptdir, WINGFIGBASE)
-    
-    bgpickle = os.path.join(pickledir, 'bgarray')
-    wcpickle = os.path.join(pickledir, WELLCOORDSN)
-    
-    return(exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, 
-    rotfigdir, wingfigdir, bgpickle, wcpickle)
+START = time.time()
 
 ######### FUNCTIONS FOR BACKGROUND SUBTRACTION ########
 
 def arr2im(a):
     #a = np.absolute(a)
+    print('-a', time.time()-START)
     a = -a
     #a=a-a.min() # Adds the minimum value to each entry in the array.
+    print('ascale', time.time()-START)
     a=a/a.max()*255.0 # Scales each array so that the max value is 255.
     #a = np.uint8(a)
     return a
@@ -49,9 +35,9 @@ def bgsub(bgpickle, imfile):
     bgpickle = pickled file containing background array (pickled/bgarray)
     imfile = one file from the movie image sequence
     '''
-    
-    with open(bgpickle) as f:
-        bg = pickle.load(f)
+    print('load bgpickle', time.time()-START)
+    bg = np.load(bgpickle)
+    print('load im', time.time()-START)
     im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
     #array with all the channels identical.
     
@@ -167,7 +153,7 @@ imname):
     Output:
     orient_im = rotated/translated image
     ''' 
-    
+    #print('orient flies', time.time()-START)
     # Create an array where each entry is the index.
     origdim = np.shape(orig_im)
     posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
@@ -182,7 +168,7 @@ imname):
 
     # Mean subtract data.
     comppos = comppos - centroid
-
+    #print('svd', time.time()-START)
     # Singular value decomposition
     u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
     
@@ -193,6 +179,7 @@ imname):
     # Orient image.
     flyoffset = fly_offset*-1
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
+    #print('rotate',time.time()-START)
     rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
     centroid + imgoffset, output_shape = rotimshape)
     
@@ -464,13 +451,13 @@ wingfigdir):
     thfigdir = directory to plot threshold figures
     
     '''
-
+    print('subim', time.time()-START)
     subim = bgsub(bgpickle, imfile)
     #subim = np.array(Image.open(os.path.join('submovie', 'sub'+imfile))).astype(float)
     
     # Finding flies.
     d = findflies(subim, imfile, well, BODY_TH, 'no')
-    print(d['uselab'])
+    #print('findflies', time.time()-START)
     if len(d['uselab']) == 0:
         print('No connected components')
     # Plotting functions.
@@ -487,13 +474,15 @@ wingfigdir):
         rotimshape = 0.5*np.array(d['dim'])
         flyoffset = np.array(0.5*rotimshape)
         # Orients flies.
+        #print('rotate flies', time.time()-START)
         orient_im = orientflies(d['orig_im'], d['label_im'], comp_label, 
         d['uselab'], d['usecoms'], flyoffset, rotimshape, d['imname'])
         
-        tmatflyim = tmatflyim(flyoffset)
+        tmatfly = tmatflyim(flyoffset)
         # Defines roi coordinates.
-        imrois = defrois(CENTER_A, SIDE_AL, MID_L, tmatflyim)
+        imrois = defrois(CENTER_A, SIDE_AL, MID_L, tmatfly)
         # Thresholds fly image to find wings.
+        #print('finding wings', time.time()-START)
         w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)
         
         # Plotting functions.
@@ -506,8 +495,11 @@ wingfigdir):
             plt.close()
 
         # Analyzing ROI intensities.
+        #print('analyzing roi intensities', time.time()-START)
         roi_int = np.array(roimeans(w_im, imrois))
         center_a, center_p, side_a, side_p, med = subroi(roi_int)
+        
+        #print('appending rois', time.time()-START)
         
         if ((center_p+side_p) - (center_a+side_a)) > 0:
             flysmc.append(side_p - center_p)
@@ -522,16 +514,19 @@ wingfigdir):
     return(flysmc, flymmc, flyroi)
     
 
-def frameint(exptdir, imfile, plotfiles):
+def frameint(exptfiles, imfile, plotfiles):
     '''Finds the difference in ROI intensities for each fly in each well 
     in one movie frame. 
     Inputs:
-    exptdir = expts/exptxxdir
+    exptfiles = exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+    rotfigdir, wingfigdir, bgpickle, wcpickle (output of 
+    wingsettings.exptfiles())
     imfile = image from movie
     plotfiles = 'yes' or 'no'; whether or not to plot files
     '''
+
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles(exptdir)
+    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
 
     subim = bgsub(bgpickle, imfile)
     wells = loadwells(wcpickle)
@@ -539,28 +534,32 @@ def frameint(exptdir, imfile, plotfiles):
     framemmc = np.empty((1, len(wells)))
     frameroi = []
     for n, well in enumerate(wells):
-        flysmc, flymmc, flyroi = wellint(imfile, bgpickle, well, n, plotfiles, 
-        thfigdir, rotfigdir, wingfigdir)
-        
-        print(n)
-        framesmc[0,n] = np.max(flysmc)
-        framemmc[0,n] = np.max(flymmc)
-        frameroi.append(flyroi)
+        print(n, time.time()-START)
+        try:
+            flysmc, flymmc, flyroi = wellint(imfile, bgpickle, well, n, plotfiles, 
+            thfigdir, rotfigdir, wingfigdir)
+            framesmc[0,n] = np.max(flysmc)
+            framemmc[0,n] = np.max(flymmc)
+            frameroi.append(flyroi)
+        except ValueError:
+            continue
 
     return(framesmc, framemmc, frameroi)
 
 
-def multimint(exptdir, images, plotfiles, picklefiles):
+def multimint(exptfiles, images, plotfiles, picklefiles):
     '''Finds the difference in ROI intensities for each fly in each well 
     in multiple images.
     Inputs:
-    exptdir = expts/exptxxdir
+    exptfiles = exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+    rotfigdir, wingfigdir, bgpickle, wcpickle (output of 
+    wingsettings.exptfiles())
     images = list of image names
     plotfiles = 'yes' or 'no'; whether or not to plot files
     picklefiles = 'yes' or 'no'; whether or not to pickle output
     '''
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles(exptdir)
+    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
     
     movlen = len(images)
     wells = loadwells(wcpickle)
@@ -569,7 +568,8 @@ def multimint(exptdir, images, plotfiles, picklefiles):
     movroi = []
     
     for frame, imfile in enumerate(images):
-        framesmc, framemmc, frameroi = frameint(exptdir, imfile, plotfiles)
+        print(imfile, time.time()-START)
+        framesmc, framemmc, frameroi = frameint(exptfiles, imfile, plotfiles)
         movsmc[frame,:] = framesmc
         movmmc[frame,:] = framemmc
         movroi.append(frameroi)
@@ -589,22 +589,22 @@ def multimint(exptdir, images, plotfiles, picklefiles):
     return(movsmc, movmmc, movroi)
         
 
-def exptint(exptdir, plotfiles, picklefiles):
+def exptint(exptfiles, plotfiles, picklefiles):
     '''Finds the difference in ROI intensities for each fly in each well 
     in multiple movieframes.
     '''
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, 
-    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles(exptdir)
+    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
     
     os.chdir(movdir)
     frames = cmn.listsortfs()
 
-    movsmc, movmmc, movroi = multiimint(exptdir, frames, plotfiles)
+    movsmc, movmmc, movroi = multiimint(exptfiles, frames, plotfiles)
 
     return(movsmc, movmmc, movroi)
 
 
-def plotintd(exptdir, [movsmc,movmmc, movroi]):
+def plotintd(exptdir, movsmc, movmmc):
     
     plt.figure()
     plt.plot(movsmc, 'r')

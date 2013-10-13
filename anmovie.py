@@ -1,26 +1,16 @@
 import os
-import bgsublib as bl
-import partimlib as pl
+import libs.bgblib as bl
+import libs.partimlib as pl
+import libs.winglib as wl
+from wingsettings import *
 
-NFRAMES = 10
 
-def an1movie(fdir, nframes):
-    # Start in expt/moviexx directory.
-    
+def an1movie(exptdir, nframes):
     # Defines directories.
-    exptdir = os.path.abspath(fdir)
-    submovdir = os.path.join(exptdir, 'submovie')
-    movdir = os.path.join(exptdir, 'movie')
-    pickledir = os.path.join(exptdir, 'pickled')
-    textdir = os.path.join(exptdir, 'text')
-    wellid = os.path.join(exptdir, 'wellid')
+    exptfiles = exptfiles(os.path.abspath(exptdir))
+    exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
     
-    # Generates background image and subtracts it from every image file.
-    bl.subbgmovie(imdir=movdir, bgdir=exptdir, pickledir=pickledir, 
-    submovdir=submovdir, nframes=nframes, fntype='median', overwrite='no')
-
-    # Finds ROIs surrounding wells.
-    pl.defaultwells('background.txt', pickledir, textdir, overwrite='no')
-    pl.showeachwell(
+    movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, 'yes', 'yes')
 
 an1movie('.', NFRAMES)
