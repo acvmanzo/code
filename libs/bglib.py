@@ -35,7 +35,6 @@ def genbgimgrp(imdir, nframes, fntype, imext, split=5):
     
     imarr = np.array(Image.open(files[0]))[:,:,0].astype(float)
     medarrs = np.empty((len(jobs),)+np.shape(imarr))
-    print(np.shape(medarrs))
         
     for m, job in enumerate(jobs):
         #print(job)
@@ -95,10 +94,9 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
     cont = np.empty((len(nummov),)+np.shape(imarr))
     #print(np.shape(cont))
     for n, x in enumerate(nummov):
-        print(n)
         #if imext == 'jpeg' or (imext== 'tif'):
         c = np.array(Image.open(files[int(x)]))[:,:,0].astype(float)
-        print('c', np.shape(c))
+        #print('c', np.shape(c))
         #if (imext == 'bmp'):
             #c = np.array(Image.open(files[int(x)])).astype(float)
         cont[n,:,:] = c
@@ -155,7 +153,8 @@ def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype, imext):
     savebg(bg, bgfile, exptdir, pickledir)
     
 
-def genbgmovies(fdir, movbase, picklebase, bgfile, nframes, fntype, overwrite):
+def genbgmovies(fdir, movbase, picklebase, bgfile, nframes, fntype, imext,
+overwrite):
     
     '''Generates and saves background image for multiple experiments in fdir 
     (see wingdet/README.txt).
@@ -181,7 +180,8 @@ def genbgmovies(fdir, movbase, picklebase, bgfile, nframes, fntype, overwrite):
         movdir = os.path.join(exptdir, movbase)
         os.chdir(movdir)
         try:
-            genbgimexpt(exptdir, movbase, picklebase, fullbgfile, nframes, fntype)
+            genbgimexpt(exptdir, movbase, picklebase, fullbgfile, nframes, 
+            fntype, imext)
         except AssertionError:
             print('Movie length > nframes')
             continue

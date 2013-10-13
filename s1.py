@@ -29,7 +29,7 @@ rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
 #START = time.time()
 #movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, 'no')
 
-exptint(exptfiles, 'no', 'yes')
+#exptint(exptfiles, 'no', 'yes')
 
 smcfile = os.path.join(pickledir, SMCFILE+'.npy')
 mmcfile = os.path.join(pickledir, MMCFILE+'.npy')
@@ -67,18 +67,18 @@ def plotextwell(smc, mmc, wellnum):
     plt.savefig('wingext_well{0:02d}.png'.format(wellnum))
     plt.close()
 
-def plotextexpt(wells):
+def plotextexpt(wells, movsmc, movmmc):
     for well in range(wells):
         smc = movsmc[:, well]
         mmc = movmmc[:, well]
         plotextwell(smc, mmc, well)
 
 
-fps = getfps(exptdir)
+#fps = getfps(exptdir)
 #csmc = movavg(1, fps, movsmc[:,4])
 #cmmc = movavg(1, fps, movmmc[:,4])
 #plotwingext(csmc, cmmc)
-
+plotextexpt(12, movsmc, movmmc)
 
 
 

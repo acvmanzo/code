@@ -245,7 +245,8 @@ wellcoordsn, boverwrite):
         os.chdir(exptdir)
         pickledir = os.path.join(exptdir, picklebase)
         textdir = os.path.join(exptdir, textbase)
-        welliddir = os.path.join(exptdir, welliddir)
+        welliddir = os.path.join(exptdir, wellidbase)
+        cmn.makenewdir(welliddir)
         if os.path.exists(os.path.join(pickledir, wellparamsn)) and \
         boverwrite == 'no':
             continue
@@ -270,6 +271,7 @@ def findwellstext(bgfile, ptextfile, wellparamsn, wellcoordsn, pickledir):
     dscale = im2scale(dimg, imrows, imcols)
     wp = WellParams(bgfile, dscale)
     wells = wp.defwells()
+    
     checkwells(wells, bgfile)
     
     textdir = os.path.dirname(os.path.abspath(ptextfile))

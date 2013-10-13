@@ -12,4 +12,4 @@ OVERWRITE = sys.argv[2] # Overwrite- 'yes' or 'no'
 
 print('1-nframes, 2-overwrite? yes or no')
 genbgmovies(fdir='.', movbase=MOVBASE, picklebase=PICKLEBASE, bgfile=BGFILE, 
-nframes=NFRAMES, fntype='median', overwrite=OVERWRITE)
+nframes=NFRAMES, fntype='median', imext='jpeg', overwrite=OVERWRITE)

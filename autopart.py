@@ -12,7 +12,7 @@ OVERWRITE = sys.argv[1] # Overwrite? 'yes' or 'no'
 
 
 b_defaultwells(fdir='.', bgfile=BGFILE, picklebase=PICKLEBASE, 
-textbase=TEXTBASE, wellparamsn=WELLPARAMSN, wellcoordsn=WELLCOORDSN,
+textbase=TEXTBASE, wellidbase=WELLIDBASE, wellparamsn=WELLPARAMSN, wellcoordsn=WELLCOORDSN,
 boverwrite=OVERWRITE)
 
 
