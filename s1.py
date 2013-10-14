@@ -26,11 +26,11 @@ exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
 rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
 
 
-IMNUMS = [str(x) for x in np.arange(10, 11, 1)]
+IMNUMS = [str(x) for x in np.arange(10, 12, 1)]
 IMAGES = ['mov000'+n+'.jpeg' for n in IMNUMS]
 os.chdir(movdir)
-#movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, plotfiles='no', 
-#savemc='no')
+movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, plotfiles='no', 
+savemc='no')
 
 #exptint(exptfiles, 'no', 'yes')
 #movsmc = np.load(smcfile)

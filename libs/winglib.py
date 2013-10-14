@@ -10,6 +10,7 @@ import cmn.cmn as cmn
 import pickle
 import libs.genplotlib as gpl
 from wingsettings import *
+import cv2
 
 MIRRY = np.array([[-1, 0], [0, 1]])
 MIRRX = np.array([[1, 0], [0, -1]])
@@ -38,7 +39,8 @@ def bgsub(bgarray, imfile):
     
     bg = bgarray
     print('load im', time.time()-START)
-    im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
+    #im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
+    im = cv2.imread(imfile, 0)
     #array with all the channels identical.
     print('Subtracting array', time.time()-START)
     print('-a', time.time()-START)
@@ -103,8 +105,9 @@ def findflies(subimarray, well, t):
     print('ndimage.com', time.time()-START)
     coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
     np.arange(1, nb_labels+1)))
+    print('end ndimage.com', time.time()-START)
     
-    print('Size filter', time.time()-START)
+    #print('Size filter', time.time()-START)
     # Filter by size of connected component.
     smsizefil = np.array(sizes) > np.tile(0.0011*(nrows*ncols), nb_labels)
     usesizes = smsizefil*sizes
@@ -147,15 +150,18 @@ def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, roti
     ''' 
     #print('orient flies', time.time()-START)
     # Create an array where each entry is the index.
+    #print('Create posarray', time.time()-START)
     origdim = np.shape(orig_im)
     posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
-
+    #print('compute centroid', time.time()-START)
     # Find the coordinates of the points comprising each connected component.
     comppos = posarray[label_im == comp_label]
+    
     centroid = np.mean(comppos, axis=0)
-
+    #print('end compute centroid', time.time()-START)
     # Check that the centers of mass are equal to the mean of the detected 
     # components.
+    #print('assertion', time.time()-START)
     assert np.all(centroid == coms[labellist.index(comp_label)])
 
     # Mean subtract data.
@@ -171,9 +177,10 @@ def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, roti
     # Orient image.
     flyoffset = fly_offset*-1
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
-    #print('rotate',time.time()-START)
+    print('rotate',time.time()-START)
     rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
-    centroid + imgoffset, output_shape = rotimshape)
+    centroid + imgoffset, output_shape = rotimshape, order=1)
+    
     
     return(rotimage)
 
