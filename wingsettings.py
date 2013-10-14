@@ -34,7 +34,10 @@ CENTER_A = np.array([[45, 10], [65, -10]]) # top left corner and bottom diagonal
 SIDE_AL = np.array([[25, 40], [45, 25]]) # top left corner and bottom diagonal corner of square
 MID_L = np.array([[-15, 65], [15, 25]])
 
-WINLEN = 1
+MOVAVGDUR = 0.5
+PLOTLEN = 60
+
+SECINTTEST = 10
 
 
 def exptfiles(fdir):
@@ -50,9 +53,11 @@ def exptfiles(fdir):
     
     bgpickle = os.path.join(pickledir, BGNP)
     wcpickle = os.path.join(pickledir, WELLCOORDSN)
+    smcfile = os.path.join(pickledir, SMCFILE+'.npy')
+    mmcfile = os.path.join(pickledir, MMCFILE+'.npy')
     
     return(exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, 
-    rotfigdir, wingfigdir, bgpickle, wcpickle)
+    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile)
 
 
 

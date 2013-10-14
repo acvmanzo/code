@@ -1,16 +1,14 @@
-import os
-import libs.bgblib as bl
-import libs.partimlib as pl
-import libs.winglib as wl
+from libs.winglib import *
 from wingsettings import *
 
 
-def an1movie(exptdir, nframes):
+def an1movie(exptdir, nframes, plotlen):
     # Defines directories.
     exptfiles = exptfiles(os.path.abspath(exptdir))
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
     rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
-    
-    movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, 'yes', 'yes')
+    movsmc, movmmc, movroi = exptint(exptfiles, plotfiles='no', save='yes')
+    plotextexpt(exptdir, movsmc, movmmc, plotlen=plotlen, usemovavg='yes', 
+    movavgdur=MOVAVGDUR)
 
-an1movie('.', NFRAMES)
+an1movie('.', NFRAMES, PLOTLEN)

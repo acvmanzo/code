@@ -459,6 +459,7 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     #subim = np.array(Image.open(os.path.join('submovie', 'sub'+imfile))).astype(float)
     
     # Finding flies.
+    print('Finding flies', time.time()-START)
     d = findflies(subim, well, BODY_TH)
     if len(d['uselab']) == 0:
         print(wellnum, 'No connected components')
@@ -530,7 +531,7 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
     framemmc = np.empty((1, len(wells)))
     frameroi = []
     for n, well in enumerate(wells):
-        #print(n, time.time()-START)
+        print(n, time.time()-START)
         try:
             flysmc, flymmc, flyroi, d = wellint(subim, well, n, thfigdir, 
             rotfigdir, wingfigdir)
@@ -547,7 +548,7 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
     return(framesmc, framemmc, frameroi)
 
 
-def multimint(exptfiles, images, plotfiles, save):
+def multimint(exptfiles, images, plotfiles, savemc):
     '''Finds the difference in ROI intensities for each fly in each well 
     in multiple images.
     Inputs:
@@ -575,7 +576,7 @@ def multimint(exptfiles, images, plotfiles, save):
         movmmc[frame,:] = framemmc
         movroi.append(frameroi)
     
-    if save == 'yes':
+    if savemc == 'yes':
     # Save as .npy arrays.
         smcfile = os.path.join(pickledir, SMCFILE)
         mmcfile = os.path.join(pickledir, MMCFILE)
@@ -601,6 +602,107 @@ def exptint(exptfiles, plotfiles, save):
     return(movsmc, movmmc, movroi)
 
 
+########## FUNCTIONS FOR PLOTTING ROI INTENSITY DIFFERENCES ###############
 
+def window(winlen):    
+    wind = list(np.ones(winlen)/winlen)
+    return(wind)
+
+
+def getfps(exptdir):
+    '''Finds fps from the name of the exptdir.
+    '''
+    info = os.path.basename(os.path.abspath(exptdir)).split('_')
+    if info.count('PF24') == 1:
+        fps = 24
+    if info.count('PF30') == 1:
+        fps = 30
+    return(fps)
+
+
+def movavg(dur, fps, trace):
+    '''Applies a moving average filter to a trace.
+    Inputs:
+    dur = duration of filter in seconds
+    fps = frames per second of movie
+    trace = 1d array to convolve
+    Output:
+    ctrace = convolved trace
+    '''
+    frames = dur*fps
+    wind = window(frames)
+    ctrace = np.convolve((trace), wind, 'same')
+    return(ctrace)
+
+
+def plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur):
+    '''Plots the difference traces.
+    smc, mmc = arrays (frames x well) showing the difference between ROIs for 
+    each well over a movie; output of multimint() or exptint()
+    fps = fps of movie
+    plotlen = duration of each subplot, in seconds
+    movavg = whether or not a moving average filter should be applied
+    movavgdur = duration moving average filter in seconds
+    '''
+    
+    if usemovavg == 'yes':
+        smc, mmc = [movavg(movavgdur, fps, x) for x in [smc, mmc]]
+    
+    # Duration of signal in seconds.
+    dur = len(smc)/float(fps)
+    # List of subplots.
+    numplots = range(np.int(np.ceil(dur/plotlen)))
+    subplots = (len(numplots), 1)
+    # X-values in seconds.
+    xvals = np.linspace(0, dur, len(smc))
+    # Max value of smc and mmc.
+    plotmax = np.max([np.max(smc), np.max(mmc)])
+    
+    # Set initial figure and font properties.
+    mpl.rc('axes', linewidth=2)
+    fontv = mpl.font_manager.FontProperties()
+    fontv.set_size(25)
+    figh = 5*len(numplots)
+    plt.figure(figsize=(30,figh), dpi=200)
+       
+    for x in numplots:
+        # Indices for each subplot.
+        li = 0 + x*plotlen*fps
+        ri = plotlen*fps + x*plotlen*fps
+        #Plot smc and mmc. 
+        ax = plt.subplot2grid(subplots, (x,0), colspan=1)    
+        plt.plot(xvals[li:ri], smc[li:ri], 'r', lw=2, label='side-center')  
+        plt.plot(xvals[li:ri], mmc[li:ri], 'b', lw=2, label='middle-center')
+        # Set x-limits and y-limits.
+        xmin = xvals[li]
+        xmax = plotlen*x+plotlen
+        plt.xlim(xmin, xmax)    
+        plt.ylim(0, 1.2*plotmax)
+        # Change x-axis labels to time format.
+        xlist = np.linspace(xmin, xmax, 5)
+        xtime = [time.strftime('%M:%S', time.gmtime(x)) for x in xlist]
+        plt.xticks(xlist, xtime, fontproperties=fontv)
+
+    plt.suptitle('Wing extension', fontsize=30)
+    plt.legend(fontsize=20)
+
+
+def saveextwell(wellnum):
+    '''Save intensity plot for each well.'''
+    plt.savefig('wingext_well{0:02d}.png'.format(wellnum))
+    plt.close()
+
+      
+def plotextexpt(exptdir, movsmc, movmmc, plotlen, usemovavg, movavgdur):
+    '''For each experiment, plots the ROI intensity differences for each well 
+    and saves each plot.
+    '''
+    
+    fps = getfps(exptdir)
+    for well in range(np.shape(movsmc)[1]):
+        smc = movsmc[:,well]
+        mmc = movmmc[:,well]
+        plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur)
+        saveextwell(well)
 
 

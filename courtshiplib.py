@@ -690,7 +690,8 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, yl
 
     # ======== PLOT AND FORMAT LEGEND ==========
     #Plots legend.
-    a1 = plt.legend(ncol=len(kindlist), loc='upper center', labelspacing=0.1, columnspacing=0.7, markerscale=0.5, fontsize=fontsz, handletextpad=0.3, borderpad=0)
+    a1 = plt.legend(ncol=len(kindlist), loc='upper center', labelspacing=0.1, 
+    columnspacing=0.7, markerscale=0.5, fontsize=fontsz, handletextpad=0.3, borderpad=0)
     #Removes border around the legend.
     a1.draw_frame(False)
 
