@@ -19,7 +19,7 @@ START = time.time()
 
 def arr2im(a):
     #a = np.absolute(a)
-    #print('-a', time.time()-START)
+    print('-a', time.time()-START)
     a = -a
     #a=a-a.min() # Adds the minimum value to each entry in the array.
     #print('ascale', time.time()-START)
@@ -37,10 +37,11 @@ def bgsub(bgarray, imfile):
     '''
     
     bg = bgarray
-    #print('load im', time.time()-START)
+    print('load im', time.time()-START)
     im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
     #array with all the channels identical.
-    
+    print('Subtracting array', time.time()-START)
+    print('-a', time.time()-START)
     subimarr = arr2im(im-bg)
     return(subimarr)
 
@@ -91,15 +92,19 @@ def findflies(subimarray, well, t):
     
     # Functions to smooth the connected components.
     #open_img = ndimage.binary_opening(img)
+    print('Binary closing', time.time()-START)
     close_im = ndimage.binary_closing(img, 
     structure=np.ones((5,5)).astype(img.dtype))
     
     # Select the connected components.
+    print('ndimage.label', time.time()-START)
     label_im, nb_labels = ndimage.label(close_im)
     sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
+    print('ndimage.com', time.time()-START)
     coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
     np.arange(1, nb_labels+1)))
     
+    print('Size filter', time.time()-START)
     # Filter by size of connected component.
     smsizefil = np.array(sizes) > np.tile(0.0011*(nrows*ncols), nb_labels)
     usesizes = smsizefil*sizes
@@ -256,7 +261,8 @@ def plotfindflies(d, imname, figdir):
     # Saves figure in the exptdir/figdir/well##/ folder.
     #plt.savefig(os.path.join(welldir, '{0}_thfig.png'.format(imname)))
     # Saves figure in the exptdir/figdir folder; more convenient for testing.
-    plt.savefig('{0}_{1}_thfig.png'.format(welldir, imname))
+    plt.savefig(os.path.join(figdir, '{0}_{1}_thfig.png'.format(imname, 
+    wellnum)))
     plt.close()
 
 
@@ -482,14 +488,17 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     # Finds data for each fly in the well.
     for flyn, comp_label in enumerate(d['uselab']):
         # Orients flies.
+        print('Rotating flies', time.time()-START)
         orient_im = orientflies(d['orig_im'], d['label_im'], comp_label, 
         d['uselab'], d['usecoms'], flyoffset, rotimshape)
         # Thresholds fly image to find wings.
+        print('Finding wings', time.time()-START)
         w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)      
         # Analyzes ROI intensities.
+        print('Analyzing ROI intensities', time.time()-START)
         roi_int = np.array(roimeans(w_im, imrois))
         center_a, center_p, side_a, side_p, med = subroi(roi_int)
-        
+        #print('Appending ROI intensities', time.time()-START)
         if ((center_p+side_p) - (center_a+side_a)) > 0:
             flysmc.append(side_p - center_p)
             flymmc.append(med - center_p)
@@ -508,8 +517,6 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     return(flysmc, flymmc, flyroi, d)
 
 
-
-
 def frameint(exptfiles, bgarray, imfile, plotfiles):
     '''Finds the difference in ROI intensities for each fly in each well 
     in one movie frame. 
@@ -523,8 +530,8 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
     '''
 
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
-
+    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
+    print('Finding subtracted movie', time.time()-START)
     subim = bgsub(bgarray, imfile)
     wells = loadwells(wcpickle)
     framesmc = np.empty((1, len(wells)))
@@ -535,6 +542,7 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
         try:
             flysmc, flymmc, flyroi, d = wellint(subim, well, n, thfigdir, 
             rotfigdir, wingfigdir)
+            #print('Appending mov ROI intensities', time.time()-START)
             framesmc[0,n] = np.max(flysmc)
             framemmc[0,n] = np.max(flymmc)
             frameroi.append(flyroi)
@@ -560,7 +568,7 @@ def multimint(exptfiles, images, plotfiles, savemc):
     picklefiles = 'yes' or 'no'; whether or not to pickle output
     '''
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
+    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
     bgarray = np.load(bgpickle)
 
     movlen = len(images)
@@ -575,7 +583,7 @@ def multimint(exptfiles, images, plotfiles, savemc):
         movsmc[frame,:] = framesmc
         movmmc[frame,:] = framemmc
         movroi.append(frameroi)
-    
+    print('Saving arrays', time.time()-START)
     if savemc == 'yes':
     # Save as .npy arrays.
         smcfile = os.path.join(pickledir, SMCFILE)

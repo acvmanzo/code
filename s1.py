@@ -18,6 +18,7 @@ from PIL import Image
 import time
 import matplotlib as mpl
 import time
+import cv2
 
 
 exptfiles = exptfiles(os.path.abspath('.'))
@@ -26,21 +27,21 @@ rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
 
 
 IMNUMS = [str(x) for x in np.arange(10, 11, 1)]
-IMAGES = ['mov000'+n+'.bmp' for n in IMNUMS]
+IMAGES = ['mov000'+n+'.jpeg' for n in IMNUMS]
 os.chdir(movdir)
-movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, plotfiles='no', 
-savemc='no')
+#movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, plotfiles='no', 
+#savemc='no')
 
 #exptint(exptfiles, 'no', 'yes')
-movsmc = np.load(smcfile)
-movmmc = np.load(mmcfile)   
+#movsmc = np.load(smcfile)
+#movmmc = np.load(mmcfile)   
 
-fps = getfps(exptdir)
+#fps = getfps(exptdir)
 #plotextwell(movsmc[:,2], movmmc[:,2], fps=fps, plotlen=60, conv='yes', 
 #convdur=0.5)
 #saveextwell(2)
 
-plotextexpt(exptdir, movsmc, movmmc, plotlen=60, usemovavg='yes', movavgdur=MOVAVGDUR)
+#plotextexpt(exptdir, movsmc, movmmc, plotlen=60, usemovavg='yes', movavgdur=MOVAVGDUR)
 
 
 
