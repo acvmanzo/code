@@ -1,5 +1,6 @@
-from piltest2 import *
+####### TESTING FLY DETECTION #########
 
+from piltest2 import *
 #imgnums = [str(x) for x in np.arange(10, 100, 20)]
 #imgnums = [str(x) for x in [50]]
 #images = ['subm00{0}'.format(n) for n in imgnums]

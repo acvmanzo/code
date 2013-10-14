@@ -1,3 +1,5 @@
+############### TESTING CODE FOR DIVIDING BACKGROUND FILE INTO WELLS ###############
+
 from PIL import Image
 import os
 import numpy as np

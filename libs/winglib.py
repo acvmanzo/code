@@ -608,7 +608,7 @@ def exptint(exptfiles, plotfiles, save):
     in multiple movieframes.
     '''
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle = exptfiles
+    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
     
     frames = cmn.listsortfs(movdir)
 

@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-# This executable file determines the locations of an ROI surrounding each 
-# well using the default ROI parameters. This should be run 
 
 import os
 import matplotlib.pyplot as plt

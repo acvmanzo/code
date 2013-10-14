@@ -1,5 +1,6 @@
-from piltest2 import *
+############ TESTING PLOTTING OF DIFFERENCE IN ROI INTENSITIES ###########
 
+from piltest2 import *
 
 IMNUMS = np.arange(1, 21014, 1)
 IMAGES = ['mov{0:05}'.format(n) for n in IMNUMS]

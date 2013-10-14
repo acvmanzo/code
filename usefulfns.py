@@ -182,22 +182,7 @@ boverwrite):
             continue
 
 
-######## PARTIMLIB.PY ############
-
-def convparams(self, imsize):
-    '''Converts parameters from scaled chamber coordinates to image 
-    coordinates.
-    Inputs:
-    imsize = image size as list [nrows x ncols] (ex., [1080 x 1920])
-    '''
-    imrows, imcols = imsize
-    for y in [d['r'], d['rpad'], self.nrows, self.rshift]:
-        y = y*imrows
-    for x in [self.c, self.cpad, self.ncols, self.cshift]:
-        x = x*imcols 
-
-
-########### function test ##############
+########### Function to remove flies from background image using thresholding ##############
 # Sometimes a fly sits still for the whole movie and so is incorporated into 
 #the background image. I tried to write some functions to get rid of the fly
 #from the background, 
@@ -274,7 +259,22 @@ plt.imshow(carr, cmap=plt.cm.gray)
 plt.savefig('../bgrthsub.png')
 
 
-###### Splitting medians into groups #########
+######## PARTIMLIB.PY ############
+
+def convparams(self, imsize):
+    '''Converts parameters from scaled chamber coordinates to image 
+    coordinates.
+    Inputs:
+    imsize = image size as list [nrows x ncols] (ex., [1080 x 1920])
+    '''
+    imrows, imcols = imsize
+    for y in [d['r'], d['rpad'], self.nrows, self.rshift]:
+        y = y*imrows
+    for x in [self.c, self.cpad, self.ncols, self.cshift]:
+        x = x*imcols 
+
+
+###### Splitting frames into groups for generation of background image #########
 def genbgim(imdir, nframes, fntype, imext, split=5):
     '''Generates a background image from a sequence of image files.
     Input:

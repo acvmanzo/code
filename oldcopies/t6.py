@@ -1,3 +1,5 @@
+############# TESTING APPLYING A MOVING AVERAGE TO INTENSITY DIFFERENCE PLOTS ###########
+
 from piltest2 import *
 
 IMNUMS = np.arange(4300, 4699, 1)

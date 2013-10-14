@@ -1,3 +1,7 @@
+####### TESTING CODE FOR FINDING INTENSITY DIFFERENCES IN ROI AND PLOTTING THE 
+#RESULTING DATA ################### 
+
+
 from piltest2 import *
 
 
