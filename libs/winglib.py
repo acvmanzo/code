@@ -95,13 +95,13 @@ def findflies(subimarray, well, t):
     # Functions to smooth the connected components.
     #open_img = ndimage.binary_opening(img)
     #print('Binary closing', time.time()-START)
-    close_im = ndimage.binary_closing(img, 
-    structure=np.ones((5,5)).astype(img.dtype))
+    #close_im = ndimage.binary_closing(img, 
+    #structure=np.ones((5,5)).astype(img.dtype))
     
-    #structure = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-    ##print(structure)
-    #cv2.morphologyEx(img, cv2.MORPH_CLOSE, structure, img)
-    #close_im = img
+    structure = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    #print(structure)
+    cv2.morphologyEx(img, cv2.MORPH_CLOSE, structure, img)
+    close_im = img
     
     # Select the connected components.
     #print('ndimage.label', time.time()-START)

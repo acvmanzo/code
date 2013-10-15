@@ -44,3 +44,7 @@ RESULTS 2:
 ndimage: 3.02625703812
 cv2: 2.27911186218
 0.07 seconds savings per frame!!
+
+
+TEST 2A: binary closing, ndimage vs opencv, findflies()
+RESULTS 2A:  timeit, cv2: 0.486644029617; timeit, ndimage: 0.5499
