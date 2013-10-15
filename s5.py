@@ -58,19 +58,18 @@ def findfliestest(subimarray, well, t):
     #print('subim well min', np.min(orig_im))
   
     img = np.uint8(np.copy(orig_im))
-    onesimage = np.ones(np.shape(orig_im))
    
     # Threshold image.
-    th_im = np.copy(img)
-    retval, th_im = cv2.threshold(src=img, thresh=175, maxval=255, 
-    type=cv2.THRESH_BINARY, dst=th_im)
+    #th_im = np.copy(img)
+    retval, img = cv2.threshold(src=img, thresh=175, maxval=255, 
+    type=cv2.THRESH_BINARY, dst=img)
     # Binary closing.
-    close_im = np.copy(th_im)
+    #close_im = np.copy(th_im)
     structure = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-    cv2.morphologyEx(src=th_im, op=cv2.MORPH_CLOSE, kernel=structure, 
-    dst=close_im)
+    cv2.morphologyEx(src=img, op=cv2.MORPH_CLOSE, kernel=structure, 
+    dst=img)
     # Find contours.
-    contim = np.copy(close_im)
+    contim = np.copy(img)
     contours, hier = cv2.findContours(contim, mode=cv2.RETR_LIST, 
     method=cv2.CHAIN_APPROX_NONE)
     # Find areas and centers of mass of contours.
@@ -78,7 +77,7 @@ def findfliestest(subimarray, well, t):
     ccoms = []
     careas = []
     for x, contour in enumerate(contours):
-        contpic = np.empty(np.shape(close_im))
+        contpic = np.empty(np.shape(img))
         cv2.drawContours(image=contpic, contours=contours, contourIdx=x, 
         color=(255,0,0), thickness=cv.CV_FILLED)
         
@@ -96,10 +95,10 @@ def findfliestest(subimarray, well, t):
     #print('ccoms', ccoms)
     #print('careas', careas)
     
-    allcontpic = np.sum(contpics, axis=0)
+    #allcontpic = np.sum(contpics, axis=0)
         
-    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
-    'contim':contim, 'contpics':contpics, 'allcontpic':allcontpic,
+    d = {'orig_im':orig_im, 'th_im':img, 'close_im':img, 
+    'contim':contim, 'contpics':contpics, 'allcontpic':img,
     'coms':np.array(ccoms), 'contours':contours, 'dim':np.shape(orig_im)}
     
     return(d)
@@ -250,14 +249,14 @@ def testff():
 
 import cProfile
 #cProfile.run('testff()', 'profall_ndim')
-cProfile.run('testff()', 'profall_cv2')
+cProfile.run('testff()', 'profall_cv2_sh')
 
 
-import pstats
-p = pstats.Stats('profall_cv2')
-q = pstats.Stats('profall_ndim')
-p.strip_dirs().sort_stats('cumulative').print_stats(15)
-q.strip_dirs().sort_stats('cumulative').print_stats(15)
+#import pstats
+#p = pstats.Stats('profall_cv2')
+#q = pstats.Stats('profall_ndim')
+#p.strip_dirs().sort_stats('cumulative').print_stats(15)
+#q.strip_dirs().sort_stats('cumulative').print_stats(15)
 
 #if __name__ == '__main__':
     #import timeit
