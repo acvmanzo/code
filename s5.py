@@ -23,20 +23,20 @@ def bgsubtest(bgarray, imfile):
     '''
     
     bg = bgarray
-    print('bg max', np.max(bg))
-    print('bg min', np.min(bg))
+    #print('bg max', np.max(bg))
+    #print('bg min', np.min(bg))
     #print('load im', time.time()-START)
     #im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
     im = cv2.imread(imfile, 0)
-    print('im max', np.max(im))
-    print('im min', np.min(im))
+    #print('im max', np.max(im))
+    #print('im min', np.min(im))
     #array with all the channels identical.
     #print('Subtracting array', time.time()-START)
     #print('-a', time.time()-START)
     #subimarr = arr2imtest(im-bg)
     subimarr = bg - im
-    print('subim max', np.max(subimarr))
-    print('subim min', np.min(subimarr))
+    #print('subim max', np.max(subimarr))
+    #print('subim min', np.min(subimarr))
     return(subimarr)
 
 
@@ -48,103 +48,59 @@ def findfliestest(subimarray, well, t):
     ncols = c2-c1
     #subimarray = np.array(array2image(subimarray))
     orig_im = subimarray[r1:r2, c1:c2]
-    print('subim well max', np.max(orig_im))
-    print('subim well min', np.min(orig_im))
+    #print('subim well max', np.max(orig_im))
+    #print('subim well min', np.min(orig_im))
     orig_im = orig_im - np.min(orig_im)
-    print('subim well max', np.max(orig_im))
-    print('subim well min', np.min(orig_im))
+    #print('subim well max', np.max(orig_im))
+    #print('subim well min', np.min(orig_im))
     orig_im = orig_im/np.max(orig_im)*255
-    print('subim well max', np.max(orig_im))
-    print('subim well min', np.min(orig_im))
-    
-
-    img = np.copy(orig_im)
-    img = img - np.min(img)
-    print('img max', np.max(img))
-    print('img min', np.min(img))
-    
-    img = np.uint8(img)
+    #print('subim well max', np.max(orig_im))
+    #print('subim well min', np.min(orig_im))
+  
+    img = np.uint8(np.copy(orig_im))
     onesimage = np.ones(np.shape(orig_im))
    
+    # Threshold image.
     th_im = np.copy(img)
     retval, th_im = cv2.threshold(src=img, thresh=175, maxval=255, 
     type=cv2.THRESH_BINARY, dst=th_im)
-    
-    ## Thresholds the image based on the peaks in the intensity histogram.
-    #floator = np.copy(orig_im)
-    #low_values_indices = floator < 120  # Where values are low
-    ##high_values_indices = img > 60
-    #floator[low_values_indices] = 0
-    #th_im = np.copy(floator)
-    #img[high_values_indices] = 0
-    
-    # Functions to smooth the connected components.
-    #open_img = ndimage.binary_opening(img)
-    # binary image closing
+    # Binary closing.
     close_im = np.copy(th_im)
     structure = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
     cv2.morphologyEx(src=th_im, op=cv2.MORPH_CLOSE, kernel=structure, 
     dst=close_im)
-
-
-    # Select the connected components.
+    # Find contours.
     contim = np.copy(close_im)
     contours, hier = cv2.findContours(contim, mode=cv2.RETR_LIST, 
     method=cv2.CHAIN_APPROX_NONE)
-    #print(np.shape(contours))
-    #print(np.shape(contours[0]))
-    #print(np.shape(contours[0][0]))
-    #print(contours[0][0][0][0])
-    #print(contours[80,0,0])
+    # Find areas and centers of mass of contours.
+    contpics = []
+    ccoms = []
+    careas = []
+    for x, contour in enumerate(contours):
+        contpic = np.empty(np.shape(close_im))
+        cv2.drawContours(image=contpic, contours=contours, contourIdx=x, 
+        color=(255,0,0), thickness=cv.CV_FILLED)
+        
+        cmean = np.mean(contour, axis=0)
+        carea = np.sum(contpic)/255.
+        contpics.append(contpic)
+        if carea > 0.0011*(nrows*ncols):
+            contpics.append(contpic)
+            ccoms.extend(cmean)
+            careas.append(carea)
+        #print('contour', np.shape(contour))
+        #print('contour mean', np.mean(contour, axis=0))
     
-    contpic = np.empty(np.shape(close_im))
-    cv2.drawContours(image=contpic, contours=contours, contourIdx=1, 
-    color=(255,0,0), thickness=cv.CV_FILLED)
-    print(np.max(contpic))
-    li = contpic > 254
+    #print('contpics shape', np.shape(contpics))
+    #print('ccoms', ccoms)
+    #print('careas', careas)
     
-    origdim = np.shape(contpic)
-    posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
-    #print('compute centroid', time.time()-START)
-    # Find the coordinates of the points comprising each connected component.
-    comppos = posarray[contpic == 255]
-    centroid = np.mean(comppos, axis=0)
-
-    print(np.mean(comppos, axis=0))
-        #ca1 = cv2.contourArea(contours[0])
-    #ca2 = cv2.contourArea(contours[1])
-    ##ca3 = cv2.contourArea(contours[2])
-    #ca = ca1 + ca2
-    #print('contour area', ca)
-    
-    ccom = cv2.moments(contours[0])
-    print('ccom', ccom)
-    
-    label_im, nb_labels = ndimage.label(close_im)
-    sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
-    #print('ndimage.com', time.time()-START)
-    coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
-    np.arange(1, nb_labels+1)))
-    #print('end ndimage.com', time.time()-START)
-    
-    #print('Size filter', time.time()-START)
-    # Filter by size of connected component.
-    smsizefil = np.array(sizes) > np.tile(0.0011*(nrows*ncols), nb_labels)
-    usesizes = smsizefil*sizes
-    uselabs = []
-    for snum, size in enumerate(usesizes):
-        if size > 0:
-            uselabs.append(snum+1)
-    #uselab = []
-    #for size, snum in sorted(lsizes, reverse=True)[:2]:
-        #uselab.append(snum)
-    usecoms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
-    uselabs))
-
-    d = {'orig_im':orig_im, 'th_im':th_im, 'centroid':centroid, 
-    'close_im':close_im, 'contim':contim, 'contours':contours, 'contpic':contpic, \
-    'label_im':label_im, 'nb_labels':nb_labels, 'uselab':uselabs, 'coms':coms,
-    'usecoms':usecoms, 'dim':list(np.shape(orig_im))}
+    allcontpic = np.sum(contpics, axis=0)
+        
+    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
+    'contim':contim, 'contpics':contpics, 'allcontpic':allcontpic,
+    'coms':np.array(ccoms), 'contours':contours, 'dim':np.shape(orig_im)}
     
     return(d)
 
@@ -184,10 +140,10 @@ def plotfindfliestest(d, imname, wellnum):
     
     # Plots the contours image.
     plt.subplot2grid((2,3), (1,2), colspan=1)
-    plt.imshow(d['contpic'], cmap=plt.cm.gray)
-    plt.plot(d['centroid'][1], d['centroid'][0], 'ro', markersize=3)
-    plt.axis('off')
-    plt.title('Contours')
+    plt.imshow(d['allcontpic'], cmap=plt.cm.gray)
+    plt.plot(d['coms'].T[0], d['coms'].T[1], 'ro', markersize=3)
+    #plt.axis('off')
+    plt.title('Comp={0}'.format(len(d['coms'])))
     rows, cols = d['dim']
     plt.axis((0, cols, rows, 0))
     
@@ -211,6 +167,49 @@ def plotfindfliestest(d, imname, wellnum):
     #plt.axis((0, cols, rows, 0))
     #plt.title('Size-fil comp={0}'.format(len(d['uselab'])))
 
+def orientfliestest(orig_im, contpics, coms, flynum, fly_offset, rotimshape):
+
+    #print('orient flies', time.time()-START)
+    # Create an array where each entry is the index.
+    #print('Create posarray', time.time()-START)
+    origdim = np.shape(orig_im)
+    #print('orig', np.shape(orig_im))
+    #print('contpic', np.shape(contpics[0]))
+    posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
+    #print(posarray[:,0])
+    #print('compute centroid', time.time()-START)
+    # Find the coordinates of the points comprising each connected component.
+    comppos = posarray[contpics[flynum] == 255]
+    #print(np.mean(comppos, axis=0))
+    
+    #centroid = np.mean(comppos, axis=0)
+    centroid = [coms[flynum][1], coms[flynum][0]]
+    #print(centroid)
+    #print('end compute centroid', time.time()-START)
+    # Check that the centers of mass are equal to the mean of the detected 
+    # components.
+    #print('assertion', time.time()-START)
+    #assert np.all(centroid == coms[labellist.index(comp_label)])
+
+    # Mean subtract data.
+    comppos = comppos - centroid
+    #print('svd', time.time()-START)
+    # Singular value decomposition
+    u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
+    
+    # Plot points in the new axes.
+    #flypoints = [[0, 0], [10, 0], [0,5]]
+    #origpoints = np.dot(flypoints, eigenv) + centroid
+    
+    # Orient image.
+    flyoffset = fly_offset*-1
+    imgoffset = np.dot(flyoffset, 0.5*eigenv)
+    #print('rotate',time.time()-START)
+    rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
+    centroid + imgoffset, output_shape = rotimshape, order=1)
+    
+    
+    return(rotimage)
 
 def testff():
     
@@ -225,26 +224,40 @@ def testff():
     bgarray = np.load(bgpickle)
     subim = bgsubtest(bgarray, imfile)
     t = BODY_TH
+    flynum = 0
 
     #plt.figure(figsize=(10,8), dpi=400)
     d = findfliestest(subim, well, t)
-    plotfindfliestest(d, imname, wellnum)
-    savetestfig(thfigdir, imname, wellnum, 'none')
+    #d = findflies(subim, well, t)
+    #plotfindfliestest(d, imname, wellnum)
+    #plotfindflies(d, imname, wellnum)
+    #savetestfig(thfigdir, imname, wellnum, 'none')
+    rotimshape = 0.5*np.array(d['dim'])
+    flyoffset = np.array(0.5*rotimshape)        
+    rotim = orientfliestest(d['orig_im'], d['contpics'], d['coms'], flynum, 
+    flyoffset, rotimshape)
+    #rotim = orientflies(d['orig_im'], d['label_im'], flynum+1, 
+    #d['uselab'], d['usecoms'], flyoffset, rotimshape)
+    #plotrotim(rotim, rotimshape, flyoffset, wellnum, flynum, imname, 
+    #rotfigdir)
+    #savetestfig(rotfigdir, imname, wellnum, flynum)
+    
     #d = findflies(subim, well, t)
     #plotfindflies(d, imname, wellnum)
     #savetestfig(thfigdir, imname, wellnum, 'none')
 
-testff()
+#testff()
 
-#import cProfile
-#cProfile.run('testff()', 'profcl_cv2')
+import cProfile
+#cProfile.run('testff()', 'profall_ndim')
+cProfile.run('testff()', 'profall_cv2')
 
 
-#import pstats
-#p = pstats.Stats('profcl_cv2')
-#q = pstats.Stats('profcl_ndim')
-#p.strip_dirs().sort_stats('cumulative').print_stats(15)
-#q.strip_dirs().sort_stats('cumulative').print_stats(15)
+import pstats
+p = pstats.Stats('profall_cv2')
+q = pstats.Stats('profall_ndim')
+p.strip_dirs().sort_stats('cumulative').print_stats(15)
+q.strip_dirs().sort_stats('cumulative').print_stats(15)
 
 #if __name__ == '__main__':
     #import timeit

@@ -134,7 +134,8 @@ def findflies(subimarray, well, t):
     return(d)
 
 
-def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, rotimshape):
+def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, 
+rotimshape):
     '''
     Rotates image so that each fly (connected component) is positioned 
     vertically along its AP axis.
