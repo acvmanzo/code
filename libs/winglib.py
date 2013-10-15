@@ -20,7 +20,7 @@ START = time.time()
 
 def arr2im(a):
     #a = np.absolute(a)
-    print('-a', time.time()-START)
+    #print('-a', time.time()-START)
     a = -a
     #a=a-a.min() # Adds the minimum value to each entry in the array.
     #print('ascale', time.time()-START)
@@ -38,12 +38,12 @@ def bgsub(bgarray, imfile):
     '''
     
     bg = bgarray
-    print('load im', time.time()-START)
+    #print('load im', time.time()-START)
     #im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
     im = cv2.imread(imfile, 0)
     #array with all the channels identical.
-    print('Subtracting array', time.time()-START)
-    print('-a', time.time()-START)
+    #print('Subtracting array', time.time()-START)
+    #print('-a', time.time()-START)
     subimarr = arr2im(im-bg)
     return(subimarr)
 
@@ -94,18 +94,23 @@ def findflies(subimarray, well, t):
     
     # Functions to smooth the connected components.
     #open_img = ndimage.binary_opening(img)
-    print('Binary closing', time.time()-START)
+    #print('Binary closing', time.time()-START)
     close_im = ndimage.binary_closing(img, 
     structure=np.ones((5,5)).astype(img.dtype))
     
+    #structure = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    ##print(structure)
+    #cv2.morphologyEx(img, cv2.MORPH_CLOSE, structure, img)
+    #close_im = img
+    
     # Select the connected components.
-    print('ndimage.label', time.time()-START)
+    #print('ndimage.label', time.time()-START)
     label_im, nb_labels = ndimage.label(close_im)
     sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
-    print('ndimage.com', time.time()-START)
+    #print('ndimage.com', time.time()-START)
     coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
     np.arange(1, nb_labels+1)))
-    print('end ndimage.com', time.time()-START)
+    #print('end ndimage.com', time.time()-START)
     
     #print('Size filter', time.time()-START)
     # Filter by size of connected component.
@@ -177,7 +182,7 @@ def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, roti
     # Orient image.
     flyoffset = fly_offset*-1
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
-    print('rotate',time.time()-START)
+    #print('rotate',time.time()-START)
     rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
     centroid + imgoffset, output_shape = rotimshape, order=1)
     
@@ -204,16 +209,15 @@ def findwings(orient_im, low_value, high_value):
     return(w_im)
 
 ############# FUNCTIONS FOR PLOTTING FLY IMAGES #############
-def plotfindflies(d, imname, figdir):
+def plotfindflies(d, imname, wellnum):
     '''Plots a figure showing different processing steps in findflies().
     Input:
     d = dictionary; output of findflies()
     figdir = directory to save figure
     '''
-    wellnum = d['wellnum']
+    
     
     # Plots original image.
-    plt.figure()
     plt.subplot2grid((2,3), (0,0), colspan=1)
     plt.imshow(Image.fromarray(d['orig_im']), cmap=plt.cm.gray)
     plt.axis('off')
@@ -259,18 +263,6 @@ def plotfindflies(d, imname, figdir):
     rows, cols = d['dim']
     plt.axis((0, cols, rows, 0))
     plt.title('Size-fil comp={0}'.format(len(d['uselab'])))
-    
-    
-    cmn.makenewdir(figdir)
-    #imname = os.path.splitext(imfile)[0]
-    welldir = os.path.join(figdir, 'well{0:02d}'.format(wellnum))
-    cmn.makenewdir(welldir)
-    # Saves figure in the exptdir/figdir/well##/ folder.
-    #plt.savefig(os.path.join(welldir, '{0}_thfig.png'.format(imname)))
-    # Saves figure in the exptdir/figdir folder; more convenient for testing.
-    plt.savefig(os.path.join(figdir, '{0}_{1}_thfig.png'.format(imname, 
-    wellnum)))
-    plt.close()
 
 
 def expt_findplotflies(bgpickle, movbase, wells):
@@ -290,32 +282,27 @@ def expt_findplotflies(bgpickle, movbase, wells):
         # To load from a saved image:
         #subimfile = os.path.join('../'+SUBMOVBASE, 'sub'+f)
         #subim = np.array(Image.open(subimfile)).astype(float)
+        imanme = os.path.splitext(f)[0]
         for n, well in enumerate(wells):
             print('Well', n)
             try:
                 d = findflies(subim, imfile, well, BODY_TH, 'no')
-                plotfindflies(d, n, THFIGDIR)
-                plt.close()
+                plotfindflies(d, n)
+                saveexptfig(THFIGDIR, imname, n)
             except IndexError:
                 print('No connected components')
                 continue  
+
 
 
 def plotrotim(orient_im, rotimshape, fly_offset, wellnum, flynum, imname, outdir):
     # Plot oriented image.
     welldir = os.path.join(outdir, 'well{0:02d}'.format(wellnum))
     cmn.makenewdir(welldir)
-    plt.figure()
+    #plt.figure()
     plt.imshow(orient_im, cmap=plt.cm.gray)
     plt.plot([0, rotimshape[1]], fly_offset, 'r-') 
     plt.plot(fly_offset, [0, rotimshape[0]], 'r-') 
-    # Saves figure in the exptdir/figdir/well##/ folder.
-    #plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
-    #flynum)))
-    # Saves figure in the exptdir/figdir/ folder (more convenient for 
-    #testing).
-    plt.savefig(os.path.join(outdir, '{0}_{1:02d}_fly{2}.png'.format(imname, 
-    wellnum, flynum)))
 
     
 def plotrois(imrois):
@@ -326,38 +313,66 @@ def plotrois(imrois):
         plt.text(c1, r1, '{0}'.format(x), color=cols[x])
 
 
-def plot_wingimage(w_im, imrois, imname, flynum, outdir, wellnum):
+def plotwingim(w_im, imrois, imname, flynum, outdir, wellnum):
     cmn.makenewdir(outdir)
-    plt.figure()
+    #plt.figure()
     plt.imshow(w_im, cmap=plt.cm.gray)
     plotrois(imrois)
-    welldir = os.path.join(outdir, 'well{0:02d}'.format(wellnum))
-    cmn.makenewdir(welldir)
-    # Saves figure in the exptdir/figdir/well##/ folder.
-    #figname = os.path.join(welldir, '{0}_{1}.png'.format(imname, flynum))
-    # Saves figure in the exptdir/figdir/ folder (more convenient for 
-    #testing).
-    figname = os.path.join(outdir, '{0}_{1:02d}_fly{2}.png'.format(imname, 
-    wellnum, flynum))
+    
 
-    plt.savefig(figname)
+def saveexptfig(figdir, imname, wellnum, flynum):
+    welldir = os.path.join(figdir, 'well{0:02d}'.format(wellnum))
+    cmn.makenewdir(welldir)
+    
+    if flynum == 'none':
+        plt.savefig(os.path.join(welldir, '{0}_thfig.png'.format(imname)))
+    else:
+        plt.savefig(os.path.join(welldir, '{0}_fly{1}.png'.format(imname, 
+        flynum)))
+    
     plt.close()
 
+def savetestfig(figdir, imname, wellnum, flynum):
+    cmn.makenewdir(figdir)
+    
+    if flynum == 'none':
+        plt.savefig(os.path.join(figdir, '{0}_{1:02d}.png'.format(imname, 
+        wellnum)))
+    else:
+        plt.savefig(os.path.join(figdir, '{0}_{1:02d}_fly{2}.png'.format(imname, 
+        wellnum, flynum)))
+    
+    plt.close()
 
 def plotwellint(d, imname, thfigdir, rotfigdir, wingfigdir):
     # Plotting functions.
     plotfindflies(d, imname, thfigdir)
-    plt.close()
+    saveexptfig(thfigdir, imname, d['wellnum'], 'none')
 
     for flyn in range(len(d['flyims'])):
         plotrotim(d['flyims'][flyn]['orient_im'], d['rotimshape'], 
         d['flyoffset'], d['wellnum'], flyn, imname, rotfigdir)
-        plt.close()
+        saveexptfig(rotfigdir, imname, d['wellnum'], flyn)
         plot_wingimage(d['flyims'][flyn]['w_im'], d['imrois'], imname, flyn, 
         wingfigdir, d['wellnum'])
+        saveexptfig(wingfigdir, imname, d['wellnum'], flyn)
+        
         plt.close()
 
+def plotwellinttest(d, imname, thfigdir, rotfigdir, wingfigdir):
+    # Plotting functions.
+    plotfindflies(d, imname, thfigdir)
+    savetestfig(thfigdir, imname, d['wellnum'], 'none')
 
+    for flyn in range(len(d['flyims'])):
+        plotrotim(d['flyims'][flyn]['orient_im'], d['rotimshape'], 
+        d['flyoffset'], d['wellnum'], flyn, imname, rotfigdir)
+        savetestfig(rotfigdir, imname, d['wellnum'], flyn)
+        plot_wingimage(d['flyims'][flyn]['w_im'], d['imrois'], imname, flyn, 
+        wingfigdir, d['wellnum'])
+        savetestfig(wingfigdir, imname, d['wellnum'], flyn)
+        
+        plt.close()
 
 
 ######### FUNCTIONS FOR DEFINING ROIS #################
@@ -472,7 +487,7 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     #subim = np.array(Image.open(os.path.join('submovie', 'sub'+imfile))).astype(float)
     
     # Finding flies.
-    print('Finding flies', time.time()-START)
+    #print('Finding flies', time.time()-START)
     d = findflies(subim, well, BODY_TH)
     if len(d['uselab']) == 0:
         print(wellnum, 'No connected components')
@@ -495,14 +510,14 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     # Finds data for each fly in the well.
     for flyn, comp_label in enumerate(d['uselab']):
         # Orients flies.
-        print('Rotating flies', time.time()-START)
+        #print('Rotating flies', time.time()-START)
         orient_im = orientflies(d['orig_im'], d['label_im'], comp_label, 
         d['uselab'], d['usecoms'], flyoffset, rotimshape)
         # Thresholds fly image to find wings.
-        print('Finding wings', time.time()-START)
+        #print('Finding wings', time.time()-START)
         w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)      
         # Analyzes ROI intensities.
-        print('Analyzing ROI intensities', time.time()-START)
+        #print('Analyzing ROI intensities', time.time()-START)
         roi_int = np.array(roimeans(w_im, imrois))
         center_a, center_p, side_a, side_p, med = subroi(roi_int)
         #print('Appending ROI intensities', time.time()-START)
@@ -530,7 +545,7 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
     Inputs:
     exptfiles = exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
     rotfigdir, wingfigdir, bgpickle, wcpickle (output of 
-    wingsettings.exptfiles())
+    wingsettings.getexptfiles())
     bgarray = array of background file
     imfile = image from movie
     plotfiles = 'yes' or 'no'; whether or not to plot files
@@ -569,7 +584,7 @@ def multimint(exptfiles, images, plotfiles, savemc):
     Inputs:
     exptfiles = exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
     rotfigdir, wingfigdir, bgpickle, wcpickle (output of 
-    wingsettings.exptfiles())
+    wingsettings.getexptfiles())
     images = list of image names
     plotfiles = 'yes' or 'no'; whether or not to plot files
     picklefiles = 'yes' or 'no'; whether or not to pickle output

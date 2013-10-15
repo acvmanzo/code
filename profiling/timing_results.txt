@@ -1,0 +1,46 @@
+TEST 1: 
+
+from wingsettings import *
+from libs.winglib import *
+
+
+def testframeint():
+    exptfiles1 = exptfiles(os.path.abspath('.'))
+    exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles1
+    bgarray = np.load(bgpickle)
+    imfile = os.path.join(movdir, 'mov00734.jpeg')
+    plotfiles = 'no'
+    
+    frameint(exptfiles1, bgarray, imfile, plotfiles)
+
+if __name__ == '__main__':
+    import timeit
+    print(timeit.timeit("testframeint()", setup="from __main__ import testframeint", 
+    number=10))
+
+
+RESULTS 1: 3.16064095497 (0.32 sec/frame)
+
+
+TEST 2: binary closing, ndimage vs. opencv
+
+def testframeint():
+    exptfiles = getexptfiles(os.path.abspath('.'))
+    exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
+    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
+    bgarray = np.load(bgpickle)
+    imfile = os.path.join(movdir, 'mov00734.jpeg')
+    plotfiles = 'no'
+    
+    frameint(exptfiles, bgarray, imfile, plotfiles)
+
+if __name__ == '__main__':
+    import timeit
+    print(timeit.timeit("testframeint()", setup="from __main__ import testframeint", 
+    number=10))
+
+RESULTS 2:
+ndimage: 3.02625703812
+cv2: 2.27911186218
+0.07 seconds savings per frame!!

@@ -1,0 +1,19 @@
+In [5]: p.sort_stats('cumulative').print_stats(10)
+Mon Oct 14 15:29:04 2013    profstats
+
+         10651 function calls (10412 primitive calls) in 0.327 seconds
+
+   Ordered by: cumulative time
+   List reduced from 345 to 10 due to restriction <10>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.327    0.327 profile.py:5(testframeint)
+        1    0.001    0.001    0.326    0.326 winglib.py:566(multimint)
+        1    0.000    0.000    0.315    0.315 winglib.py:527(frameint)
+       12    0.001    0.000    0.278    0.023 winglib.py:462(wellint)
+       12    0.031    0.003    0.204    0.017 winglib.py:60(findflies)
+       12    0.000    0.000    0.083    0.007 morphology.py:651(binary_closing)
+       24    0.000    0.000    0.083    0.003 morphology.py:218(_binary_erosion)
+       24    0.082    0.003    0.082    0.003 {scipy.ndimage._nd_image.binary_erosion}
+       12    0.000    0.000    0.073    0.006 morphology.py:396(binary_dilation)
+       84    0.000    0.000    0.072    0.001 measurements.py:453(sum)

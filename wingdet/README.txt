@@ -10,43 +10,26 @@ I. Directory structure:
     wingdet/
         expts/
             genotype_date_PFxx_A_side/
+                0_thfigs/
+                1_rotims/
+                2_wingims/
                 background.tif
                 genotype_date_PFxx_A_side_1.MTS
                 genotype_date_PFxx_A_side_2.MTS
                 movie/
-                    mov00001.jpg
-                    mov00002.jpg
+                    mov00001.jpeg
+                    mov00002.jpeg
                 pickled/
-                    bgarray
+                    bgarray.npy
                     wellcoords
                     wellparams
-                submovie/
-                    submov_00001.jpg
-                    submov_00002.jpg
                 text/
                     wellcoords.txt
                     wellparams.txt
                 wells.png
                 
             genotype_date_PFxx_B_side/
-                background.tif
-                genotype_date_PFxx_B_side_1.MTS
-                genotype_date_PFxx_B_side_o2.MTS
-                
-                movie/
-                    mov_00001.jpg
-                    mov_00002.jpg
-                pickled/
-                    bgarray
-                    wellcoords
-                    wellparams
-                submovie/
-                    submov_00001.tif
-                    submov_00002.tif
-                text/
-                    wellcoords.txt
-                    wellparams.txt
-                wells.png
+
 
 
 

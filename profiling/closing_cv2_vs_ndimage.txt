@@ -1,0 +1,54 @@
+In [8]: p.strip_dirs().sort_stats('cumulative').print_stats(15)
+Mon Oct 14 18:09:22 2013    profcl_cv2
+
+         1975 function calls (1736 primitive calls) in 0.054 seconds
+
+   Ordered by: cumulative time
+   List reduced from 286 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.054    0.054 s5.py:63(testff)
+        1    0.007    0.007    0.034    0.034 winglib.py:32(bgsub)
+        1    0.020    0.020    0.022    0.022 winglib.py:21(arr2im)
+        1    0.003    0.003    0.011    0.011 s5.py:6(findfliestest)
+        1    0.000    0.000    0.009    0.009 npyio.py:265(load)
+        1    0.000    0.000    0.009    0.009 format.py:415(read_array)
+        7    0.000    0.000    0.006    0.001 measurements.py:453(sum)
+        7    0.000    0.000    0.006    0.001 measurements.py:384(_stats)
+        2    0.000    0.000    0.006    0.003 measurements.py:992(center_of_mass)
+        1    0.006    0.006    0.006    0.006 {cv2.imread}
+        1    0.005    0.005    0.005    0.005 {numpy.core.multiarray.fromfile}
+       14    0.005    0.000    0.005    0.000 {numpy.lib._compiled_base.bincount}
+        1    0.000    0.000    0.004    0.004 format.py:288(read_array_header_1_0)
+        1    0.000    0.000    0.004    0.004 utils.py:1087(safe_eval)
+        1    0.001    0.001    0.003    0.003 __init__.py:22(<module>)
+
+
+Out[8]: <pstats.Stats instance at 0x340b200>
+
+In [9]: q = pstats.Stats('profcl_ndim')
+
+In [10]: q.strip_dirs().sort_stats('cumulative').print_stats(15)
+Mon Oct 14 18:09:03 2013    profcl_ndim
+
+         2043 function calls (1804 primitive calls) in 0.061 seconds
+
+   Ordered by: cumulative time
+   List reduced from 294 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.061    0.061 s5.py:63(testff)
+        1    0.007    0.007    0.034    0.034 winglib.py:32(bgsub)
+        1    0.020    0.020    0.021    0.021 winglib.py:21(arr2im)
+        1    0.003    0.003    0.018    0.018 winglib.py:60(findflies)
+        1    0.000    0.000    0.009    0.009 npyio.py:265(load)
+        1    0.000    0.000    0.009    0.009 format.py:415(read_array)
+        1    0.000    0.000    0.007    0.007 morphology.py:651(binary_closing)
+        2    0.000    0.000    0.007    0.003 morphology.py:218(_binary_erosion)
+        2    0.007    0.003    0.007    0.003 {scipy.ndimage._nd_image.binary_erosion}
+        1    0.000    0.000    0.006    0.006 morphology.py:396(binary_dilation)
+        7    0.000    0.000    0.006    0.001 measurements.py:453(sum)
+        7    0.000    0.000    0.006    0.001 measurements.py:384(_stats)
+        1    0.006    0.006    0.006    0.006 {cv2.imread}
+        2    0.000    0.000    0.006    0.003 measurements.py:992(center_of_mass)
+        1    0.005    0.005    0.005    0.005 {numpy.core.multiarray.fromfile}

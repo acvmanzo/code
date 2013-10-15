@@ -40,7 +40,7 @@ PLOTLEN = 60
 SECINTTEST = 10
 
 
-def exptfiles(fdir):
+def getexptfiles(fdir):
     exptdir = os.path.abspath(fdir)
     movdir = os.path.join(exptdir, MOVBASE)
     submovdir = os.path.join(exptdir, SUBMOVBASE)

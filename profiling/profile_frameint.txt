@@ -1,0 +1,29 @@
+In [10]: p.sort_stats('cumulative').print_stats(20)
+Mon Oct 14 15:31:19 2013    profstatsframeint
+
+         9754 function calls (9515 primitive calls) in 0.321 seconds
+
+   Ordered by: cumulative time
+   List reduced from 338 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.321    0.321 profile.py:5(testframeint)
+        1    0.000    0.000    0.311    0.311 winglib.py:527(frameint)
+       12    0.001    0.000    0.275    0.023 winglib.py:462(wellint)
+       12    0.031    0.003    0.206    0.017 winglib.py:60(findflies)
+       12    0.000    0.000    0.083    0.007 morphology.py:651(binary_closing)
+       24    0.000    0.000    0.083    0.003 morphology.py:218(_binary_erosion)
+       24    0.082    0.003    0.082    0.003 {scipy.ndimage._nd_image.binary_erosion}
+       84    0.000    0.000    0.073    0.001 measurements.py:453(sum)
+       84    0.003    0.000    0.073    0.001 measurements.py:384(_stats)
+       12    0.000    0.000    0.073    0.006 morphology.py:396(binary_dilation)
+       24    0.006    0.000    0.070    0.003 measurements.py:992(center_of_mass)
+      168    0.056    0.000    0.056    0.000 {numpy.lib._compiled_base.bincount}
+       20    0.007    0.000    0.051    0.003 winglib.py:132(orientflies)
+        1    0.007    0.007    0.035    0.035 winglib.py:32(bgsub)
+       20    0.000    0.000    0.028    0.001 interpolation.py:302(affine_transform)
+       20    0.027    0.001    0.027    0.001 {scipy.ndimage._nd_image.geometric_transform}
+        1    0.021    0.021    0.023    0.023 winglib.py:21(arr2im)
+       44    0.009    0.000    0.015    0.000 index_tricks.py:144(__getitem__)
+       20    0.013    0.001    0.013    0.001 winglib.py:188(findwings)
+       12    0.000    0.000    0.011    0.001 morphology.py:292(binary_erosion)

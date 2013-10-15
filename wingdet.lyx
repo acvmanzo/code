@@ -1792,5 +1792,34 @@ partim.py, autopart.py and manpart.py - Edited so it can be used with movies
  with multiple image resolutions.
 \end_layout
 
+\begin_layout Section
+10/12/2013-10/13/2013 - More code cleanup
+\end_layout
+
+\begin_layout Subsection
+Updated winglib.py, mtslib.py, bglib.py
+\end_layout
+
+\begin_layout Standard
+Basically the code is usable but slow.
+ Need to speed optimize.,
+\end_layout
+
+\begin_layout Subsection
+To do:
+\end_layout
+
+\begin_layout Itemize
+Convert pickling to numpy.save where possible (wellcoords)
+\end_layout
+
+\begin_layout Itemize
+Convert ndimage operations to opencv
+\end_layout
+
+\begin_layout Itemize
+Adjust image subtraction to remove scaling.
+\end_layout
+
 \end_body
 \end_document
