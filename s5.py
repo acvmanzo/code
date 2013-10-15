@@ -232,13 +232,21 @@ def testff():
     flynum = 0
 
     #plt.figure(figsize=(10,8), dpi=400)
-    d = findfliestest(subim, well, t)
+    d = findflies(subim, well, t)
+    plt.figure()
+    
+    plt.subplot(121)
+    plt.imshow(d['contpics'][0], cmap=plt.cm.gray)
+    plt.subplot(122)
+    plt.imshow(d['contpics'][1], cmap=plt.cm.gray)
+    plt.savefig('contpics.png')
+        
     #d = findflies(subim, well, t)
-    plotfindfliestest(d, imname, wellnum)
+    #plotfindfliestest(d, imname, wellnum)
     #plotfindflies(d, imname, wellnum)
-    savetestfig(thfigdir, imname, wellnum, 'none')
-    rotimshape = 0.5*np.array(d['dim'])
-    flyoffset = np.array(0.5*rotimshape)        
+    #savetestfig(thfigdir, imname, wellnum, 'none')
+    #rotimshape = 0.5*np.array(d['dim'])
+    #flyoffset = np.array(0.5*rotimshape)        
     #rotim = orientfliestest(d['orig_im'], d['contpics'], d['coms'], flynum, 
     #flyoffset, rotimshape)
     #rotim = orientflies(d['orig_im'], d['label_im'], flynum+1, 

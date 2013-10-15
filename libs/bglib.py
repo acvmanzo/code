@@ -11,60 +11,60 @@ import glob
 import scipy.stats as stats
 import cv2
 
-def genbgimgrp(imdir, nframes, fntype, imext, split=5):
-    '''Generates a background image from a sequence of image files.
-    Input:
-    imdir = directory containing the sequence of image files
-    nframes = # frames used to generate the background image; these are spread 
-    evenly throughout the image sequence
-    fntype = 'median, 'average'; method for combining nframes.
-    imext = extension of image files
-    split = how many lists to split the job into
-    Output:
-    bgnew = numpy array of background image 
-    '''
-    print "Generating background"
-    # Load frames for generating background image.
-    imdir = os.path.abspath(imdir)
-    files = sorted(os.listdir(imdir))
-    moviel = len(files)
-    nframes = int(nframes)
-    assert moviel > nframes
+#def genbgimgrp(imdir, nframes, fntype, imext, split=5):
+    #'''Generates a background image from a sequence of image files.
+    #Input:
+    #imdir = directory containing the sequence of image files
+    #nframes = # frames used to generate the background image; these are spread 
+    #evenly throughout the image sequence
+    #fntype = 'median, 'average'; method for combining nframes.
+    #imext = extension of image files
+    #split = how many lists to split the job into
+    #Output:
+    #bgnew = numpy array of background image 
+    #'''
+    #print "Generating background"
+    ## Load frames for generating background image.
+    #imdir = os.path.abspath(imdir)
+    #files = sorted(os.listdir(imdir))
+    #moviel = len(files)
+    #nframes = int(nframes)
+    #assert moviel > nframes
     
-    nummov = np.linspace(1, moviel-1, nframes)
-    jobs = np.array_split(nummov, split)
+    #nummov = np.linspace(1, moviel-1, nframes)
+    #jobs = np.array_split(nummov, split)
     
-    imarr = np.array(Image.open(files[0]))[:,:,0].astype(float)
-    medarrs = np.empty((len(jobs),)+np.shape(imarr))
+    #imarr = np.array(Image.open(files[0]))[:,:,0].astype(float)
+    #medarrs = np.empty((len(jobs),)+np.shape(imarr))
         
-    for m, job in enumerate(jobs):
-        #print(job)
-        cont = np.empty((nframes/split,)+np.shape(imarr))
-        for n, x in enumerate(job):
+    #for m, job in enumerate(jobs):
+        ##print(job)
+        #cont = np.empty((nframes/split,)+np.shape(imarr))
+        #for n, x in enumerate(job):
+            ##print(n)
+            #if imext == 'jpeg':
+                #c = np.array(Image.open(files[int(x)]))[:,:,0].astype(float)
+                ##print('c', np.shape(c))
+            #if (imext == 'bmp') or (imext== 'tif'):
+                #c = np.array(Image.open(files[int(x)])).astype(float)
             #print(n)
-            if imext == 'jpeg':
-                c = np.array(Image.open(files[int(x)]))[:,:,0].astype(float)
-                #print('c', np.shape(c))
-            if (imext == 'bmp') or (imext== 'tif'):
-                c = np.array(Image.open(files[int(x)])).astype(float)
-            print(n)
-            cont[n,:,:] = c
-            #print('container shape after addition', np.shape(cont[:,:,1:]))
-        if fntype == 'median':
-            newc = np.median(cont, 0)
-        if fntype == 'average':
-            newc = np.average(cont, 0)
-        #print('newc', np.shape(newc))
-        #print(m)
-        medarrs[m,:,:] = newc
+            #cont[n,:,:] = c
+            ##print('container shape after addition', np.shape(cont[:,:,1:]))
+        #if fntype == 'median':
+            #newc = np.median(cont, 0)
+        #if fntype == 'average':
+            #newc = np.average(cont, 0)
+        ##print('newc', np.shape(newc))
+        ##print(m)
+        #medarrs[m,:,:] = newc
         
-    print('medarrs', np.shape(medarrs))
-    #print(medarrs)
-    #print(np.sort(medarrs, 2))
-    bg = np.median(medarrs, 0)
+    #print('medarrs', np.shape(medarrs))
+    ##print(medarrs)
+    ##print(np.sort(medarrs, 2))
+    #bg = np.median(medarrs, 0)
     
-    print(np.shape(bg))
-    return(bg)
+    #print(np.shape(bg))
+    #return(bg)
         
 
 def genbgim(imdir, nframes, fntype, imext, split=5):
@@ -94,12 +94,7 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
     cont = np.empty((len(nummov),)+np.shape(imarr))
     #print(np.shape(cont))
     for n, x in enumerate(nummov):
-        #if imext == 'jpeg' or (imext== 'tif'):
         c = cv2.imread(files[int(x)], 0)
-        #c = np.array(Image.open(files[int(x)]))[:,:,0]
-        #print('c', np.shape(c))
-        #if (imext == 'bmp'):
-            #c = np.array(Image.open(files[int(x)])).astype(float)
         cont[n,:,:] = c
     print(np.shape(cont))
     if fntype == 'median':

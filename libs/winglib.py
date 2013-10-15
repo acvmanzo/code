@@ -19,35 +19,6 @@ START = time.time()
 
 ######### FUNCTIONS FOR BACKGROUND SUBTRACTION ########
 
-#def arr2im(a):
-    ##a = np.absolute(a)
-    ##print('-a', time.time()-START)
-    #a = -a
-    ##a=a-a.min() # Adds the minimum value to each entry in the array.
-    ##print('ascale', time.time()-START)
-    #a=a/a.max()*255.0 # Scales each array so that the max value is 255.
-    ##a = np.uint8(a)
-    #return a
-
-
-#def bgsub(bgarray, imfile):
-    #'''Loads background array from pickle file and image from imfile. 
-    #Subtracts background from image.
-    #Inputs:
-    #bgpickle = pickled file containing background array (pickled/bgarray)
-    #imfile = one file from the movie image sequence
-    #'''
-    
-    #bg = bgarray
-    ##print('load im', time.time()-START)
-    ##im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
-    #im = cv2.imread(imfile, 0)
-    ##array with all the channels identical.
-    ##print('Subtracting array', time.time()-START)
-    ##print('-a', time.time()-START)
-    #subimarr = arr2im(im-bg)
-    #return(subimarr)
-
 def bgsub(bgarray, imfile):
     '''Loads background array from pickle file and image from imfile. 
     Subtracts background from image.
@@ -57,18 +28,8 @@ def bgsub(bgarray, imfile):
     '''
     
     bg = bgarray
-    #print('bg max', np.max(bg))
-    #print('bg min', np.min(bg))
-    #print('load im', time.time()-START)
-    #im = np.array(Image.open(imfile))[:,:,0].astype(float) # This loads a 3D 
     im = cv2.imread(imfile, 0)
-    #print('im max', np.max(im))
-    #print('im min', np.min(im))
-    #array with all the channels identical.
-    #print('Subtracting array', time.time()-START)
-    #print('-a', time.time()-START)
-    #subimarr = arr2imtest(im-bg)
-    subimarr = bg - im
+    subimarr = np.clip(bg-im, 0, 255).astype(np.uint8)
     #print('subim max', np.max(subimarr))
     #print('subim min', np.min(subimarr))
     return(subimarr)
@@ -83,27 +44,19 @@ def loadwells(wcfile):
         wells = pickle.load(f)
     return(wells)
 
-def findfliestest(subimarray, well, t):
+
+def findflies(subimarray, well, t):
 
     # Load the image.
     r1, r2, c1, c2 = well
     nrows = r2-r1
     ncols = c2-c1
-    #subimarray = np.array(array2image(subimarray))
+
     orig_im = subimarray[r1:r2, c1:c2]
-    #print('subim well max', np.max(orig_im))
-    #print('subim well min', np.min(orig_im))
-    #orig_im = orig_im - np.min(orig_im)
-    #print('subim well max', np.max(orig_im))
-    #print('subim well min', np.min(orig_im))
-    #orig_im = orig_im/np.max(orig_im)*255
-    #print('subim well max', np.max(orig_im))
-    #print('subim well min', np.min(orig_im))
-  
-    img = np.uint8(np.copy(orig_im))
+    img = np.copy(orig_im)
     # Threshold image.
     th_im = np.copy(img)
-    cv2.threshold(src=img, thresh=175, maxval=255, 
+    cv2.threshold(src=img, thresh=150, maxval=255, 
     type=cv2.THRESH_BINARY, dst=th_im)
     # Binary closing.
     close_im = np.copy(th_im)
@@ -119,213 +72,65 @@ def findfliestest(subimarray, well, t):
     ccoms = []
     #careas = []
     careascv = []
+       
     for x, contour in enumerate(contours):
+        print('x', x)
         contpic = np.zeros(np.shape(img))
         cv2.drawContours(image=contpic, contours=contours, contourIdx=x, 
-        color=(255,0,0), thickness=cv.CV_FILLED)
-               
+        color=(255,255,255), thickness=cv.CV_FILLED)
+        
+        # Finding COM another way:
+        #origdim = np.shape(orig_im)
+        #posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
+        #comppos = posarray[contpic==255]
+        #cmean = np.mean(comppos, axis=0)
+        #cmean = [cmean[1], cmean[0]]
+        
         cmean = np.mean(contour, axis=0)
+
+        # Two ways of finding areas of contour.
         #carea = np.sum(contpic)/255.
         careacv = cv2.contourArea(contours[x])
-        contpics.append(contpic)
+        
         #if carea > 0.0011*(nrows*ncols):
             #contpics.append(contpic)
             #ccoms.extend(cmean)
-            #careas.append(carea)
+            #careascv.append(carea)
         if careacv > 0.0011*(nrows*ncols):
             contpics.append(contpic)
             ccoms.extend(cmean)
+            #ccoms.append(cmean)
             careascv.append(careacv)
-        #print('contour', np.shape(contour))
-        #print('contour mean', np.mean(contour, axis=0))
-    
-    #print('contpics shape', np.shape(contpics))
-    #print('ccoms', ccoms)
-    #print('careas', careas)
     print('careascv', careascv)
-    
-    #allcontpic = np.sum(contpics, axis=0)
-        
-    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':th_im, 
-    'contim':contim, 'contpics':contpics,
+    print('ccoms', ccoms)
+    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
+    'contim':contim, 'contpics':contpics, 'contareas':careascv, 
     'coms':np.array(ccoms), 'contours':contours, 'dim':np.shape(orig_im)}
+    
     return(d)
 
-def orientfliestest(orig_im, contpics, coms, flynum, fly_offset, rotimshape):
 
-    #print('orient flies', time.time()-START)
+def orientflies(orig_im, contpics, coms, flynum, fly_offset, rotimshape):
+
     # Create an array where each entry is the index.
-    #print('Create posarray', time.time()-START)
     origdim = np.shape(orig_im)
-    #print('orig', np.shape(orig_im))
-    #print('contpic', np.shape(contpics[0]))
     posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
-    #print(posarray[:,0])
-    #print('compute centroid', time.time()-START)
     # Find the coordinates of the points comprising each connected component.
     comppos = posarray[contpics[flynum] == 255]
-    #print(np.mean(comppos, axis=0))
-    
     #centroid = np.mean(comppos, axis=0)
     centroid = [coms[flynum][1], coms[flynum][0]]
-    #print(centroid)
-    #print('end compute centroid', time.time()-START)
-    # Check that the centers of mass are equal to the mean of the detected 
-    # components.
-    #print('assertion', time.time()-START)
-    #assert np.all(centroid == coms[labellist.index(comp_label)])
 
     # Mean subtract data.
     comppos = comppos - centroid
-    #print('svd', time.time()-START)
     # Singular value decomposition
     u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
-    
-    # Plot points in the new axes.
-    #flypoints = [[0, 0], [10, 0], [0,5]]
-    #origpoints = np.dot(flypoints, eigenv) + centroid
-    
+       
     # Orient image.
     flyoffset = fly_offset*-1
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
-    #print('rotate',time.time()-START)
     rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
     centroid + imgoffset, output_shape = rotimshape, order=1)
-    
-    
     return(rotimage)
-
-#def findflies(subimarray, well, t):
-    #'''
-    #Input:
-    #subimarray = array of subtracted image
-    #imfile = name of image (ex., mov00001.jpeg)
-    #well = row and column coords of ROI surrounding well: [r1, r2, c1, c2]
-    #t = intensity threshold for selecting fly body]
-    
-    #Output: 
-    #A dictionary with the following keys, values:
-    #orig_im = original image
-    #th_im = thresholded image
-    #close_im = thresholded image after binary closing is applied
-    #label_im = array where connected components are labeled by integers; 0 is 
-    #the background and labeled components start at 1 
-    #nb_labels = number of connected components (not including the background)
-    #coms = centers of mass of connected components
-    #'''
-    
-    ## Load the image.
-    #r1, r2, c1, c2 = well
-    #nrows = r2-r1
-    #ncols = c2-c1
-    ##subimarray = np.array(array2image(subimarray))
-    #orig_im = subimarray[r1:r2, c1:c2]
-    #img = np.copy(orig_im)
-    #onesimage = np.ones(np.shape(orig_im))
-    
-    ## Thresholds the image based on the peaks in the intensity histogram.
-    #low_values_indices = img < t  # Where values are low
-    ##high_values_indices = img > 60
-    #img[low_values_indices] = 0
-    #th_im = np.copy(img)
-    ##img[high_values_indices] = 0
-    
-    ## Functions to smooth the connected components.
-    ##open_img = ndimage.binary_opening(img)
-    ##print('Binary closing', time.time()-START)
-    ##close_im = ndimage.binary_closing(img, 
-    ##structure=np.ones((5,5)).astype(img.dtype))
-    
-    #structure = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-    ##print(structure)
-    #cv2.morphologyEx(img, cv2.MORPH_CLOSE, structure, img)
-    #close_im = img
-    
-    ## Select the connected components.
-    ##print('ndimage.label', time.time()-START)
-    #label_im, nb_labels = ndimage.label(close_im)
-    #sizes = ndimage.sum(onesimage, label_im, np.arange(1, nb_labels+1))
-    ##print('ndimage.com', time.time()-START)
-    #coms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
-    #np.arange(1, nb_labels+1)))
-    ##print('end ndimage.com', time.time()-START)
-    
-    ##print('Size filter', time.time()-START)
-    ## Filter by size of connected component.
-    #smsizefil = np.array(sizes) > np.tile(0.0011*(nrows*ncols), nb_labels)
-    #usesizes = smsizefil*sizes
-    #uselabs = []
-    #for snum, size in enumerate(usesizes):
-        #if size > 0:
-            #uselabs.append(snum+1)
-    ##uselab = []
-    ##for size, snum in sorted(lsizes, reverse=True)[:2]:
-        ##uselab.append(snum)
-    #usecoms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
-    #uselabs))
-
-    #d = {'orig_im':orig_im, 'th_im':th_im, 
-    #'close_im':close_im, 
-    #'label_im':label_im, 'nb_labels':nb_labels, 'uselab':uselabs, 'coms':coms,
-    #'usecoms':usecoms, 'dim':list(np.shape(orig_im))}
-    
-    #return(d)
-
-
-#def orientflies(orig_im, label_im, comp_label, labellist, coms, fly_offset, rotimshape):
-    #'''
-    #Rotates image so that each fly (connected component) is positioned 
-    #vertically along its AP axis.
-    #Input:
-    #orig_im = original image
-    #label_im = array where connected components are labeled by integers 
-    #(from findflies())
-    #comp_label = label designating connected components; starts at 1
-    #labellist = list of numbers designating connected components
-    #coms = centers of mass of the connected components
-    #fly_offset = list of new center coordinates for the oriented image
-    #rotimshape = tuple with size of the rotated image
-    #imname = image name
-    #plot = 'no' (does not plot figure) or 'yes'
-    
-    #Output:
-    #orient_im = rotated/translated image
-    #''' 
-    ##print('orient flies', time.time()-START)
-    ## Create an array where each entry is the index.
-    ##print('Create posarray', time.time()-START)
-    #origdim = np.shape(orig_im)
-    #posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
-    ##print('compute centroid', time.time()-START)
-    ## Find the coordinates of the points comprising each connected component.
-    #comppos = posarray[label_im == comp_label]
-    
-    #centroid = np.mean(comppos, axis=0)
-    ##print('end compute centroid', time.time()-START)
-    ## Check that the centers of mass are equal to the mean of the detected 
-    ## components.
-    ##print('assertion', time.time()-START)
-    #assert np.all(centroid == coms[labellist.index(comp_label)])
-
-    ## Mean subtract data.
-    #comppos = comppos - centroid
-    ##print('svd', time.time()-START)
-    ## Singular value decomposition
-    #u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
-    
-    ## Plot points in the new axes.
-    ##flypoints = [[0, 0], [10, 0], [0,5]]
-    ##origpoints = np.dot(flypoints, eigenv) + centroid
-    
-    ## Orient image.
-    #flyoffset = fly_offset*-1
-    #imgoffset = np.dot(flyoffset, 0.5*eigenv)
-    ##print('rotate',time.time()-START)
-    #rotimage = ndimage.interpolation.affine_transform(orig_im, 0.5*eigenv.T, 
-    #centroid + imgoffset, output_shape = rotimshape, order=1)
-    
-    
-    #return(rotimage)
 
 
 def findwings(orient_im, low_value, high_value):
@@ -347,14 +152,14 @@ def findwings(orient_im, low_value, high_value):
     return(w_im)
 
 ############# FUNCTIONS FOR PLOTTING FLY IMAGES #############
+
 def plotfindflies(d, imname, wellnum):
     '''Plots a figure showing different processing steps in findflies().
     Input:
     d = dictionary; output of findflies()
-    figdir = directory to save figure
+    imname = name of image frame
+    wellnum = number of well
     '''
-    
-    
     # Plots original image.
     plt.subplot2grid((2,3), (0,0), colspan=1)
     plt.imshow(Image.fromarray(d['orig_im']), cmap=plt.cm.gray)
@@ -362,7 +167,7 @@ def plotfindflies(d, imname, wellnum):
     plt.title('BGsub')
 
     # Plot a histogram of the intensities.
-    plt.subplot2grid((2,3), (0,1), colspan=2)
+    plt.subplot2grid((2,3), (1,0), colspan=3)
     hist, bin_edges = np.histogram(d['orig_im'], bins=60)
     bin_centers = 0.5*(bin_edges[:-1] + bin_edges[1:])
     plt.plot(bin_centers, hist, lw=2)
@@ -371,36 +176,31 @@ def plotfindflies(d, imname, wellnum):
     plt.title('Intensity histogram')
 
     # Plot the threshholded image.
-    plt.subplot2grid((2,3), (1,0), colspan=1)
+    plt.subplot2grid((2,3), (0,1), colspan=1)
     plt.imshow(d['th_im'], cmap=plt.cm.gray)
     plt.axis('off')
     plt.title('Thresholded')
 
-    ## Plots the smoothed image.
+    # Plots the smoothed image.
     #plt.subplot2grid((2,3), (1,1), colspan=1)
     #plt.imshow(d['close_im'], cmap=plt.cm.gray)
     #plt.axis('off')
     #plt.title('Binary closing')
     
-    # Plot the connected components and their centers of mass.
-    plt.subplot2grid((2,3), (1,1), colspan=1)
-    plt.imshow(d['label_im'], cmap=plt.cm.gray)
-    
-    plt.plot(d['coms'].T[1], d['coms'].T[0], 'ro', mec='r', lw=1, ms=2)
-    #plt.plot([0, 290], [290, 0], 'ys', ms=5)
+    # Plots the smoothed image.
+    plt.subplot2grid((2,3), (0,2), colspan=1)
+    plt.imshow(d['close_im'], cmap=plt.cm.gray)
+    plt.plot(d['coms'].T[0], d['coms'].T[1], 'ro', markersize=3)
+    print(d['coms'])
+    print(np.shape(d['coms']))
+    for x in range(len(d['coms'].T[0])):
+        s = '{0}'.format(x)
+        plt.text(d['coms'][x, 0], d['coms'][x, 1]-25, s, color='r', fontsize=9,
+        weight='bold')
+    #plt.axis('off')
+    plt.title('Flies={0}'.format(len(d['coms'])))
     rows, cols = d['dim']
     plt.axis((0, cols, rows, 0))
-    plt.title('Comp = {0}'.format(d['nb_labels']))
-    
-    # Plot the size-filtered connected components and their centers of mass.
-    plt.subplot2grid((2,3), (1,2), colspan=1)
-    plt.imshow(d['label_im'], cmap=plt.cm.gray)
-    
-    plt.plot(d['usecoms'].T[1], d['usecoms'].T[0], 'ro', mec='r', lw=1, ms=2)
-    #plt.plot([0, 290], [290, 0], 'ys', ms=5)
-    rows, cols = d['dim']
-    plt.axis((0, cols, rows, 0))
-    plt.title('Size-fil comp={0}'.format(len(d['uselab'])))
 
 
 def expt_findplotflies(bgpickle, movbase, wells):
@@ -425,12 +225,11 @@ def expt_findplotflies(bgpickle, movbase, wells):
             print('Well', n)
             try:
                 d = findflies(subim, imfile, well, BODY_TH, 'no')
-                plotfindflies(d, n)
+                plotfindflies(d, imname, n)
                 saveexptfig(THFIGDIR, imname, n)
             except IndexError:
                 print('No connected components')
                 continue  
-
 
 
 def plotrotim(orient_im, rotimshape, fly_offset, wellnum, flynum, imname, outdir):
@@ -491,7 +290,7 @@ def plotwellint(d, imname, thfigdir, rotfigdir, wingfigdir):
         plotrotim(d['flyims'][flyn]['orient_im'], d['rotimshape'], 
         d['flyoffset'], d['wellnum'], flyn, imname, rotfigdir)
         saveexptfig(rotfigdir, imname, d['wellnum'], flyn)
-        plot_wingimage(d['flyims'][flyn]['w_im'], d['imrois'], imname, flyn, 
+        plotwingim(d['flyims'][flyn]['w_im'], d['imrois'], imname, flyn, 
         wingfigdir, d['wellnum'])
         saveexptfig(wingfigdir, imname, d['wellnum'], flyn)
         
@@ -506,7 +305,7 @@ def plotwellinttest(d, imname, thfigdir, rotfigdir, wingfigdir):
         plotrotim(d['flyims'][flyn]['orient_im'], d['rotimshape'], 
         d['flyoffset'], d['wellnum'], flyn, imname, rotfigdir)
         savetestfig(rotfigdir, imname, d['wellnum'], flyn)
-        plot_wingimage(d['flyims'][flyn]['w_im'], d['imrois'], imname, flyn, 
+        plotwingim(d['flyims'][flyn]['w_im'], d['imrois'], imname, flyn, 
         wingfigdir, d['wellnum'])
         savetestfig(wingfigdir, imname, d['wellnum'], flyn)
         
@@ -626,10 +425,9 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     
     # Finding flies.
     #print('Finding flies', time.time()-START)
-    #d = findflies(subim, well, BODY_TH)
-    d = findfliestest(subim, well, BODY_TH)
-    #if len(d['uselab']) == 0:
-        #print(wellnum, 'No connected components')
+    d = findflies(subim, well, BODY_TH)
+    if len(d['contareas']) == 0:
+        print(wellnum, 'No connected components')
     
     # Defines roi coordinates.
     rotimshape = 0.5*np.array(d['dim'])
@@ -648,21 +446,21 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     flyroi = []
     # Finds data for each fly in the well.
     #for flyn, comp_label in enumerate(d['uselab']):
-    for flyn, comp_label in enumerate(d['coms']):
+    for flyn, com in enumerate(d['coms']):
+        print('flyn', flyn)
+        print('coms', com)
         # Orients flies.
-        #print('Rotating flies', time.time()-START)
-        #orient_im = orientflies(d['orig_im'], d['label_im'], comp_label, 
-        #d['uselab'], d['usecoms'], flyoffset, rotimshape)
-        orient_im = orientfliestest(d['orig_im'], d['contpics'], d['coms'], 
+        orient_im = orientflies(d['orig_im'], d['contpics'], d['coms'], 
         flyn, flyoffset, rotimshape)
+        orient_pic = np.copy(orient_im)
         # Thresholds fly image to find wings.
         #print('Finding wings', time.time()-START)
-        w_im = findwings(orient_im, WING_TH_LOW, WING_TH_HIGH)      
+        w_im = findwings(orient_pic, WING_TH_LOW, WING_TH_HIGH)      
         # Analyzes ROI intensities.
         #print('Analyzing ROI intensities', time.time()-START)
         roi_int = np.array(roimeans(w_im, imrois))
         center_a, center_p, side_a, side_p, med = subroi(roi_int)
-        #print('Appending ROI intensities', time.time()-START)
+
         if ((center_p+side_p) - (center_a+side_a)) > 0:
             flysmc.append(side_p - center_p)
             flymmc.append(med - center_p)
@@ -695,14 +493,14 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
 
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
     rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
-    print('Finding subtracted movie', time.time()-START)
+    #print('Finding subtracted movie', time.time()-START)
     subim = bgsub(bgarray, imfile)
     wells = loadwells(wcpickle)
     framesmc = np.empty((1, len(wells)))
     framemmc = np.empty((1, len(wells)))
     frameroi = []
     for n, well in enumerate(wells):
-        print(n, time.time()-START)
+        #print(n, time.time()-START)
         try:
             flysmc, flymmc, flyroi, d = wellint(subim, well, n, thfigdir, 
             rotfigdir, wingfigdir)
@@ -713,7 +511,7 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
             
             if plotfiles == 'yes':
                 imname = os.path.splitext(imfile)[0]
-                plotwellint(d, imname, thfigdir, rotfigdir, wingfigdir)
+                plotwellinttest(d, imname, thfigdir, rotfigdir, wingfigdir)
         except ValueError:
             continue
 
@@ -742,12 +540,14 @@ def multimint(exptfiles, images, plotfiles, savemc):
     movroi = []
     
     for frame, imfile in enumerate(images):
-        print(os.path.basename(imfile), time.time()-START)
-        framesmc, framemmc, frameroi = frameint(exptfiles, bgarray, imfile, plotfiles)
+        x = time.time()
+        print(os.path.basename(imfile), time.time()-x)
+        framesmc, framemmc, frameroi = frameint(exptfiles, bgarray, imfile, 
+        plotfiles)
         movsmc[frame,:] = framesmc
         movmmc[frame,:] = framemmc
         movroi.append(frameroi)
-    print('Saving arrays', time.time()-START)
+    #print('Saving arrays', time.time()-START)
     if savemc == 'yes':
     # Save as .npy arrays.
         smcfile = os.path.join(pickledir, SMCFILE)

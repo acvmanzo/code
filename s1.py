@@ -19,15 +19,15 @@ import time
 import cv2
 
 
-exptfiles = exptfiles(os.path.abspath('.'))
+exptfiles = getexptfiles(os.path.abspath('.'))
 exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
 rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
 
 
-IMNUMS = [str(x) for x in np.arange(10, 12, 1)]
+IMNUMS = [str(x) for x in np.arange(10, 11, 1)]
 IMAGES = ['mov000'+n+'.jpeg' for n in IMNUMS]
 os.chdir(movdir)
-movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, plotfiles='no', 
+movsmc, movmmc, movroi = multimint(exptfiles, IMAGES, plotfiles='yes', 
 savemc='no')
 
 #exptint(exptfiles, 'no', 'yes')
