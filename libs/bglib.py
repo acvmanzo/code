@@ -9,6 +9,7 @@ import numpy as np
 import cmn.cmn as cmn
 import glob
 import scipy.stats as stats
+import cv2
 
 def genbgimgrp(imdir, nframes, fntype, imext, split=5):
     '''Generates a background image from a sequence of image files.
@@ -87,15 +88,15 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
     assert moviel > nframes
     
     nummov = np.linspace(1, moviel-1, nframes)
-    
-    imarr = np.array(Image.open(files[0]))[:,:,0].astype(float)
+    imarr = cv2.imread(files[0], 0)
     #if (imext == 'bmp'):
         #imarr = np.array(Image.open(files[0])).astype(float)
     cont = np.empty((len(nummov),)+np.shape(imarr))
     #print(np.shape(cont))
     for n, x in enumerate(nummov):
         #if imext == 'jpeg' or (imext== 'tif'):
-        c = np.array(Image.open(files[int(x)]))[:,:,0].astype(float)
+        c = cv2.imread(files[int(x)], 0)
+        #c = np.array(Image.open(files[int(x)]))[:,:,0]
         #print('c', np.shape(c))
         #if (imext == 'bmp'):
             #c = np.array(Image.open(files[int(x)])).astype(float)
@@ -107,7 +108,7 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
         newc = np.average(cont, 0)
     if fntype == 'mode':
         newc = stats.mode(cont, 0)
-    return(newc)    
+    return(newc.astype(np.uint8))    
     
 
 

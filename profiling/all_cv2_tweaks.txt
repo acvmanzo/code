@@ -82,3 +82,13 @@ Tue Oct 15 00:25:22 2013    profall_ndim_comp
         1    0.000    0.000    0.006    0.006 utils.py:1087(safe_eval)
         1    0.001    0.001    0.006    0.006 __init__.py:22(<module>)
         1    0.001    0.001    0.005    0.005 winglib.py:137(orientflies)
+
+FRAMEINT ON HOME DESKTOP:
+
+10826 function calls (10583 primitive calls) in 0.711 seconds
+9399 function calls (9160 primitive calls) in 0.516 seconds -- switched image 
+loading and binary closing to ndimage
+5917 function calls (5678 primitive calls) in 0.260 seconds -- switched all 
+functions (image loading, binary closing, thresholding, connected component 
+identification) to opencv
+

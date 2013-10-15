@@ -34,9 +34,9 @@ def bgsubtest(bgarray, imfile):
     #print('Subtracting array', time.time()-START)
     #print('-a', time.time()-START)
     #subimarr = arr2imtest(im-bg)
-    subimarr = bg - im
-    #print('subim max', np.max(subimarr))
-    #print('subim min', np.min(subimarr))
+    subimarr = np.clip(bg-im, 0, 255).astype(np.uint8)
+    print('subim max', np.max(subimarr))
+    print('subim min', np.min(subimarr))
     return(subimarr)
 
 
@@ -50,17 +50,17 @@ def findfliestest(subimarray, well, t):
     orig_im = subimarray[r1:r2, c1:c2]
     #print('subim well max', np.max(orig_im))
     #print('subim well min', np.min(orig_im))
-    orig_im = orig_im - np.min(orig_im)
+    #orig_im = orig_im - np.min(orig_im)
     #print('subim well max', np.max(orig_im))
     #print('subim well min', np.min(orig_im))
-    orig_im = orig_im/np.max(orig_im)*255
+    #orig_im = orig_im/np.max(orig_im)*255
     #print('subim well max', np.max(orig_im))
     #print('subim well min', np.min(orig_im))
   
-    img = np.uint8(np.copy(orig_im))
+    img = np.copy(orig_im)
     # Threshold image.
     th_im = np.copy(img)
-    cv2.threshold(src=img, thresh=175, maxval=255, 
+    cv2.threshold(src=img, thresh=150, maxval=255, 
     type=cv2.THRESH_BINARY, dst=th_im)
     # Binary closing.
     close_im = np.copy(th_im)
@@ -103,7 +103,7 @@ def findfliestest(subimarray, well, t):
     
     #allcontpic = np.sum(contpics, axis=0)
         
-    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':th_im, 
+    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
     'contim':contim, 'contpics':contpics,
     'coms':np.array(ccoms), 'contours':contours, 'dim':np.shape(orig_im)}
     
@@ -226,23 +226,23 @@ def testff():
     wells = loadwells(wcpickle)
     wellnum = 1
     well = wells[wellnum]
-    bgarray = np.load(bgpickle)
+    bgarray = np.load(bgpickle).astype(np.int16) + 5
     subim = bgsubtest(bgarray, imfile)
     t = BODY_TH
     flynum = 0
 
     #plt.figure(figsize=(10,8), dpi=400)
-    #d = findfliestest(subim, well, t)
-    d = findflies(subim, well, t)
-    #plotfindfliestest(d, imname, wellnum)
+    d = findfliestest(subim, well, t)
+    #d = findflies(subim, well, t)
+    plotfindfliestest(d, imname, wellnum)
     #plotfindflies(d, imname, wellnum)
-    #savetestfig(thfigdir, imname, wellnum, 'none')
+    savetestfig(thfigdir, imname, wellnum, 'none')
     rotimshape = 0.5*np.array(d['dim'])
     flyoffset = np.array(0.5*rotimshape)        
     #rotim = orientfliestest(d['orig_im'], d['contpics'], d['coms'], flynum, 
     #flyoffset, rotimshape)
-    rotim = orientflies(d['orig_im'], d['label_im'], flynum+1, 
-    d['uselab'], d['usecoms'], flyoffset, rotimshape)
+    #rotim = orientflies(d['orig_im'], d['label_im'], flynum+1, 
+    #d['uselab'], d['usecoms'], flyoffset, rotimshape)
     #plotrotim(rotim, rotimshape, flyoffset, wellnum, flynum, imname, 
     #rotfigdir)
     #savetestfig(rotfigdir, imname, wellnum, flynum)
@@ -251,10 +251,10 @@ def testff():
     #plotfindflies(d, imname, wellnum)
     #savetestfig(thfigdir, imname, wellnum, 'none')
 
-#testff()
+testff()
 
-import cProfile
-cProfile.run('testff()', 'profall_ndim_comp')
+#import cProfile
+#cProfile.run('testff()', 'profall_ndim_comp')
 #cProfile.run('testff()', 'profall_cv2_careascv')
 
 

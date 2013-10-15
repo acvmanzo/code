@@ -26,7 +26,7 @@ def testframeint():
 
 import cProfile
 print(os.getcwd())
-cProfile.run('testframeint()', 'prof_frameint_closing_ndim')
+cProfile.run('testframeint()', 'prof_cv2_all')
 #testframeint()
 
 
