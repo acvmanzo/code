@@ -58,84 +58,9 @@ def findfliestest(subimarray, well, t):
     #print('subim well min', np.min(orig_im))
   
     img = np.uint8(np.copy(orig_im))
-    
-    ###### FROM WORKING VERSION #########
-    #img = np.uint8(np.copy(orig_im))
-    #onesimage = np.ones(np.shape(orig_im))
-    
-    ## Threshold image.
-    #th_im = np.copy(img)
-    #retval, th_im = cv2.threshold(src=img, thresh=175, maxval=255, 
-    #type=cv2.THRESH_BINARY, dst=th_im)
-    
-    ### Thresholds the image based on the peaks in the intensity histogram.
-    ##floator = np.copy(orig_im)
-    ##low_values_indices = floator < 120  # Where values are low
-    ###high_values_indices = img > 60
-    ##floator[low_values_indices] = 0
-    ##th_im = np.copy(floator)
-    ##img[high_values_indices] = 0
-    
-    ## Functions to smooth the connected components.
-    ##open_img = ndimage.binary_opening(img)
-    ## binary image closing
-    ## Binary closing.
-    #close_im = np.copy(th_im)
-    #structure = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
-    #cv2.morphologyEx(src=th_im, op=cv2.MORPH_CLOSE, kernel=structure, 
-    #dst=close_im)
-    
-    
-    ## Select the connected components.
-    ## Find contours.
-    #contim = np.copy(close_im)
-    #contours, hier = cv2.findContours(contim, mode=cv2.RETR_LIST, 
-    #method=cv2.CHAIN_APPROX_NONE)
-    ##print(np.shape(contours))
-    ##print(np.shape(contours[0]))
-    ##print(np.shape(contours[0][0]))
-    ##print(contours[0][0][0][0])
-    ##print(contours[80,0,0])
-    
-    #contpic = np.empty(np.shape(close_im))
-    #cv2.drawContours(image=contpic, contours=contours, contourIdx=1, 
-    #color=(255,0,0), thickness=cv.CV_FILLED)
-    
-    #contpics = []
-    #ccoms = []
-    #careas = []
-    #for x, contour in enumerate(contours):
-        #contpic = np.empty(np.shape(close_im))
-        #cv2.drawContours(image=contpic, contours=contours, contourIdx=x, 
-        #color=(255,0,0), thickness=cv.CV_FILLED)
-
-        #cmean = np.mean(contour, axis=0)
-        #carea = np.sum(contpic)/255.
-        #contpics.append(contpic)
-        #if carea > 0.0011*(nrows*ncols):
-            #contpics.append(contpic)
-            #ccoms.extend(cmean)
-            #careas.append(carea)
-     ##print('contour', np.shape(contour))
-     ##print('contour mean', np.mean(contour, axis=0))
-    
-    ##print('contpics shape', np.shape(contpics))
-    ##print('ccoms', ccoms)
-    #print('careas', careas)
-    
-    #allcontpic = np.sum(contpics, axis=0)
-     
-    #d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
-    #'contim':contim, 'contpics':contpics, 'allcontpic':allcontpic,
-    #'coms':np.array(ccoms), 'contours':contours, 'dim':np.shape(orig_im)}
-    
-    #return(d)
-   #############END OF OLD VERSION #####################3
-   
-   
     # Threshold image.
     th_im = np.copy(img)
-    retval, th_im = cv2.threshold(src=img, thresh=175, maxval=255, 
+    cv2.threshold(src=img, thresh=175, maxval=255, 
     type=cv2.THRESH_BINARY, dst=th_im)
     # Binary closing.
     close_im = np.copy(th_im)
@@ -149,32 +74,37 @@ def findfliestest(subimarray, well, t):
     # Find areas and centers of mass of contours.
     contpics = []
     ccoms = []
-    careas = []
+    #careas = []
+    careascv = []
     for x, contour in enumerate(contours):
-        contpic = np.zeros(np.shape(close_im))
+        contpic = np.zeros(np.shape(img))
         cv2.drawContours(image=contpic, contours=contours, contourIdx=x, 
         color=(255,0,0), thickness=cv.CV_FILLED)
-        
-        print('contourarea', cv2.contourArea(contours[x]))
-        
+               
         cmean = np.mean(contour, axis=0)
-        carea = np.sum(contpic)/255.
+        #carea = np.sum(contpic)/255.
+        careacv = cv2.contourArea(contours[x])
         contpics.append(contpic)
-        if carea > 0.0011*(nrows*ncols):
+        #if carea > 0.0011*(nrows*ncols):
+            #contpics.append(contpic)
+            #ccoms.extend(cmean)
+            #careas.append(carea)
+        if careacv > 0.0011*(nrows*ncols):
             contpics.append(contpic)
             ccoms.extend(cmean)
-            careas.append(carea)
+            careascv.append(careacv)
         #print('contour', np.shape(contour))
         #print('contour mean', np.mean(contour, axis=0))
     
     #print('contpics shape', np.shape(contpics))
     #print('ccoms', ccoms)
-    print('careas', careas)
+    #print('careas', careas)
+    print('careascv', careascv)
     
-    allcontpic = np.sum(contpics, axis=0)
+    #allcontpic = np.sum(contpics, axis=0)
         
-    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
-    'contim':contim, 'contpics':contpics, 'allcontpic':allcontpic,
+    d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':th_im, 
+    'contim':contim, 'contpics':contpics,
     'coms':np.array(ccoms), 'contours':contours, 'dim':np.shape(orig_im)}
     
     return(d)
@@ -215,7 +145,7 @@ def plotfindfliestest(d, imname, wellnum):
     
     # Plots the contours image.
     plt.subplot2grid((2,3), (1,2), colspan=1)
-    plt.imshow(d['allcontpic'], cmap=plt.cm.gray)
+    #plt.imshow(d['allcontpic'], cmap=plt.cm.gray)
     plt.plot(d['coms'].T[0], d['coms'].T[1], 'ro', markersize=3)
     #plt.axis('off')
     plt.title('Comp={0}'.format(len(d['coms'])))
@@ -302,17 +232,17 @@ def testff():
     flynum = 0
 
     #plt.figure(figsize=(10,8), dpi=400)
-    d = findfliestest(subim, well, t)
-    #d = findflies(subim, well, t)
-    plotfindfliestest(d, imname, wellnum)
+    #d = findfliestest(subim, well, t)
+    d = findflies(subim, well, t)
+    #plotfindfliestest(d, imname, wellnum)
     #plotfindflies(d, imname, wellnum)
     #savetestfig(thfigdir, imname, wellnum, 'none')
     rotimshape = 0.5*np.array(d['dim'])
     flyoffset = np.array(0.5*rotimshape)        
-    rotim = orientfliestest(d['orig_im'], d['contpics'], d['coms'], flynum, 
-    flyoffset, rotimshape)
-    #rotim = orientflies(d['orig_im'], d['label_im'], flynum+1, 
-    #d['uselab'], d['usecoms'], flyoffset, rotimshape)
+    #rotim = orientfliestest(d['orig_im'], d['contpics'], d['coms'], flynum, 
+    #flyoffset, rotimshape)
+    rotim = orientflies(d['orig_im'], d['label_im'], flynum+1, 
+    d['uselab'], d['usecoms'], flyoffset, rotimshape)
     #plotrotim(rotim, rotimshape, flyoffset, wellnum, flynum, imname, 
     #rotfigdir)
     #savetestfig(rotfigdir, imname, wellnum, flynum)
@@ -321,11 +251,11 @@ def testff():
     #plotfindflies(d, imname, wellnum)
     #savetestfig(thfigdir, imname, wellnum, 'none')
 
-testff()
+#testff()
 
-#import cProfile
-#cProfile.run('testff()', 'profall_ndim')
-#cProfile.run('testff()', 'profall_cv2_sh')
+import cProfile
+cProfile.run('testff()', 'profall_ndim_comp')
+#cProfile.run('testff()', 'profall_cv2_careascv')
 
 
 #import pstats

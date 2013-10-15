@@ -1,0 +1,84 @@
+NO ALL CONTPIC FUNCTION
+
+In [3]: p.strip_dirs().sort_stats('cumulative').print_stats(15)
+Tue Oct 15 00:13:10 2013    profall_cv2_noallcontpic
+
+         1797 function calls (1558 primitive calls) in 0.056 seconds
+
+   Ordered by: cumulative time
+   List reduced from 300 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.056    0.056 s5.py:218(testff)
+        1    0.016    0.016    0.025    0.025 s5.py:17(bgsubtest)
+        1    0.000    0.000    0.020    0.020 npyio.py:265(load)
+        1    0.000    0.000    0.019    0.019 format.py:415(read_array)
+        1    0.013    0.013    0.013    0.013 {numpy.core.multiarray.fromfile}
+        1    0.009    0.009    0.009    0.009 {cv2.imread}
+        1    0.001    0.001    0.007    0.007 s5.py:174(orientfliestest)
+        1    0.000    0.000    0.007    0.007 format.py:288(read_array_header_1_0)
+        1    0.000    0.000    0.006    0.006 utils.py:1087(safe_eval)
+        1    0.001    0.001    0.006    0.006 __init__.py:22(<module>)
+        1    0.002    0.002    0.004    0.004 s5.py:43(findfliestest)
+        1    0.003    0.003    0.004    0.004 transformer.py:9(<module>)
+        1    0.002    0.002    0.003    0.003 index_tricks.py:144(__getitem__)
+        1    0.000    0.000    0.003    0.003 interpolation.py:302(affine_transform)
+        1    0.003    0.003    0.003    0.003 {scipy.ndimage._nd_image.geometric_transform}
+
+
+NO ALL CONTPIC FUNCTION, NO COPIES
+In [7]: q.strip_dirs().sort_stats('cumulative').print_stats(15)
+Tue Oct 15 00:18:17 2013    profall_cv2_noall_nocopy
+
+         1799 function calls (1560 primitive calls) in 0.056 seconds
+
+   Ordered by: cumulative time
+   List reduced from 300 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.056    0.056 s5.py:219(testff)
+        1    0.015    0.015    0.025    0.025 s5.py:17(bgsubtest)
+        1    0.000    0.000    0.020    0.020 npyio.py:265(load)
+        1    0.000    0.000    0.019    0.019 format.py:415(read_array)
+        1    0.013    0.013    0.013    0.013 {numpy.core.multiarray.fromfile}
+        1    0.009    0.009    0.009    0.009 {cv2.imread}
+        1    0.001    0.001    0.007    0.007 s5.py:175(orientfliestest)
+        1    0.000    0.000    0.007    0.007 format.py:288(read_array_header_1_0)
+        1    0.000    0.000    0.006    0.006 utils.py:1087(safe_eval)
+        1    0.001    0.001    0.006    0.006 __init__.py:22(<module>)
+        1    0.002    0.002    0.004    0.004 s5.py:43(findfliestest)
+        1    0.003    0.003    0.004    0.004 transformer.py:9(<module>)
+        1    0.002    0.002    0.003    0.003 index_tricks.py:144(__getitem__)
+        1    0.000    0.000    0.003    0.003 interpolation.py:302(affine_transform)
+        1    0.003    0.003    0.003    0.003 {scipy.ndimage._nd_image.geometric_transform}
+
+WITH CAREAS:
+1797 function calls (1558 primitive calls) in 0.056 seconds
+
+WITH CAREASCV:
+1791 function calls (1552 primitive calls) in 0.056 seconds
+
+NDIMAGE as normal:
+Tue Oct 15 00:25:22 2013    profall_ndim_comp
+
+         2075 function calls (1836 primitive calls) in 0.074 seconds
+
+   Ordered by: cumulative time
+   List reduced from 315 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.074    0.074 s5.py:219(testff)
+        1    0.016    0.016    0.025    0.025 s5.py:17(bgsubtest)
+        1    0.006    0.006    0.023    0.023 winglib.py:60(findflies)
+        1    0.000    0.000    0.020    0.020 npyio.py:265(load)
+        1    0.000    0.000    0.020    0.020 format.py:415(read_array)
+        1    0.013    0.013    0.013    0.013 {numpy.core.multiarray.fromfile}
+        7    0.000    0.000    0.012    0.002 measurements.py:453(sum)
+        7    0.000    0.000    0.012    0.002 measurements.py:384(_stats)
+        2    0.001    0.001    0.012    0.006 measurements.py:992(center_of_mass)
+       14    0.010    0.001    0.010    0.001 {numpy.lib._compiled_base.bincount}
+        1    0.009    0.009    0.009    0.009 {cv2.imread}
+        1    0.000    0.000    0.007    0.007 format.py:288(read_array_header_1_0)
+        1    0.000    0.000    0.006    0.006 utils.py:1087(safe_eval)
+        1    0.001    0.001    0.006    0.006 __init__.py:22(<module>)
+        1    0.001    0.001    0.005    0.005 winglib.py:137(orientflies)
