@@ -97,17 +97,25 @@ def findfliestest(subimarray, well, t):
     #print(contours[0][0][0][0])
     #print(contours[80,0,0])
     
-    contpic = np.copy(close_im)
-    cv2.drawContours(image=contpic, contours=contours, contourIdx=-1, 
+    contpic = np.empty(np.shape(close_im))
+    cv2.drawContours(image=contpic, contours=contours, contourIdx=1, 
     color=(255,0,0), thickness=cv.CV_FILLED)
-    li = contpic > 0
-    print(np.sum(li))
+    print(np.max(contpic))
+    li = contpic > 254
     
-    ca1 = cv2.contourArea(contours[0])
-    ca2 = cv2.contourArea(contours[1])
-    #ca3 = cv2.contourArea(contours[2])
-    ca = ca1 + ca2
-    print('contour area', ca)
+    origdim = np.shape(contpic)
+    posarray = np.rollaxis(np.mgrid[0:origdim[0], 0:origdim[1]], 0, 3)
+    #print('compute centroid', time.time()-START)
+    # Find the coordinates of the points comprising each connected component.
+    comppos = posarray[contpic == 255]
+    centroid = np.mean(comppos, axis=0)
+
+    print(np.mean(comppos, axis=0))
+        #ca1 = cv2.contourArea(contours[0])
+    #ca2 = cv2.contourArea(contours[1])
+    ##ca3 = cv2.contourArea(contours[2])
+    #ca = ca1 + ca2
+    #print('contour area', ca)
     
     ccom = cv2.moments(contours[0])
     print('ccom', ccom)
@@ -133,7 +141,7 @@ def findfliestest(subimarray, well, t):
     usecoms = np.array(ndimage.measurements.center_of_mass(onesimage, label_im, 
     uselabs))
 
-    d = {'orig_im':orig_im, 'th_im':th_im, 
+    d = {'orig_im':orig_im, 'th_im':th_im, 'centroid':centroid, 
     'close_im':close_im, 'contim':contim, 'contours':contours, 'contpic':contpic, \
     'label_im':label_im, 'nb_labels':nb_labels, 'uselab':uselabs, 'coms':coms,
     'usecoms':usecoms, 'dim':list(np.shape(orig_im))}
@@ -176,9 +184,12 @@ def plotfindfliestest(d, imname, wellnum):
     
     # Plots the contours image.
     plt.subplot2grid((2,3), (1,2), colspan=1)
-    plt.imshow(d['contpic'])
+    plt.imshow(d['contpic'], cmap=plt.cm.gray)
+    plt.plot(d['centroid'][1], d['centroid'][0], 'ro', markersize=3)
     plt.axis('off')
     plt.title('Contours')
+    rows, cols = d['dim']
+    plt.axis((0, cols, rows, 0))
     
     ## Plot the connected components and their centers of mass.
     #plt.subplot2grid((2,3), (1,1), colspan=1)
