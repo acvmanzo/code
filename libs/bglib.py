@@ -130,7 +130,8 @@ def savebg(bg, bgfile, bgdir, pickledir):
     np.save(os.path.join(pickledir, 'bgarray'), bg)
 
 
-def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype, imext):
+def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype, imext, 
+overwrite):
     '''Generates and saves background image for a single experiment. 
     Input:
     exptdir = expts/exptxx/ directory
@@ -142,7 +143,7 @@ def genbgimexpt(exptdir, movbase, picklebase, bgfile, nframes, ftype, imext):
     fntype = 'median, 'average'; method for combining nframes
     Output:
     '''
-    
+    #check(bgfile, overwrite)
     imdir = os.path.join(exptdir, movbase)
     pickledir = os.path.join(exptdir, picklebase)
     bg = genbgim(imdir, nframes, ftype, imext)

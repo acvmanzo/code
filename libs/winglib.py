@@ -56,7 +56,7 @@ def findflies(subimarray, well, t):
     img = np.copy(orig_im)
     # Threshold image.
     th_im = np.copy(img)
-    cv2.threshold(src=img, thresh=150, maxval=255, 
+    cv2.threshold(src=img, thresh=t, maxval=255, 
     type=cv2.THRESH_BINARY, dst=th_im)
     # Binary closing.
     close_im = np.copy(th_im)
@@ -74,7 +74,7 @@ def findflies(subimarray, well, t):
     careascv = []
        
     for x, contour in enumerate(contours):
-        print('x', x)
+        #print('x', x)
         contpic = np.zeros(np.shape(img))
         cv2.drawContours(image=contpic, contours=contours, contourIdx=x, 
         color=(255,255,255), thickness=cv.CV_FILLED)
@@ -101,8 +101,8 @@ def findflies(subimarray, well, t):
             ccoms.extend(cmean)
             #ccoms.append(cmean)
             careascv.append(careacv)
-    print('careascv', careascv)
-    print('ccoms', ccoms)
+    #print('careascv', careascv)
+    #print('ccoms', ccoms)
     d = {'orig_im':orig_im, 'th_im':th_im, 'close_im':close_im, 
     'contim':contim, 'contpics':contpics, 'contareas':careascv, 
     'coms':np.array(ccoms), 'contours':contours, 'dim':np.shape(orig_im)}
@@ -123,7 +123,7 @@ def orientflies(orig_im, contpics, coms, flynum, fly_offset, rotimshape):
     comppos = comppos - centroid
     # Singular value decomposition
     u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
-    print('Eigenshape', eigenv.shape)
+    #print('Eigenshape', eigenv.shape)
     # Orient image.
     flyoffset = fly_offset*-1
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
@@ -189,8 +189,8 @@ def plotfindflies(d, imname, wellnum):
     plt.subplot2grid((2,3), (0,2), colspan=1)
     plt.imshow(d['close_im'], cmap=plt.cm.gray)
     plt.plot(d['coms'].T[0], d['coms'].T[1], 'ro', markersize=3)
-    print(d['coms'])
-    print(np.shape(d['coms']))
+    #print(d['coms'])
+    #print(np.shape(d['coms']))
     for x in range(len(d['coms'].T[0])):
         s = '{0}'.format(x)
         plt.text(d['coms'][x, 0], d['coms'][x, 1]-25, s, color='r', fontsize=9,
@@ -210,8 +210,8 @@ def expt_findplotflies(bgpickle, movbase, wells):
     '''
     os.chdir(movbase)
     files = cmn.listsortfs(fdir)
-    print('load bgpickle', time.time()-START)
-    bgarray = np.load(bgpickle)
+    #print('load bgpickle', time.time()-START)
+    bgarray = np.load(bgpickle).astype(np.int16) + 5
     for f in files:
         # To compute for each image:
         subim = bgsub(bgarray, f)
@@ -220,7 +220,7 @@ def expt_findplotflies(bgpickle, movbase, wells):
         #subim = np.array(Image.open(subimfile)).astype(float)
         imanme = os.path.splitext(f)[0]
         for n, well in enumerate(wells):
-            print('Well', n)
+            #print('Well', n)
             try:
                 d = findflies(subim, imfile, well, BODY_TH, 'no')
                 plotfindflies(d, imname, n)
@@ -257,7 +257,7 @@ def plotwingim(w_im, imrois, imname, flynum, outdir, wellnum):
 
 def saveexptfig(figdir, imname, wellnum, flynum):
     welldir = os.path.join(figdir, 'well{0:02d}'.format(wellnum))
-    cmn.makenewdir(welldir)
+    cmn.makenewdir(welldir)  
     
     if flynum == 'none':
         plt.savefig(os.path.join(welldir, '{0}_thfig.png'.format(imname)))
@@ -281,13 +281,14 @@ def savetestfig(figdir, imname, wellnum, flynum):
 
 def plotwellint(d, imname, thfigdir, rotfigdir, wingfigdir):
     # Plotting functions.
+    print("Plotting")
     plotfindflies(d, imname, thfigdir)
     saveexptfig(thfigdir, imname, d['wellnum'], 'none')
 
     for flyn in range(len(d['flyims'])):
-        plotrotim(d['flyims'][flyn]['orient_im'], d['rotimshape'], 
-        d['flyoffset'], d['wellnum'], flyn, imname, rotfigdir)
-        saveexptfig(rotfigdir, imname, d['wellnum'], flyn)
+        #plotrotim(d['flyims'][flyn]['orient_im'], d['rotimshape'], 
+        #d['flyoffset'], d['wellnum'], flyn, imname, rotfigdir)
+        #saveexptfig(rotfigdir, imname, d['wellnum'], flyn)
         plotwingim(d['flyims'][flyn]['w_im'], d['imrois'], imname, flyn, 
         wingfigdir, d['wellnum'])
         saveexptfig(wingfigdir, imname, d['wellnum'], flyn)
@@ -409,7 +410,7 @@ def subroi(roi_int):
 
 ########### COMBINED FUNCTIONS FOR ANALYSIS ###################
 
-def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
+def wellint(subim, well, wellnum):
     '''Finds the difference in ROI intensities for each fly in one well of 
     one movie frame.
     Inputs:
@@ -445,8 +446,8 @@ def wellint(subim, well, wellnum, thfigdir, rotfigdir, wingfigdir):
     # Finds data for each fly in the well.
     #for flyn, comp_label in enumerate(d['uselab']):
     for flyn, com in enumerate(d['coms']):
-        print('flyn', flyn)
-        print('coms', com)
+        #print('flyn', flyn)
+        #print('coms', com)
         # Orients flies.
         orient_im = orientflies(d['orig_im'], d['contpics'], d['coms'], 
         flyn, flyoffset, rotimshape)
@@ -482,7 +483,7 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
     in one movie frame. 
     Inputs:
     exptfiles = exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle (output of 
+    rotfigdir, wingfigdir, extfigdir, bgpickle, wcpickle (output of 
     wingsettings.getexptfiles())
     bgarray = array of background file
     imfile = image from movie
@@ -490,27 +491,28 @@ def frameint(exptfiles, bgarray, imfile, plotfiles):
     '''
 
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
+    rotfigdir, wingfigdir, extfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
     #print('Finding subtracted movie', time.time()-START)
     subim = bgsub(bgarray, imfile)
     wells = loadwells(wcpickle)
     framesmc = np.empty((1, len(wells)))
     framemmc = np.empty((1, len(wells)))
     frameroi = []
+    imname = os.path.splitext(os.path.basename(imfile))[0]
+    
     for n, well in enumerate(wells):
         #print(n, time.time()-START)
         try:
-            flysmc, flymmc, flyroi, d = wellint(subim, well, n, thfigdir, 
-            rotfigdir, wingfigdir)
+            flysmc, flymmc, flyroi, d = wellint(subim, well, n)
             #print('Appending mov ROI intensities', time.time()-START)
             framesmc[0,n] = np.max(flysmc)
             framemmc[0,n] = np.max(flymmc)
             frameroi.append(flyroi)
             
             if plotfiles == 'yes':
-                imname = os.path.splitext(imfile)[0]
-                plotwellinttest(d, imname, thfigdir, rotfigdir, wingfigdir)
+                plotwellint(d, imname, thfigdir, rotfigdir, wingfigdir)
         except ValueError:
+            print(imname)
             continue
 
     return(framesmc, framemmc, frameroi)
@@ -528,8 +530,9 @@ def multimint(exptfiles, images, plotfiles, savemc):
     picklefiles = 'yes' or 'no'; whether or not to pickle output
     '''
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
+    rotfigdir, wingfigdir, extfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
     bgarray = np.load(bgpickle).astype(np.int16) + 5
+    fps = int(getfps(exptdir))
 
     movlen = len(images)
     wells = loadwells(wcpickle)
@@ -538,8 +541,10 @@ def multimint(exptfiles, images, plotfiles, savemc):
     movroi = []
     
     for frame, imfile in enumerate(images):
-        x = time.time()
-        print(os.path.basename(imfile), time.time()-x)
+        if frame % (60.*fps) == 0:
+            
+            print(os.path.basename(imfile), '{0} min'.format(frame/(60.*fps)),
+            time.strftime("%H:%M:%S", time.localtime()))
         framesmc, framemmc, frameroi = frameint(exptfiles, bgarray, imfile, 
         plotfiles)
         movsmc[frame,:] = framesmc
@@ -563,7 +568,7 @@ def exptint(exptfiles, plotfiles, save):
     in multiple movieframes.
     '''
     exptdir, movdir, submovdir, pickledir, textdir, plotdir, thfigdir, \
-    rotfigdir, wingfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
+    rotfigdir, wingfigdir, extfigdir, bgpickle, wcpickle, smcfile, mmcfile = exptfiles
     
     frames = cmn.listsortfs(movdir)
 
@@ -612,7 +617,7 @@ def plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur):
     fps = fps of movie
     plotlen = duration of each subplot, in seconds
     movavg = whether or not a moving average filter should be applied
-    movavgdur = duration moving average filter in seconds
+    movavgdur = duration of moving average filter in seconds
     '''
     
     if usemovavg == 'yes':
@@ -649,7 +654,7 @@ def plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur):
         plt.xlim(xmin, xmax)    
         plt.ylim(0, 1.2*plotmax)
         # Change x-axis labels to time format.
-        xlist = np.linspace(xmin, xmax, 5)
+        xlist = np.linspace(xmin, xmax, 10)
         xtime = [time.strftime('%M:%S', time.gmtime(x)) for x in xlist]
         plt.xticks(xlist, xtime, fontproperties=fontv)
 
@@ -657,22 +662,24 @@ def plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur):
     plt.legend(fontsize=20)
 
 
-def saveextwell(wellnum):
+def saveextwell(wellnum, figdir):
     '''Save intensity plot for each well.'''
-    plt.savefig('wingext_well{0:02d}.png'.format(wellnum))
+    cmn.makenewdir(figdir)
+    plt.savefig(os.path.join(figdir, 'wingext_well{0:02d}.png'.format(wellnum)))
     plt.close()
 
       
-def plotextexpt(exptdir, movsmc, movmmc, plotlen, usemovavg, movavgdur):
+def plotextexpt(exptdir, smcfile, mmcfile, figdir, plotlen, usemovavg, movavgdur):
     '''For each experiment, plots the ROI intensity differences for each well 
     and saves each plot.
     '''
+    movsmc, movmmc = map(np.load, [smcfile, mmcfile])
     
     fps = getfps(exptdir)
     for well in range(np.shape(movsmc)[1]):
         smc = movsmc[:,well]
         mmc = movmmc[:,well]
         plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur)
-        saveextwell(well)
+        saveextwell(well, figdir)
 
 

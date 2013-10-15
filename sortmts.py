@@ -18,10 +18,10 @@ exptsdir = b_sortmtsexpt('.', WINGDETBASE, EXPTSBASE)
 os.chdir(exptsdir)
 print("Converting movies")
 #convmovies(fdir=exptsdir, specdur1='no', start1=0, dur1=0, specdur2='yes', 
-#start2=0, dur2=240, ext=EXT, removeavi='yes', movbase=MOVBASE, 
-#num=5, qscale=3)
+#start2=0, dur2=240, newxdim=1920, newydim=1080, ext=EXT, overwrite=OVERWRITE, 
+#scale = 'yes', removeavi='yes', movbase=MOVBASE, num=5, qscale=3)
 
-##For testing code
-convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=180, specdur2='yes', 
+###For testing code
+convmovies(fdir=exptsdir, specdur1='yes', start1=0, dur1=300, specdur2='yes', 
 start2=0, dur2=0, newxdim=1920, newydim=1080, ext=EXT, overwrite=OVERWRITE, 
 scale = 'yes', removeavi='no', movbase=MOVBASE, num=5, qscale=3)
