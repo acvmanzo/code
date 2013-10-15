@@ -119,12 +119,11 @@ def orientflies(orig_im, contpics, coms, flynum, fly_offset, rotimshape):
     comppos = posarray[contpics[flynum] == 255]
     #centroid = np.mean(comppos, axis=0)
     centroid = [coms[flynum][1], coms[flynum][0]]
-
     # Mean subtract data.
     comppos = comppos - centroid
     # Singular value decomposition
     u, singval, eigenv = np.linalg.svd(comppos, full_matrices=False)
-       
+    print('Eigenshape', eigenv.shape)
     # Orient image.
     flyoffset = fly_offset*-1
     imgoffset = np.dot(flyoffset, 0.5*eigenv)
@@ -142,7 +141,6 @@ def findwings(orient_im, low_value, high_value):
     Output:
     w_im = thresholded image
     '''   
-    
     w_im = orient_im
     low_values_indices = w_im < low_value  # Where values are below low_value
     high_values_indices = w_im > high_value

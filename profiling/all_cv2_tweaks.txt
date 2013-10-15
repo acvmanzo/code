@@ -85,7 +85,7 @@ Tue Oct 15 00:25:22 2013    profall_ndim_comp
 
 FRAMEINT ON HOME DESKTOP:
 
-10826 function calls (10583 primitive calls) in 0.711 seconds
+10826 function calls (10583 primitive calls) in 0.711 seconds -- all ndimage
 9399 function calls (9160 primitive calls) in 0.516 seconds -- switched image 
 loading and binary closing to ndimage
 5917 function calls (5678 primitive calls) in 0.260 seconds -- switched all 
