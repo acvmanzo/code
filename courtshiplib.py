@@ -14,9 +14,6 @@ import pylab
 
 r = robjects.r
 
-def convtosec (minvalue, secvalue):
-    return(60*minvalue + secvalue)
-
 def courtshipline(line):
 
     """Generates dictionary with the values from line, with the parameters as keywords.
@@ -60,7 +57,8 @@ def dictlat(kind, fname):
         ks = kind + 's'
 
         if cdict[km] != 'x' and cdict[km] != '-':
-            d[gen].append(convtosec(float(cdict[km]), float(cdict[ks]))-float(cdict['offset']))
+            d[gen].append(cmn.convtosec(float(cdict[km]), float(cdict[ks])) -
+            float(cdict['offset']))
     return(d)
 
 

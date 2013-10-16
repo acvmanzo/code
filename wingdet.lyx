@@ -1821,5 +1821,239 @@ Convert ndimage operations to opencv
 Adjust image subtraction to remove scaling.
 \end_layout
 
+\begin_layout Section
+10/15/2013 - Testing code
+\end_layout
+
+\begin_layout Itemize
+Ran code (commit message shows which version) to test how well it detects
+ wing extensions; converted first 5 minutes.
+\end_layout
+
+\begin_layout Itemize
+Files: aggression/wingdet/cg30116_20130216_ag_PF24_A_r (Jenee's movie)
+\end_layout
+
+\begin_layout Subsection
+Well comparison
+\end_layout
+
+\begin_layout Standard
+Blue (mmc) seems more informative for actual aggressive encounters.
+ Flare indicated by red.
+\end_layout
+
+\begin_layout Itemize
+Well 0
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 2:38 flare
+\end_layout
+
+\begin_layout Description
+noconv Lots of noise
+\end_layout
+
+\begin_layout Description
+conv1 Many bumps; flare at 2:38 is visible but small.
+ Other bumps are due to grooming or times when fly was climbing on the wall
+ and its profile was sideways.
+\end_layout
+
+\begin_layout Description
+conv3 Similar to conv1
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 1
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 1:16 flare
+\end_layout
+
+\begin_layout Description
+conv1s 1:16 flare very small
+\end_layout
+
+\begin_layout Description
+conv3s 1:16 flare not shown; 1:53 peak grooming, 3:26 flare, 3:40 flare,
+ 4:20 grooming
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 2
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 0:00 flare, 2:11 wt+charge
+\end_layout
+
+\begin_layout Description
+conv1s 0:00 flare and 2:11 charge shown (but height small), 1:06-1:26 grooming,
+ 2:06 grooming, 2:46 some aggression, 3:06 touching and flaring, a lunge;
+ 4:13 wing fluttering, 4:40 extended wing flare, 4:53 more wing flare
+\end_layout
+
+\begin_layout Description
+conv3s 0:00 flare and 2:11 charge shown; missed 2:46 aggression
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 3
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 0:13 wt+charge, dominant escalation
+\end_layout
+
+\begin_layout Description
+conv1s 0:13 can see activity but amplitude is small; 0:53 wing threat, 1:20
+ wt, 1:27 wt+charge, 2:20 wt+charge, extended wt afterwards, 4:26 fly on
+ wall
+\end_layout
+
+\begin_layout Description
+conv3s 0:13 activity shown but amplited small, 0:46 wt+charge (no blue),
+ 0:53 flare,1:20 wt, 1:27 wt+charge (no blue), 2:20 wt+charge, extended
+ wt afterwards, 4:26 fly on wall
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 4
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J nothing in first 5 min
+\end_layout
+
+\begin_layout Description
+conv1s 0:40 fly on side; 1:00 wing fluttering, 1:30 wing fluttering, 2:26
+ fly on side, 2:33 fly on side, 2:50 fly on side, 4:00 wing fluttering,
+ 4:26 fly on side
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 5
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 3:42 flare, 4:25 wt+lunge/charge
+\end_layout
+
+\begin_layout Description
+conv1s 3:40 flare not shown but 4:25 wt+lunge/charge is shown; 0:18 wing
+ fluttering, 0:24 fly on side, 0:33 wing fluttering, 0:40 fly on side, 1:13
+ wing fluttering, 1:53 wing fluttering, 2:00 grooming, 2:10 grooming, 3:17
+ on side, 3:32 pushing, 4:20 wt+orient, 4:27 wt, 4:26 fluttering, 4:40 flare,
+ 4:53 wing fluttering
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 6
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 0:06 flare
+\end_layout
+
+\begin_layout Description
+conv1s 0:06 flare shown, 0:13 grooming, 0:20-0:26 grooming, 0:40 nothing,
+ 1:53 nothing - flies don't move much so they are in the background and
+ are subtracted weirdly, 3:40-3:46 grooming, 4:06-4:13 grooming, 4:26 grooming
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 7
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 0:00 wt+charge, 0:48 dominant escalation
+\end_layout
+
+\begin_layout Description
+conv1s 0:00 wt+charge shown, 0:13 some aggression, 0:24 flare, 0:33 wt_charge,
+ 0:40 on, aggression; 0:54 charge, aggression until 1:00; 1:13 fly on side,
+ 1:30 fly on side + wing fluttering, 1:35 wt+charge (no blue), basically
+ lots of wing fluttering this whole time; 2:09 wt+charge (no blue), 2:14
+ wt_charge (no blue), ends at 3:00 when other fly goes to ceiling, 4:46
+ fly on side, 4:48 wt+charge (shown, blue)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 8
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 3:20 flare
+\end_layout
+
+\begin_layout Description
+conv1s 3:20 flare is shown along with other small bumps
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 9
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J nothing
+\end_layout
+
+\begin_layout Description
+conv1s many red bumps in first minute: grooming; 2:26 - grooming
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 10
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 2:43 flare
+\end_layout
+
+\begin_layout Description
+conv1s 2:40 flare shown; 0:13 fly on ceiling, 0:26 fluttering, 0:43 grooming,
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Well 11
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+J 2:13 flare
+\end_layout
+
+\begin_layout Description
+conv1s flare is not really shown, but can see grooming leading up to flare;
+ 1:33 grooming; 1:40 grooming
+\end_layout
+
+\end_deeper
 \end_body
 \end_document

@@ -36,7 +36,7 @@ CENTER_A = np.array([[45, 10], [65, -10]]) # top left corner and bottom diagonal
 SIDE_AL = np.array([[25, 40], [45, 25]]) # top left corner and bottom diagonal corner of square
 MID_L = np.array([[-15, 65], [15, 25]])
 
-MOVAVGDUR = 3 # duration of moving average filter in seconds
+MOVAVGDUR = 0.5 # duration of moving average filter in seconds
 PLOTLEN = 60 # length of subplot window for plotextexpt() in seconds
 
 SECINTTEST = 10 # interval between frames analyzed in test1movie.py, in seconds

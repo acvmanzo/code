@@ -621,6 +621,7 @@ def plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur):
     '''
     
     if usemovavg == 'yes':
+        #smc = movavg(movavgdur, fps, smc) 
         smc, mmc = [movavg(movavgdur, fps, x) for x in [smc, mmc]]
     
     # Duration of signal in seconds.
@@ -652,7 +653,8 @@ def plotextwell(smc, mmc, fps, plotlen, usemovavg, movavgdur):
         xmin = xvals[li]
         xmax = plotlen*x+plotlen
         plt.xlim(xmin, xmax)    
-        plt.ylim(0, 1.2*plotmax)
+        #plt.ylim(0, 1.2*plotmax)
+        plt.ylim(-10, 40)
         # Change x-axis labels to time format.
         xlist = np.linspace(xmin, xmax, 10)
         xtime = [time.strftime('%M:%S', time.gmtime(x)) for x in xlist]

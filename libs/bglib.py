@@ -178,7 +178,7 @@ overwrite):
         os.chdir(movdir)
         try:
             genbgimexpt(exptdir, movbase, picklebase, fullbgfile, nframes, 
-            fntype, imext)
+            fntype, imext, overwrite)
         except AssertionError:
             print('Movie length > nframes')
             continue

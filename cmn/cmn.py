@@ -109,6 +109,10 @@ def window(winlen):
 
 def myround(x, base=10):
     return int(base * round(float(x)/base))
+    
+def convtosec (minvalue, secvalue):
+
+    return(60*minvalue + secvalue)
 
 
 ### FUNCTIONS FOR MANIPULATING STRINGS ###
