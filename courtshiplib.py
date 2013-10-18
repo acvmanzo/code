@@ -94,7 +94,10 @@ def dictfreq(kind, fname):
 
 
 def dictproptest(d):
-    """Returns a p-value for whether a set of proportions are from the same distribution. Input is a dictionary in which the keywords are genotypes or conditions and the values are a list in which an entry of "100" = success and an entry of "0" = failure (output of dictfreq).
+    """Returns a p-value for whether a set of proportions are from the same 
+    distribution. Input is a dictionary in which the keywords are genotypes 
+    or conditions and the values are a list in which an entry of 
+    "100" = success and an entry of "0" = failure (output of dictfreq).
     """
 
     ks = []
@@ -265,7 +268,8 @@ def plotlat(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 
 def plotfreq(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 
-    """Generates a bar plot of the frequency of each type of behavior for each genotype.
+    """Generates a bar plot of the frequency of each type of behavior for 
+    each genotype.
 
     kind: type of behavior - 'wing' (wing extension) 'copatt1' (first copulation attempt), 'copsuc' (successful copulation)
     fname: file containing raw data
@@ -711,7 +715,8 @@ def writeinfolat(ifile, ofile, kind, ctrlkey):
 
     for k in d.keys():
         with open(ofile, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, mwd[k]['median'], mwd[k]['n'], mcwd[k]['adjpval'], mcwd[k]['control']))
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, 
+            mwd[k]['median'], mwd[k]['n'], mcwd[k]['adjpval'], mcwd[k]['control']))
             mx.append(np.max(mwd[k]['n']))
             mi.append(np.min(mwd[k]['n']))
 
@@ -727,7 +732,8 @@ def createinfoprop(ofile):
 
 
 def writeinfoprop(ifile, ofile, kind):
-    '''Writes into a file with information on the frequency graphs plotted in multiplot_1bar.'''
+    '''Writes into a file with information on the 
+    frequency graphs plotted in multiplot_1bar.'''
 
     d = dictfreq(kind, ifile)
     bd = dictbin(d)

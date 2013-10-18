@@ -90,8 +90,9 @@ def savebar(fname = 'bargraph'):
 
 
 
-def plotdata(dictdata, dictmeans, keylist, ptype, ylabel, ftitle, datac='b', meanc='r',
-bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titlesize='xx-large', xlabelsize='large'):
+def plotdata(dictdata, dictmeans, keylist, ptype, ylabel, ftitle, datac='b', 
+meanc='r', bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, 
+end=1, titlesize='xx-large', xlabelsize='large'):
     """Plots either a bar graph or a scatter plot using data from 'dictdata', with means taken from 'dictmeans' in the
     order specified by 'keylist'.
 
