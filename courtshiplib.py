@@ -10,7 +10,8 @@ import rstatslib as rsl
 import rpy2.robjects as robjects
 import os
 import pylab
-
+import math
+import rpy2
 
 r = robjects.r
 
@@ -48,6 +49,7 @@ def dictlat(kind, fname):
     f.next()
     for l in f:
         cdict= courtshipline(l)
+
 
         gen = cdict['gen']
         if gen not in d:
@@ -110,7 +112,7 @@ def dictproptest(d):
         n.append(len(v))
 
     dpt = zip(ks, nsuc, n)
-
+    #print(dpt)
     unlist = r['unlist']
     pt = rsl.proptest(unlist(nsuc), unlist(n))
     return(pt.rx('p.value')[0][0])
@@ -132,6 +134,7 @@ def writeproptestfile(ofile, d, kind):
     pt = dictproptest(d)
     with open(ofile, 'a') as f:
         f.write('{0}\t{1}\n'.format(kind, pt))
+
 
 
 
@@ -161,7 +164,7 @@ def dictmeans(dict, label='data'):
     return(mean_dict)
 
 
-def dictbin(dict, conf=0.05, methods='wilson', label='data'):
+def dictbin(dict, conf=0.95, methods='wilson', label='data'):
     """Generates a new dictionary with binomical confidence intervals from frequency data.
     Input:
     dict = output of function dictfreq
@@ -201,12 +204,13 @@ def dictbin(dict, conf=0.05, methods='wilson', label='data'):
         mean_dict[condition]['prop'] = z.rx('mean')[0][0]*100
         mean_dict[condition]['lowerci'] = z.rx('lower')[0][0]
         mean_dict[condition]['upperci'] = z.rx('upper')[0][0]
+        mean_dict[condition]['conf'] = conf
 
 
     return(mean_dict)
 
 
-def plotlatbw(kind, fname, iskeyfile = 'true', type='bw'):
+def plotlatbw(kind, fname, iskeyfile = 'true', keyfile='keylist', type='bw'):
     '''Plots a box and whisker plot of the latency data.'''
 
     d = dictlat(kind, fname)
@@ -366,16 +370,52 @@ def dictmw(d, ctrlkey='cs', test='exact'):
         mwdict[i]['control'] = ctrlkey
 
     return(mwdict)
+    
+    
+def dictpptest(d, ctrlkey='cs'):
+
+    """Returns a dictionary in which the keys are the genotypes and the values are the results of the Mann-Whitney test as implemented in R.
+
+    datadict: a dictionary with the keys as the genotypes and the values as the raw data
+    ctrlkey: the name of the key for the dictionary entry that will serve as the control genotype; default is 'cs'
+    """
+
+    unlist = r['unlist']
+    mwdict = {}
+
+    for i,v in d.iteritems():
+
+        nsuc = [np.sum(x)/100 for x in [v, d[ctrlkey]]]
+        print('nsuc', nsuc)
+        n = [len(x) for x in [v, d[ctrlkey]]]
+        print('n', n)
+        
+        pt = rsl.proptest(unlist(nsuc), unlist(n))
+
+        mwdict[i] = {}
+        if math.isnan(pt.rx('p.value')[0][0]):
+            mwdict[i]['pval'] = 1
+        else:
+            mwdict[i]['pval'] = pt.rx('p.value')[0][0]
+        mwdict[i]['n'] = len(v)
+        mwdict[i]['control'] = ctrlkey
+
+    return(mwdict)
 
 
 def mcpval(pvaldict, method='fdr', iskeyfile = 'true', keyfile='keylist'):
 
-    """Returns a dictionary where the keys are genotypes and the values include p-values that are corrected for multiple comparisons using the p.adjust function in R.
+    """Returns a dictionary where the keys are genotypes and the values 
+    include p-values that are corrected for multiple comparisons using the 
+    p.adjust function in R.
 
-    pvaldict = dictionary where the keys are genotypes and the values include p-values derived from a statistical test; should be the output of a function like dictmw()
-    method = method chosen for multiple correction using the p.adjust function ('holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none')
+    pvaldict = dictionary where the keys are genotypes and the values include 
+    p-values derived from a statistical test; should be the output of a function like dictmw()
+    method = method chosen for multiple correction using the p.adjust function 
+    ('holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none')
     iskeyfile: specifies whether a keylist file exists; default is 'true'
-    keyfile: file with a list of the genotypes to be used; default name is 'keylist'
+    keyfile: file with a list of the genotypes to be used; default name is 
+    'keylist'
 
     """
 
@@ -394,9 +434,10 @@ def mcpval(pvaldict, method='fdr', iskeyfile = 'true', keyfile='keylist'):
         pvals.append(pvaldict[k]['pval'])
         ctrl.append(pvaldict[k]['control'])
         newdict[k] = pvaldict[k]
-
-    for k in keylist:
-        assert pvals[gens.index(k)] == pvaldict[k]['pval']
+     
+    
+    #for k in keylist:
+        #assert pvals[gens.index(k)] == pvaldict[k]['pval']
 
     pvals.pop(gens.index(ctrl[0]))
     gens.remove(ctrl[0])
@@ -422,7 +463,8 @@ def createmwfile(fname):
     with open(fname, 'w') as f:
         f.write('Mann-Whitney U Test corrected for Multiple Comparisons\n')
 
-        f.write('Condition\tBehavior\tControl\tSigtest\tMultCompar\tp-value\tAdj p-value\n')
+        f.write('Condition\tBehavior\tControl\tSigtest\tMultCompar\tp-value\t\
+        Adj p-value\n')
 
 
 def writemwfile(fname, pvaldict, kind):
@@ -435,7 +477,31 @@ def writemwfile(fname, pvaldict, kind):
 
     for k, v in pvaldict.iteritems():
         with open(fname, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], v['adjpval']))
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, \
+            v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], \
+            v['adjpval']))
+
+
+def createpptestfile(fname):
+
+    """Creates a file (specified in 'fname') that will list the results of the Mann-Whitney significance test as implemented in R.
+    """
+
+    with open(fname, 'w') as f:
+        f.write('Proportion test corrected for Multiple Comparisons\n')
+
+        f.write('Condition\tBehavior\tControl\tMultCompar\tp-value\t\
+        Adj p-value\n')
+
+
+def writepptestfile(ofile, pvaldict, kind):
+    """Input is a dictionary in which the keywords are genotypes or conditions and the values are a list in which an entry of "100" = success and an entry of "0" = failure (output of dictfreq)"""
+
+    for k, v in pvaldict.iteritems():
+        with open(ofile, 'a') as f:
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, \
+            v['control'], v['adjpvaltest'], v['pval'], v['adjpval']))    
+    
 
 
 def plotqqplots(kind, fname, outputdir, ctrl='cs'):
@@ -466,34 +532,12 @@ def plotqqplots(kind, fname, outputdir, ctrl='cs'):
 
 #### BELOW ARE FUNCTIONS FOR PLOTTING A 4-PANEL PUBLICATION-QUALITY FIGURE ####
 
-def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
+def multiplot_1bar(kind, fname, ctrlkey, barwidth, ymin, ylabel, yaxisticks, 
+subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
-    # ======== SET INITIAL FIGURE PROPERTIES =============
-    mpl.rc('axes', linewidth=lw)
-    mpl.rc('axes.formatter', limits = [-6, 6])
-
-    # Sets font to Arial and assigns font properties.
-    fontv = mpl.font_manager.FontProperties()
-    fontv = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/arial.ttf')
-    fontv.set_size(fontsz)
-    # Sets italicized font.
-    fonti = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/ariali.ttf')
-    fonti.set_size(fontsz)
-
-
-    # Defines coordinates for each bar.
-    lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
-    x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
-    x_list = x_gen1 # Coordinates for the temperature labels.
-
-    # Defines the axes.
-    ax = plt.subplot(subplotn)
-
-    # =========== PLOT DATA =======================
-
-    # Load data
+    # ======== LOAD DATA =============
     if keyfile == 'no':
-        keyfile = sorted(d.keys())
+        keylist = sorted(d.keys())
     else:
         keylist = cmn.load_keys(keyfile)
     d = dictlat(kind, fname)
@@ -509,22 +553,50 @@ def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, y
         conds.append(k)
         pvals.append(adjpd[k]['adjpval'])
 
+    # ======== SET INITIAL FIGURE PROPERTIES =============
+    mpl.rc('axes', linewidth=lw)
+    mpl.rc('axes.formatter', limits = [-6, 6])
+
+    # Sets font to Arial and assigns font properties.
+    fontv = mpl.font_manager.FontProperties()
+    fontv = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/arial.ttf')
+    fontv.set_size(fontsz)
+    # Sets italicized font.
+    fonti = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/ariali.ttf')
+    fonti.set_size(fontsz)
+
+    # Defines coordinates for each bar.
+    barnum = len(keylist)
+    lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
+    x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
+    x_list = x_gen1 
+
+    # Defines the axes.
+    ax = plt.subplot(subplotn)
+
+    # =========== PLOT DATA =======================
+
     #Plots the box plot.
+
     bp = plt.boxplot(vals, positions=x_list, sym='')
     pylab.setp(bp['boxes'], color='black')
     pylab.setp(bp['whiskers'], color='black', ls='-')
     pylab.setp(bp['medians'], color='black')
 
     # Sets the x- and y-axis limits.
-    xlim = x_list[-1]+1.5*barwidth
+    xlim = x_list[-1]+1*barwidth
 
-    maxval = np.max(np.max(vals))
+    print(kind)
+    maxvals = [max(x) for x in vals]
+    maxval = max(maxvals)
+    print('maxval', maxval)
     if kind == 'copsuc':
         ylim = 1.3*maxval
     else:
-        ylim = maxval
+        ylim = 1.2*maxval
     ylim = cmn.myround(ylim)
 
+    xlim=barnum*barwidth+1.5*barwidth
     plt.axis( [0, xlim, ymin, ylim])
 
 
@@ -582,20 +654,179 @@ def multiplot_1bar(kind, fname, ctrlkey, barnum, barwidth, xlim, ymin, ylabel, y
 
     # ========ADDS SIGNIFICANCE STARS============
 
-    p05i = [i for i, pval in enumerate(pvals) if pval <0.05]
-    for i in p05i:
-        plt.text(x_list[i], 0.75*ylim, '*', horizontalalignment='center', fontsize=fontsz)
+    print('pvals',pvals)
 
-    p01i = [i for i, pval in enumerate(pvals) if pval <0.01]
+    p05i = [i for i, pval in enumerate(pvals) if pval <0.05 and pval >= 0.01]
+    
+    
+    print(p05i)
+    for i in p05i:
+        plt.text(x_list[i], 0.85*ylim, '*', horizontalalignment='center', 
+        fontsize=fontsz)
+
+    p01i = [i for i, pval in enumerate(pvals) if pval <0.01 and pval >= 0.001]
+    print(p01i)
     for i in p01i:
-        plt.text(x_list[i], 0.75*ylim, '**', horizontalalignment='center', fontsize=fontsz)
+        plt.text(x_list[i], 0.85*ylim, '**', horizontalalignment='center', 
+        fontsize=fontsz)
 
     p001i = [i for i, pval in enumerate(pvals) if pval <0.001]
+    print(p001i)
     for i in p001i:
-        plt.text(x_list[i], 0.75*ylim, '***', horizontalalignment='center', fontsize=fontsz)
+        plt.text(x_list[i], 0.85*ylim, '***', horizontalalignment='center', 
+        fontsize=fontsz)
 
 
-def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, ylim, colors, subplotn, subplotl, barwidth, barnum, fontsz, stitlesz, leglabels, lw=1):
+def multiplot_1barf(kind, fname, ctrlkey, barwidth, keyfile, conf, ylabel, yaxisticks, ymin, 
+ylim, subplotn, subplotl, fontsz, stitlesz, leglabels, lw=1):
+
+    # ======== SET INITIAL FIGURE PROPERTIES =============
+    mpl.rc('axes', linewidth=lw)
+    mpl.rc('axes.formatter', limits = [-6, 6])
+
+    # Sets font properties.
+    fontv = mpl.font_manager.FontProperties()
+    fontv.set_size(fontsz)
+    # Sets italicized font.
+    fonti = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/ariali.ttf')
+    fonti.set_size(fontsz)
+
+    # Defines the axes.
+    ax = plt.subplot(subplotn)
+
+    # ======== LOAD DATA =============
+    keylist = cmn.load_keys(keyfile)
+    d = dictfreq(kind, fname)
+    db = dictbin(d, conf, label=kind)
+    ppd = dictpptest(d, ctrlkey)
+    adjppd = mcpval(ppd, 'fdr')
+
+    vals = []
+    conds = []
+    lowerci = []
+    upperci = []
+    nsuc = []
+    n = []
+    pvals = []
+
+    # Appends data for the bar plot to appropriate lists.
+    for k in keylist:
+        vals.append(db[k]['prop'])
+        conds.append(k)
+        nsuc.append(db[k]['nsuc'])
+        n.append(db[k]['n'])
+        lowerci.append(db[k]['prop']-100*db[k]['lowerci'])
+        upperci.append(100*db[k]['upperci']-db[k]['prop'])
+        pvals.append(adjppd[k]['adjpval'])
+
+
+    # Defines coordinates for each bar.
+    barnum = len(keylist)
+    lastbar = (1.5*barnum*barwidth)-barwidth
+    x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
+    print(x_gen1)
+    x_list = x_gen1 
+                
+    # =========== PLOT DATA =======================
+    
+    # Plots the bar plot for each kind of data.
+    truebarw = 0.35*barwidth
+    #plt.bar(x_list, vals, yerr=[lowerci,upperci], width=truebarw, 
+    #color=colors[i], bottom=0, ecolor='k', capsize=0.5, linewidth=lw, 
+    #label=leglabels[i])
+    plt.bar(x_list, vals, width=truebarw, color='k', bottom=0, 
+    ecolor='k', capsize=0.5, linewidth=lw)
+
+
+    # ======== ADDS TICKS, LABELS and TITLES==========
+
+    # Sets the x- and y-axis limits.
+    xlim=barnum*barwidth+1.5*barwidth
+    plt.xlim(0, xlim)
+    plt.ylim(ymin, ylim)
+
+    # Plots and formats xlabels.
+    xlabel_list = [x for x in x_list]
+    plt.xticks(xlabel_list, conds, rotation=45, fontproperties=fonti)
+
+    # Formats the yticks.
+    plt.yticks(fontproperties=fontv)
+
+    # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
+    plt.ylabel(ylabel, labelpad=4, fontproperties=fontv, multialignment='center')
+
+    # Add title
+    if kind == 'wing':
+        plt.title('% flies courting', fontsize=stitlesz)
+
+    if kind == 'copsuc':
+        plt.title('% flies copulating', fontsize=stitlesz)
+
+    if kind == 'copatt1':
+        plt.title('% flies attempting copulation', fontsize=stitlesz)
+
+
+    # Labels the subplot
+    plt.text(-0.1, 1.1, subplotl, transform=ax.transAxes)
+
+
+    # ======== FORMATS THE PLOT==========
+    #Uncomment lines below to display without top and right borders.
+    for loc, spine in ax.spines.iteritems():
+        if loc in ['left','bottom']:
+            pass
+        elif loc in ['right','top']:
+            spine.set_color('none') # don't draw spine
+        else:
+            raise ValueError('unknown spine location: %s'%loc)
+
+    # ======== FORMATS THE TICKS ==========
+    #Uncomment lines below to display ticks only where there are borders.
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
+    # Specifies the number of tickmarks/labels on the yaxis.
+    ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(yaxisticks))
+
+    #Removes the tickmarks on the x-axis but leaves the labels and the spline.
+    for line in ax.get_xticklines():
+        line.set_visible(False)
+
+
+    # ======== PLOT AND FORMAT LEGEND ==========
+    ##Plots legend.
+    #a1 = plt.legend(ncol=len(kindlist), loc='upper center', labelspacing=0.1, 
+    #columnspacing=0.7, markerscale=0.5, fontsize=fontsz, handletextpad=0.3, borderpad=0)
+    ##Removes border around the legend.
+    #a1.draw_frame(False)
+    
+    
+    # ========ADDS SIGNIFICANCE STARS============
+
+    print('pvals',pvals)
+
+    p05i = [i for i, pval in enumerate(pvals) if pval <0.05 and pval >= 0.01]
+    
+    print(p05i)
+    for i in p05i:
+        plt.text(x_list[i], 0.9*ylim, '*', horizontalalignment='center', 
+        fontsize=fontsz)
+
+    p01i = [i for i, pval in enumerate(pvals) if pval <0.01 and pval >= 0.001]
+    print(p01i)
+    for i in p01i:
+        plt.text(x_list[i], 0.9*ylim, '**', horizontalalignment='center', 
+        fontsize=fontsz)
+
+    p001i = [i for i, pval in enumerate(pvals) if pval <0.001]
+    print(p001i)
+    for i in p001i:
+        plt.text(x_list[i], 0.9*ylim, '***', horizontalalignment='center', 
+        fontsize=fontsz)
+
+
+def multiplot_3bars(kindlist, fname, ctrlkey, keyfile, conf, ylabel, yaxisticks, ymin, 
+ylim, colors, subplotn, subplotl, barwidth, fontsz, stitlesz, leglabels, lw=1):
 
     mpl.rc('axes', linewidth=lw)
     mpl.rc('axes.formatter', limits = [-6, 6])
@@ -610,22 +841,30 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, yl
     # Defines the axes.
     ax = plt.subplot(subplotn)
 
+    # Load data.
+    keylist = cmn.load_keys(keyfile)
+    barnum = len(keylist)
+
     # Defines variables used in finding coordinates for each bar.
     lastbar = (barnum*len(kindlist)*barwidth)
     x_gen1 = np.linspace(1.5*barwidth, lastbar+barnum*barwidth, barnum).tolist()
 
-    # Load data.
-    keylist = cmn.load_keys(keyfile)
 
     for i, kind in enumerate(kindlist):
         d = dictfreq(kind, fname)
         db = dictbin(d, conf, label=kind)
+        print('db', db)
+        ppd = dictpptest(d, ctrlkey)
+        adjppd = mcpval(ppd, 'fdr')
+
+        
         vals = []
         conds = []
         lowerci = []
         upperci = []
         nsuc = []
         n = []
+        pvals = []
 
         # Defines coordinates for each bar.
         x_list = [x + i for x in x_gen1]
@@ -638,11 +877,17 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, yl
             n.append(db[k]['n'])
             lowerci.append(db[k]['prop']-100*db[k]['lowerci'])
             upperci.append(100*db[k]['upperci']-db[k]['prop'])
+            pvals.append(adjppd[k]['adjpval'])
 
+                
 
         # Plots the bar plot for each kind of data.
         truebarw = barwidth-(0.05*barwidth)
-        plt.bar(x_list, vals, yerr=[lowerci,upperci], width=truebarw, color=colors[i], bottom=0, ecolor='k', capsize=0.5, linewidth=lw, label=leglabels[i])
+        #plt.bar(x_list, vals, yerr=[lowerci,upperci], width=truebarw, 
+        #color=colors[i], bottom=0, ecolor='k', capsize=0.5, linewidth=lw, 
+        #label=leglabels[i])
+        plt.bar(x_list, vals, width=truebarw, color=colors[i], bottom=0, 
+        ecolor='k', capsize=0.5, linewidth=lw, label=leglabels[i])
 
 
     # ======== ADDS TICKS, LABELS and TITLES==========
@@ -696,6 +941,30 @@ def multiplot_3bars(kindlist, fname, keyfile, conf, ylabel, yaxisticks, ymin, yl
     columnspacing=0.7, markerscale=0.5, fontsize=fontsz, handletextpad=0.3, borderpad=0)
     #Removes border around the legend.
     a1.draw_frame(False)
+    
+    
+    # ========ADDS SIGNIFICANCE STARS============
+
+    print('pvals',pvals)
+
+    p05i = [i for i, pval in enumerate(pvals) if pval <0.05 and pval >= 0.01]
+    
+    print(p05i)
+    for i in p05i:
+        plt.text(x_list[i], 0.9*ylim, '*', horizontalalignment='center', 
+        fontsize=fontsz)
+
+    p01i = [i for i, pval in enumerate(pvals) if pval <0.01 and pval >= 0.001]
+    print(p01i)
+    for i in p01i:
+        plt.text(x_list[i], 0.9*ylim, '**', horizontalalignment='center', 
+        fontsize=fontsz)
+
+    p001i = [i for i, pval in enumerate(pvals) if pval <0.001]
+    print(p001i)
+    for i in p001i:
+        plt.text(x_list[i], 0.9*ylim, '***', horizontalalignment='center', 
+        fontsize=fontsz)
 
 
 def createinfolat(ofile):
@@ -703,19 +972,19 @@ def createinfolat(ofile):
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tmedian\tn\tAdj p-value\tCtrl\n')
 
+
 def writeinfolat(ifile, ofile, kind, ctrlkey):
     '''Writes into a file with information on the latency graphs plotted in multiplot_1bar.'''
 
     d = dictlat(kind, ifile)
     mwd = dictmw(d, ctrlkey)
     mcwd = mcpval(mwd)
-
     mx = []
     mi = []
 
     for k in d.keys():
         with open(ofile, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, 
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, \
             mwd[k]['median'], mwd[k]['n'], mcwd[k]['adjpval'], mcwd[k]['control']))
             mx.append(np.max(mwd[k]['n']))
             mi.append(np.min(mwd[k]['n']))
@@ -725,10 +994,40 @@ def writeinfolat(ifile, ofile, kind, ctrlkey):
         f.write('Min n = {0}\n'.format(np.min(mi)))
 
 
+def createinfolatmean(ofile):
+    
+    with open(ofile, 'w') as f:
+        f.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
+    'Mean latency (s)', 'Std Error (s)', '# pairs exhibiting behavior'))
+    
+
+def writeinfolatmean(ifile, ofile, kind, ctrlkey):
+    
+    d = dictlat(kind, ifile)
+    mwd = dictmeans(d)
+
+    for k in d.keys():
+
+        if kind == 'wing':
+            nk = 'wing extension'
+        if kind == 'copsuc':
+            nk = 'successful copulation'
+        if kind == 'copatt1':
+            nk = 'first attempted copulation'
+
+        print(mwd[k][0])
+        with open(ofile, 'a') as f:
+            f.write('{0}\t{1}\t{2:.2f}\t{3:.2f}\t{4}\n'.format(k, nk, mwd[k][0], 
+            mwd[k][2], mwd[k][3]))
+    
+   
+
+
 def createinfoprop(ofile):
     '''Creates a file with information on the frequency graphs plotted in multiplot_1bar.'''
     with open(ofile, 'w') as f:
-        f.write('Genotype\tBehavior\tnsuc\tn\n')
+        f.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
+        '# pairs exhibiting behavior', '# pairs tested', '% exhibiting behavior'))
 
 
 def writeinfoprop(ifile, ofile, kind):
@@ -741,10 +1040,19 @@ def writeinfoprop(ifile, ofile, kind):
     mx = []
     mi = []
     for k, v in bd.iteritems():
+        
+        if kind == 'wing':
+            nk = 'wing extension'
+        if kind == 'copsuc':
+            nk = 'successful copulation'
+        if kind == 'copatt1':
+            nk = 'first attempted copulation'
+        
         with open(ofile, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\n'.format(k, kind, v['nsuc'], v['n']))
+            f.write('{0}\t{1}\t{2}\t{3}\t{4:.2%}\n'.format(k, kind, v['nsuc'], v['n'], 
+            float(v['nsuc'])/float(v['n'])))
             mx.append(np.max(v['n']))
             mi.append(np.min(v['n']))
-    with open(ofile, 'a') as f:
-        f.write('Max n = {0}\n'.format(np.max(mx)))
-        f.write('Min n = {0}\n'.format(np.min(mi)))
+    #with open(ofile, 'a') as f:
+        #f.write('Max n = {0}\n'.format(np.max(mx)))
+        #f.write('Min n = {0}\n'.format(np.min(mi)))

@@ -4,15 +4,26 @@
 
 from courtshiplib import *
 
-KINDLIST = ['wing', 'copsuc', 'copatt1'] # List of behaviors; wing = wing extension; copsuc = successful copulation; copatt1 = first attempted copulation.
-FNAME = '2013-0718_courtship_data_for_nrsa.csv' # Name of file with the data from manual scoring.
-SHAPFILE = 'shap_lat.txt' # Name of file listing results of the Shapiro-Wilk test.
-MCPVALFILE = 'mcpvalue_lat_exact.txt' # Name of file listing results of the Mann-Whitney U Test, with p-values adjusted for multiple comparisons.
-MWTEST = 'exact' # Specifies whether to use the R function wilcox.exact ('exact') or wilcox.test ('std')
-MCCORR = 'fdr' # Specifies how to adjust p-values to correct for multiple comparisons using the R function p.adjust ('fdr' = false discovery rate')
-PTFILE = 'proptest.txt' # Name of file listing the results of the proportion test, where p-values give the probability of observing the results if the null hypothesis that all the proportions are from the same distribution is true.
-CTRLKEY = '+/+' # Name of the control strain that all other lines will be compared to in the Mann-Whitney U Test.
-DIR = 'summary/' # Name of the directory where plots and text files will be saved.
+KINDLIST = ['wing', 'copsuc', 'copatt1'] # List of behaviors; wing = wing 
+ #extension; copsuc = successful copulation; copatt1 = first attempted 
+ #copulation.
+FNAME = '2013-0718_courtship_data_for_nrsa.csv' # Name of file with the data 
+#from manual scoring.
+SHAPFILE = 'shap_lat.txt' # Name of file listing results of the Shapiro-Wilk 
+#test.
+MCPVALFILE = 'mcpvalue_lat_exact.txt' # Name of file listing results of the 
+#Mann-Whitney U Test, with p-values adjusted for multiple comparisons.
+MWTEST = 'exact' # Specifies whether to use the R function wilcox.exact 
+#('exact') or wilcox.test ('std')
+MCCORR = 'fdr' # Specifies how to adjust p-values to correct for multiple 
+#comparisons using the R function p.adjust ('fdr' = false discovery rate')
+PTFILE = 'proptest.txt' # Name of file listing the results of the proportion 
+#test, where p-values give the probability of observing the results if the null
+ #hypothesis that all the proportions are from the same distribution is true.
+CTRLKEY = '+/+' # Name of the control strain that all other lines will be 
+#compared to in the Mann-Whitney U Test.
+DIR = 'summary/' # Name of the directory where plots and text files will be 
+#saved.
 QQDIR = DIR+'qqplots/' # Name of the directory where qqplots will be saved.
 
 # Creates the directories where the plots will go.

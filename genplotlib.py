@@ -121,7 +121,7 @@ end=1, titlesize='xx-large', xlabelsize='large'):
     """
 
     i = keylist
-    num = len(dictdata)
+    num = len(keylist)
     x = xstart
 
     x_list = []
@@ -229,9 +229,6 @@ end=1, titlesize='xx-large', xlabelsize='large'):
 
     else:
         plt.xticks(xt, cond_list, fontsize=xlabelsize)
-
-
-
 
     plt.ylabel(ylabel, fontsize='x-large')
     plt.title(ftitle, fontsize=titlesize)

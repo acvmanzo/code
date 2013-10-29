@@ -57,6 +57,16 @@ def proptest(x, n, confleveln=0.95):
     return(proptest(x, n, **{'conf.level': confleveln}))
 
 
+def pairwiseproptest(x, n, method, confleveln=0.95):
+    # Applies prop.test to each pair in a group with adjustments for multiple
+    #comparisons .
+    # x = vector of number of successes in binomial experiment
+    # n = vector of number of independent trials in binomial experiment
+    pptest = r['pairwise.prop.test']
+    conflevel = robjects.StrVector("conf.level")
+    return(pptest(x, n, method, **{'conf.level': confleveln}))
+
+
 #rnorm = r['rnorm']
 #datanorm = rnorm(50)
 #winglat, copsuclat, copattlat = dictlat(FNAME)
