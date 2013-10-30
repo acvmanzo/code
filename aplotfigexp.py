@@ -2,6 +2,7 @@
 
 # Executable function for plotting a four-panel figure with the courtship data.
 
+import aglib as al
 import courtshiplib as cl
 import cmn.cmn as cmn
 import matplotlib.pyplot as plt
@@ -19,14 +20,15 @@ CTRLKEY = sys.argv[2]
 #FNAME = 'allwillcourtship.csv' #File containing original data.
 KEYFILE = 'keylist'
 DIR = 'presfig/' # Directory that figure will be saved in.
-OUTPUTFIG = DIR+'courtresexp.png' # Name of figure.
-OFILELAT = DIR+'courtreslat.txt' # Name of file with latency info.
-OFILEPROP = DIR+'courtresprop.txt' # Name of file with frequency info.
+OUTPUTFIG = DIR+'agresexp.png' # Name of figure.
+OFILELAT = DIR+'agreslat.txt' # Name of file with latency info.
+OFILEPROP = DIR+'agresprop.txt' # Name of file with frequency info.
 OFILEMULTIPROPTEST= DIR+'multiproptest.txt' # Name of file with results of the R 
 #function 'prop.test'
+PTFILE = DIR+'aproptest.txt'
 
 # Info about figure content.
-KINDLIST = ['wing', 'copatt1', 'copsuc'] # Behaviors to be analyzed.
+KINDLIST = ['flare', 'charge', 'escd', 'escm'] # Behaviors to be analyzed.
 #CTRLKEY = '+/+' # Name of the control strain that all other lines will be 
 #CTRLKEY = 'cs-Apr' # Name of the control strain that all other lines will be 
 #CTRLKEY = 'cs-Jenee' # Name of the control strain that all other lines will be 
@@ -34,13 +36,19 @@ KINDLIST = ['wing', 'copatt1', 'copsuc'] # Behaviors to be analyzed.
 #compared to in the Mann-Whitney U Test.
 
 # Figure parameters.
-SUBPLOTNS1 = [321, 323, 325] # Subplots of the figure.
-SUBPLOTNS2 = [322, 324, 326] # Subplots of the figure.
-SUBPLOTLS1 = ['A', 'B', 'C'] # Labels for the subplots.
-SUBPLOTLS2 = ['D', 'E', 'F'] # Labels for the subplots.
-FIGW=6 # Figure width.
-FIGH=8 # Figure height.
-FIGDPI=1000 # Figure DPI.
+#SUBPLOTNS1 = [421, 423, 425, 427] # Subplots of the figure.
+#SUBPLOTNS2 = [422, 424, 426, 428] # Subplots of the figure.
+SUBPLOTLS1 = ['A', 'B', 'C', 'D'] # Labels for the subplots.
+SUBPLOTLS2 = ['E', 'F', 'G', 'H'] # Labels for the subplots.
+#FIGW=6 # Figure width.
+#FIGH=10 # Figure height.
+FIGDPI=1200 # Figure DPI.
+
+SUBPLOTNS1 = [241, 242, 243, 244]
+SUBPLOTNS2 = [245, 246, 247, 248]
+FIGW=10
+FIGH=6
+
 FONTSZ=11 # Size of font.
 LW = 1 # Width of lines in the figure.
 STITLESZ=12 # Title font size.
@@ -59,13 +67,13 @@ YLABEL2 ='%'
 YAXISTICKS2 = 7 # Number of y-axis ticks.
 YMIN2 = 0
 YLIM2 = 130
-LEGLABELS = ['we', 'attcop', 'cop']
 
 # Creates directory and output text files.
 cmn.makenewdir(DIR)
 cl.createinfolat(OFILELAT)
 cl.createinfoprop(OFILEPROP)
 cl.createpptestfile(OFILEMULTIPROPTEST)
+cl.createproptestfile(PTFILE)
 
 # Creates a figure of the indicated size and dpi.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
@@ -75,21 +83,28 @@ edgecolor='k')
 #(i.e., latency bar plots).
 ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1)
 for k in ks1:
-    cl.multiplot_1bar(k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
-    YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2], \
-    keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
+    print(k[0])
+    if k[0] == 'flare' or k[0] == 'escm':
+        continue
+    try:
+        al.multiplot_1bar(k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
+        YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2], \
+        keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
+    except cmn.EmptyValueError:
+        continue
     # Writes two files with the summary information for frequency and latency plots.
     #d =cl.dictfreq(k[0], FNAME)
-    cl.writeinfolat(FNAME, OFILELAT, k[0], CTRLKEY, KEYFILE, 'True')
+    
     
 ks2 = zip(KINDLIST, SUBPLOTNS2, SUBPLOTLS2)
 for k in ks2:
     print('behavior', k)
-    cl.multiplot_1barf(k[0], FNAME, CTRLKEY, BARWIDTH, KEYFILE, conf=0.95, 
-    ylabel=YLABEL2, yaxisticks=YAXISTICKS2, ymin=YMIN2, ylim=YLIM2, \
-    subplotn=k[1], subplotl=k[2], 
-    fontsz=FONTSZ, stitlesz=STITLESZ, leglabels=LEGLABELS, lw=LW)
-    cl.writeinfoprop(FNAME, OFILEPROP, k[0], KEYFILE, 'True')
+    al.multiplot_1barf(k[0], FNAME, CTRLKEY, BARWIDTH, KEYFILE, conf=0.95, 
+    ylabel=YLABEL2, yaxisticks=YAXISTICKS2, ymin=YMIN2, ylim=YLIM2,
+    subplotn=k[1], subplotl=k[2], fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
+    
+    al.writeinfolat(FNAME, OFILELAT, k[0], CTRLKEY, KEYFILE, 'True')
+    al.writeinfoprop(FNAME, OFILEPROP, k[0], KEYFILE, 'True')
 
 # Adjusts figure areas.
 plt.tight_layout()
@@ -97,10 +112,12 @@ fig1.subplots_adjust(top=0.92)
 plt.savefig(OUTPUTFIG) #Saves figure.
 
 for k in KINDLIST:
-    pd = cl.dictfreq(k, FNAME)
+    pd = al.dictfreq(k, FNAME)
     #print('ppd')
     ppd = cl.dictpptest(pd, ctrlkey=CTRLKEY)
     #print(ppd)
     #print('adjppd')
     adjppd = cl.mcpval(ppd, 'fdr')
     cl.writepptestfile(OFILEMULTIPROPTEST, adjppd, k)
+    
+    al.writeproptestfile(PTFILE, pd, k, KEYFILE, 'True')

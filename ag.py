@@ -7,14 +7,8 @@ PROPFILE = 'freq_of_behavior.txt'
 LATFILE = 'latency_to_behavior.txt'
 PROPTESTFILE = 'proptest.txt'
 
-with open(LATFILE, 'w') as g:
-    g.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
-    'Mean latency (s)', 'Std Error (s)', '# pairs exhibiting behavior'))
-
-with open(PROPFILE, 'w') as f:
-    f.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
-    '# pairs exhibiting behavior', '# pairs tested', '% exhibiting behavior'))
-    
+createinfolat(LATFILE)
+createinfoprop(PROPFILE)   
     
 for KIND in KINDLIST:
     print(KIND)

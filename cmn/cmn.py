@@ -129,6 +129,11 @@ class FileError(Exception):
     def __str__(self):
        return repr(self.value)
 
+class EmptyValueError(Exception):
+    def __init__(self, value):
+       self.value = value
+    def __str__(self):
+       return repr(self.value)    
 
 def check(obj, overwrite):
     """Checks whether obj (file, directory) exists.
