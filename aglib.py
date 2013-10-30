@@ -318,7 +318,7 @@ def writeinfoprop(ifile, ofile, kind, keyfile, iskeyfile='False'):
     if iskeyfile == 'True':
         keylist = cmn.load_keys(keyfile)
     else:
-        keylist = dictbin.iterkeys()
+        keylist = bd.iterkeys()
 
     mx = []
     mi = []
@@ -368,7 +368,8 @@ subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
         if not d[k]:
             continue
         vals.append(d[k])
-        conds.append('{0}\nn={1}'.format(k, mwd[k]['n']))
+        #conds.append('{0}\nn={1}'.format(k, mwd[k]['n']))
+        conds.append('{0}; n={1}'.format(k, mwd[k]['n']))
         try:
             pvals.append(adjpd[k]['adjpval'])
         except KeyError:
@@ -527,8 +528,10 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
     keylist = cmn.load_keys(keyfile)
     d = dictfreq(kind, fname)
     db = cl.dictbin(d, conf, label=kind)
-    ppd = cl.dictpptest(d, ctrlkey)
-    adjppd = cl.mcpval(ppd, 'fdr')
+    #ppd = cl.dictpptest(d, ctrlkey)
+    #adjppd = cl.mcpval(ppd, 'fdr')
+    fd = cl.dictfishtest(d, ctrlkey=ctrlkey)
+    adjppd = cl.mcpval(fd, 'fdr')
 
     vals = []
     conds = []
@@ -541,7 +544,8 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
     # Appends data for the bar plot to appropriate lists.
     for k in keylist:
         vals.append(db[k]['prop'])
-        conds.append('{0}\nn={1}'.format(k, db[k]['n']))
+        #conds.append('{0}\nn={1}'.format(k, db[k]['n']))
+        conds.append('{0}; n={1}'.format(k, db[k]['n']))
         nsuc.append(db[k]['nsuc'])
         n.append(db[k]['n'])
         lowerci.append(db[k]['prop']-db[k]['lowerci'])

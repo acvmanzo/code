@@ -335,6 +335,10 @@ def writeshapfile(fname, datadict, kind):
     unlist = r['unlist']
 
     for n, v in datadict.iteritems():
+        print('n', n)
+        print('v', v)
+        if len(v) < 3:
+            continue
         v = unlist(v)
         x = rsl.shapirowilk(v)
         with open(fname, 'a') as f:
@@ -403,6 +407,40 @@ def dictpptest(d, ctrlkey='cs'):
 
     return(mwdict)
 
+def dictfishtest(d, ctrlkey='cs'):
+
+    """Returns a dictionary in which the keys are the genotypes and the values are the results of the Mann-Whitney test as implemented in R.
+
+    datadict: a dictionary with the keys as the genotypes and the values as the
+    raw data
+    ctrlkey: the name of the key for the dictionary entry that will serve as 
+    the control genotype; default is 'cs'
+    """
+
+    unlist = r['unlist']
+    mwdict = {}
+
+    for i,v in d.iteritems():
+
+        nsuc = [np.sum(x)/100 for x in [v, d[ctrlkey]]]
+        #print('nsuc', nsuc)
+        nfail = [len(x) - np.sum(x)/100 for x in [v, d[ctrlkey]]]
+        #print('nfail', nfail)
+        nsuc = unlist(nsuc)
+        nfail = unlist(nfail)
+        
+        ft = rsl.fishertest(nsuc[0], nfail[0], nsuc[1], nfail[1])
+
+        mwdict[i] = {}
+        if math.isnan(ft.rx('p.value')[0][0]):
+            mwdict[i]['pval'] = 1
+        else:
+            mwdict[i]['pval'] = ft.rx('p.value')[0][0]
+        mwdict[i]['n'] = len(v)
+        mwdict[i]['control'] = ctrlkey
+
+    return(mwdict)
+
 
 def mcpval(pvaldict, method='fdr', iskeyfile = 'True', keyfile='keylist'):
 
@@ -441,14 +479,17 @@ def mcpval(pvaldict, method='fdr', iskeyfile = 'True', keyfile='keylist'):
      
     #for k in keylist:
         #assert pvals[gens.index(k)] == pvaldict[k]['pval']
-    print(pvals)
-    print(gens)
+    #print('pvals', pvals)
+    #print('gens', gens)
+    #print('ctrl', ctrl)
     if len(pvals) >= 2:
         try:
             pvals.pop(gens.index(ctrl[0]))
+            print('pvals-noctrl', pvals)
             gens.remove(ctrl[0])
 
-            adjpvals = list(rsl.padjust(pvals, method, len(pvals)))
+            adjpvals = list(rsl.padjust(pvals, method))
+            print('adjpvals', adjpvals)
             newptuple = zip(gens, adjpvals)
 
             for t in newptuple:
@@ -601,9 +642,9 @@ subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
     if kind == 'copsuc':
         ylim = 1.3*maxval
     elif kind == 'wing':
-        ylim = 1.6*maxval
+        ylim = 1.3*maxval
     else:
-        ylim = 1.2*maxval
+        ylim = 1.3*maxval
     ylim = cmn.myround(ylim)
 
     #xlim=barnum*barwidth+1.5*barwidth
@@ -622,10 +663,10 @@ subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
     # Add title
     if kind == 'wing':
-        plt.title('Latency to wing extension', fontsize=stitlesz)
+        plt.title('Latency to\nwing extension', fontsize=stitlesz)
 
     if kind == 'copsuc':
-        plt.title('Latency to copulation', fontsize=stitlesz)
+        plt.title('Latency to\ncopulation', fontsize=stitlesz)
 
     if kind == 'copatt1':
         plt.title('Latency to first\ncopulation attempt', fontsize=stitlesz)
@@ -710,8 +751,10 @@ ylim, subplotn, subplotl, fontsz, stitlesz, leglabels, lw=1):
     keylist = cmn.load_keys(keyfile)
     d = dictfreq(kind, fname)
     db = dictbin(d, conf, label=kind)
-    ppd = dictpptest(d, ctrlkey)
-    adjppd = mcpval(ppd, 'fdr')
+    #ppd = dictpptest(d, ctrlkey)
+    #adjppd = mcpval(ppd, 'fdr')
+    fd = dictfishtest(d, ctrlkey=ctrlkey)
+    adjppd = mcpval(fd, 'fdr')
 
     vals = []
     conds = []
@@ -824,19 +867,19 @@ ylim, subplotn, subplotl, fontsz, stitlesz, leglabels, lw=1):
     
     #print(p05i)
     for i in p05i:
-        plt.text(x_list[i], 0.9*ylim, '*', horizontalalignment='center', 
+        plt.text((x_list[i]+truebarw/2.), 0.9*ylim, '*', horizontalalignment='center', 
         fontsize=fontsz)
 
     p01i = [i for i, pval in enumerate(pvals) if pval <0.01 and pval >= 0.001]
     #print(p01i)
     for i in p01i:
-        plt.text(x_list[i], 0.9*ylim, '**', horizontalalignment='center', 
+        plt.text((x_list[i]+truebarw/2.), 0.9*ylim, '**', horizontalalignment='center', 
         fontsize=fontsz)
 
     p001i = [i for i, pval in enumerate(pvals) if pval <0.001]
     #print(p001i)
     for i in p001i:
-        plt.text(x_list[i], 0.9*ylim, '***', horizontalalignment='center', 
+        plt.text((x_list[i]+truebarw/2.), 0.9*ylim, '***', horizontalalignment='center', 
         fontsize=fontsz)
 
 

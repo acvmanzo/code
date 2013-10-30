@@ -26,6 +26,7 @@ OFILEPROP = DIR+'agresprop.txt' # Name of file with frequency info.
 OFILEMULTIPROPTEST= DIR+'multiproptest.txt' # Name of file with results of the R 
 #function 'prop.test'
 PTFILE = DIR+'aproptest.txt'
+FISHTFILE = DIR+'agfishtest.txt'
 
 # Info about figure content.
 KINDLIST = ['flare', 'charge', 'escd', 'escm'] # Behaviors to be analyzed.
@@ -46,8 +47,8 @@ FIGDPI=1200 # Figure DPI.
 
 SUBPLOTNS1 = [241, 242, 243, 244]
 SUBPLOTNS2 = [245, 246, 247, 248]
-FIGW=10
-FIGH=6
+FIGW=13
+FIGH=7
 
 FONTSZ=11 # Size of font.
 LW = 1 # Width of lines in the figure.
@@ -73,7 +74,8 @@ cmn.makenewdir(DIR)
 cl.createinfolat(OFILELAT)
 cl.createinfoprop(OFILEPROP)
 cl.createpptestfile(OFILEMULTIPROPTEST)
-cl.createproptestfile(PTFILE)
+#cl.createproptestfile(PTFILE)
+cl.createpptestfile(FISHTFILE)
 
 # Creates a figure of the indicated size and dpi.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
@@ -84,16 +86,14 @@ edgecolor='k')
 ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1)
 for k in ks1:
     print(k[0])
-    if k[0] == 'flare' or k[0] == 'escm':
-        continue
+    #if k[0] == 'flare' or k[0] == 'escm':
+        #continue
     try:
         al.multiplot_1bar(k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
         YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2], \
         keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
     except cmn.EmptyValueError:
         continue
-    # Writes two files with the summary information for frequency and latency plots.
-    #d =cl.dictfreq(k[0], FNAME)
     
     
 ks2 = zip(KINDLIST, SUBPLOTNS2, SUBPLOTLS2)
@@ -113,11 +113,10 @@ plt.savefig(OUTPUTFIG) #Saves figure.
 
 for k in KINDLIST:
     pd = al.dictfreq(k, FNAME)
-    #print('ppd')
     ppd = cl.dictpptest(pd, ctrlkey=CTRLKEY)
-    #print(ppd)
-    #print('adjppd')
-    adjppd = cl.mcpval(ppd, 'fdr')
-    cl.writepptestfile(OFILEMULTIPROPTEST, adjppd, k)
-    
-    al.writeproptestfile(PTFILE, pd, k, KEYFILE, 'True')
+    adjppd1 = cl.mcpval(ppd, 'fdr')
+    fd = cl.dictfishtest(pd, ctrlkey=CTRLKEY)
+    adjppd = cl.mcpval(fd, 'fdr')
+    cl.writepptestfile(OFILEMULTIPROPTEST, adjppd1, k)
+    #al.writeproptestfile(PTFILE, pd, k, KEYFILE, 'True')
+    cl.writepptestfile(FISHTFILE, adjppd, k)

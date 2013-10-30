@@ -24,6 +24,7 @@ OFILELAT = DIR+'courtreslat.txt' # Name of file with latency info.
 OFILEPROP = DIR+'courtresprop.txt' # Name of file with frequency info.
 OFILEMULTIPROPTEST= DIR+'multiproptest.txt' # Name of file with results of the R 
 #function 'prop.test'
+FISHTFILE = DIR+'agfishtest.txt'
 
 # Info about figure content.
 KINDLIST = ['wing', 'copatt1', 'copsuc'] # Behaviors to be analyzed.
@@ -34,12 +35,12 @@ KINDLIST = ['wing', 'copatt1', 'copsuc'] # Behaviors to be analyzed.
 #compared to in the Mann-Whitney U Test.
 
 # Figure parameters.
-SUBPLOTNS1 = [321, 323, 325] # Subplots of the figure.
-SUBPLOTNS2 = [322, 324, 326] # Subplots of the figure.
+SUBPLOTNS1 = [231, 232, 233] # Subplots of the figure.
+SUBPLOTNS2 = [234, 235, 236] # Subplots of the figure.
 SUBPLOTLS1 = ['A', 'B', 'C'] # Labels for the subplots.
 SUBPLOTLS2 = ['D', 'E', 'F'] # Labels for the subplots.
-FIGW=6 # Figure width.
-FIGH=8 # Figure height.
+FIGW=8 # Figure width.
+FIGH=6 # Figure height.
 FIGDPI=1000 # Figure DPI.
 FONTSZ=11 # Size of font.
 LW = 1 # Width of lines in the figure.
@@ -66,6 +67,7 @@ cmn.makenewdir(DIR)
 cl.createinfolat(OFILELAT)
 cl.createinfoprop(OFILEPROP)
 cl.createpptestfile(OFILEMULTIPROPTEST)
+cl.createpptestfile(FISHTFILE)
 
 # Creates a figure of the indicated size and dpi.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
@@ -98,9 +100,10 @@ plt.savefig(OUTPUTFIG) #Saves figure.
 
 for k in KINDLIST:
     pd = cl.dictfreq(k, FNAME)
-    #print('ppd')
     ppd = cl.dictpptest(pd, ctrlkey=CTRLKEY)
-    #print(ppd)
-    #print('adjppd')
-    adjppd = cl.mcpval(ppd, 'fdr')
-    cl.writepptestfile(OFILEMULTIPROPTEST, adjppd, k)
+    adjppd1 = cl.mcpval(ppd, 'fdr')
+    fd = cl.dictfishtest(pd, ctrlkey=CTRLKEY)
+    adjppd = cl.mcpval(fd, 'fdr')
+    cl.writepptestfile(OFILEMULTIPROPTEST, adjppd1, k)
+    #al.writeproptestfile(PTFILE, pd, k, KEYFILE, 'True')
+    cl.writepptestfile(FISHTFILE, adjppd, k)

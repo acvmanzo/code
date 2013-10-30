@@ -29,11 +29,12 @@ def mannwhitneyexact(x, y):
     test = r['wilcox.exact']
     return(test(x, y, alternative="two.sided"))
 
-def padjust(p, method, n):
+def padjust(p, method):
     # Adjusts p-values according to the method specified; method often used is "fdr".
 
     test = r['p.adjust']
-    return(test(p, method, n))
+    return(test(p, method))
+    
 
 
 def binomci_w(x, n, conflevel, methods='wilson'):
@@ -66,7 +67,22 @@ def pairwiseproptest(x, n, method, confleveln=0.95):
     conflevel = robjects.StrVector("conf.level")
     return(pptest(x, n, method, **{'conf.level': confleveln}))
 
+def fishertest(nsuc1, nfail1, nsuc2, nfail2):
+    fishertest = r['fisher.test']
+    matrix = r['matrix']
+    rlist = r['list']
+    c = r['c']
+    x = matrix(c(nsuc1, nfail1, nsuc2, nfail2), nrow=2, 
+    dimnames=rlist(c("Gen1", "Gen2"), c("Success", "Failure")))
+    return(fishertest(x))
 
+#nsuc1 = 1
+#nfail1 = 12
+#nsuc2 = 14
+#nfail2 = 17
+#res = fishertest(nsuc1, nfail1, nsuc2, nfail2)
+#print(res)
+#print(res.rx('p.value')[0][0])
 #rnorm = r['rnorm']
 #datanorm = rnorm(50)
 #winglat, copsuclat, copattlat = dictlat(FNAME)
