@@ -86,8 +86,8 @@ edgecolor='k')
 ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1)
 for k in ks1:
     print(k[0])
-    #if k[0] == 'flare' or k[0] == 'escm':
-        #continue
+    if k[0] == 'flare' or k[0] == 'escm':
+        continue
     try:
         al.multiplot_1bar(k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
         YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2], \
