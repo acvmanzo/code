@@ -1,3 +1,6 @@
+#Script that renames the files in a directory into numbers, and writes the 
+#names of the old and new files into a text file named 'moviekey.txt'
+
 import os
 import glob
 
