@@ -1,13 +1,21 @@
+# Contains functions useful for analyzing aggression data from a csv file 
+# generated during manual scoring.
+# Some functions used for analysis are in the courtshiplib.py library.
+
+
+import os
+import pylab
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-import genplotlib as gpl
-import cmn.cmn as cmn
-import rstatslib as rsl
 import rpy2.robjects as robjects
-import os
-import pylab
+import cmn.cmn as cmn
+import libs.genplotlib as gpl
+import libs.rstatslib as rsl
 import courtshiplib as cl
+
+
+#### FUNCTIONS FOR CONSTRUCTING DICTIONARIES ####
 
 def agline(line):
 
@@ -78,49 +86,10 @@ def dictaglat(kind, fname):
                 float(cmn.convtosec(float(adict['offset']), 0)))
         
         y = adict['well']
-    
-    
     return(d)
 
 
-def dictmw(d, ctrlkey='cs', test='exact'):
-
-    """Returns a dictionary in which the keys are the genotypes and the 
-    values are the results of the Mann-Whitney test as implemented in R.
-
-    datadict: a dictionary with the keys as the genotypes and the values as 
-    the raw data
-    ctrlkey: the name of the key for the dictionary entry that will serve as 
-    the control genotype; default is 'cs'
-    """
-
-    r = robjects.r
-    unlist = r['unlist']
-    mwdict = {}
-
-    for i,v in d.iteritems():
-        if not v:
-            #mwdict[i] = []
-            continue
-        v, ctrl = map(unlist, [v, d[ctrlkey]])
-
-        if test == 'exact':
-            mw = rsl.mannwhitneyexact(v, ctrl)
-
-        if test == 'std':
-            mw = rsl.mannwhitney(v, ctrl)
-
-        mwdict[i] = {}
-        mwdict[i]['sigtest'] = mw.rx('method')[0][0]
-        mwdict[i]['pval'] = mw.rx('p.value')[0][0]
-        mwdict[i]['n'] = len(v)
-        mwdict[i]['median'] = np.median(v).tolist()
-        mwdict[i]['control'] = ctrlkey
-
-    return(mwdict)
-
-
-def dictfreq(kind, fname):
+def dictagfreq(kind, fname):
     """Generates a dictionary where the keywords are genotypes and the values 
     are a list in which an entry of "100" = success and an entry of "0" = failure.
 
@@ -135,10 +104,9 @@ def dictfreq(kind, fname):
     f = open(fname)
     f.next()
     f.next()
-    y = 0
+    y = '0'
     for l in f:
         adict = agline(l)
-        #print(adict)
         if y == adict['well']:
             continue        
         gen = adict['gen']
@@ -166,120 +134,129 @@ def dictfreq(kind, fname):
     return(d)
 
 
-def plotaglatbw(kind, d, iskeyfile = 'true', type='bw'):
-    '''Plots a box and whisker plot of the latency data.'''
+def dictagnum(kind, fname):
+    """Generates a dictionary where the keywords are genotypes and the values 
+    indicate the number of times each fly exhibits the behavior.
 
-    md = cl.dictmeans(d)
-
-    if iskeyfile == 'true':
-        keylist = cmn.load_keys(keyfile)
-    else:
-        keylist = sorted(d.keys())
-
-    ylabel = 'Latency (s)'
-    ftitle = 'Latency'
-
-    if kind == 'flare':
-        ftitle = 'Latency to first flare or wing threat'
-
-    if kind == 'charge':
-        ftitle = 'Latency to aggression'
-
-    if kind == 'escd':
-        ftitle = 'Latency to dominant escalation'
-        
-    if kind == 'escm':
-        ftitle = 'Latency to mutual escalation'
-    
-    
-    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
-    titlesize='large')
-    if kind == 'wing':
-        plt.ylim(0, 150)
-
-
-def plotagfreq(kind, d, iskeyfile = 'true', keyfile='keylist', type='b'):
-
-    """Generates a bar plot of the frequency of each type of behavior for 
-    each genotype.
-
-    kind = 'flare' (flare or wing threat alone), 
-    'charge' (wing threat + charge, orientation, or lunge),
+    kind = 'charge' (wing threat + charge, orientation, or lunge),
     'escd' (dominant escalation), 
     'escm' (mutual escalation)
-    iskeyfile: specifies whether a keylist file exists; default is 'true'
-    keyfile: file with a list of the genotypes to be plotted; default name is 'keylist'
-    type: type of plot; default is 'b' which is a bar plot
+    fname = file with raw data
     """
 
+    with open(fname, 'r') as g:
+        g.next()
+        g.next()
+        m = g.next()
+    startdict = agline(m)
+    genold = startdict['gen']
 
-    md = cl.dictmeans(d)
+    f = open(fname)
+    f.next()
+    f.next()
+    d = {}
+    y = '1'
+    nb = []
+    for l in f:
+        adict = agline(l)
+        ks = kind + 's'
+        gen = adict['gen']
+        well = adict['well']
 
-    if iskeyfile == 'true':
-        keylist = cmn.load_keys(keyfile)
-    else:
-        keylist = sorted(d.keys())
+        if adict['gen'] not in d:
+            d[gen] = []
+        
+        if gen != genold:
+            d[genold].append(sum(nb))
+            nb = []
+        else: 
+            if adict['well'] != y:
+                d[gen].append(sum(nb))
+                nb = []
+        
+        if kind == 'charge':
+            if adict[ks] == 'x':
+                nb.append(0)
+            elif int(adict[ks]) >= 0 and (adict['charget'] == 'c' or 
+            adict['charget'] == 'o'):
+                nb.append(1)
+            elif adict[ks] == '-':
+                pass
+            #print('nb', nb)
 
-    ylabel = '%'
+        if kind == 'escd' or kind == 'escm':
+            if adict[ks] == '':
+                nb.append(0)
+            elif int(adict[ks]) >= 0:
+                nb.append(1)
+            elif adict[ks] == '-':
+                pass
+
+        y = adict['well']
+        genold = adict['gen']
+        
+    d[gen].append(sum(nb))
+        
+    return(d)
+
+def dictagdur(kind, fname):
+    """Generates a dictionary where the keywords are genotypes and the values 
+    indicate the duration over which each fly exhibits the behavior.
+
+    kind = 'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    fname = file with raw data
+    """
+
+    with open(fname, 'r') as g:
+        g.next()
+        g.next()
+        m = g.next()
+    startdict = agline(m)
+    genold = startdict['gen']
+
+    f = open(fname)
+    f.next()
+    f.next()
+    d = {}
+    y = '1'
+    nb = []
+    for l in f:
+        adict = agline(l)
+        kdur = kind + 'dur'
+        gen = adict['gen']
+        well = adict['well']
+
+        if adict['gen'] not in d:
+            d[gen] = []
+        
+        if gen != genold:
+            d[genold].append(sum(nb))
+            nb = []
+        else: 
+            if adict['well'] != y:
+                d[gen].append(sum(nb))
+                nb = []
+        
+        if adict[kdur] == '':
+            nb.append(0)
+        elif int(adict[kdur]) >= 0:
+            nb.append(int(adict[kdur]))
+        elif adict[ks] == '-':
+            pass
+
+        y = adict['well']
+        genold = adict['gen']
+        
+    d[gen].append(sum(nb))
     
-    ftitle = 'Percent displaying behavior'
-
-    if kind == 'flare':
-        ftitle = 'Percent with flared wings\nor aggression'
-
-    if kind == 'charge':
-        ftitle = 'Percent exhibiting aggression'
-
-    if kind == 'escd':
-        ftitle = 'Percent exhibiting dominant escalation'
-    
-    if kind == 'escm':
-        ftitle = 'Percent exhibiting mutual escalation'
-
-    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
-    titlesize='large', err='none')
-    plt.ylim(0, 110)
-
-def createinfolatmean(fname):
-    with open(fname, 'w') as g:
-        g.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
-        'Mean latency (s)', 'Std Error (s)', '# pairs exhibiting behavior'))
-
-def createinfoprop(fname):
-    with open(fname, 'w') as f:
-        f.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
-        '# pairs exhibiting behavior', '# pairs tested', '% exhibiting behavior'))
-
-def writeinfolat(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
-    '''Writes into a file with information on the latency graphs plotted in multiplot_1bar.'''
-
-    d = dictaglat(kind, ifile)
-    mwd = dictmw(d, ctrlkey)
-    mcwd = cl.mcpval(mwd)
-    mx = []
-    mi = []
-    
-    if iskeyfile == 'True':
-        keylist = cmn.load_keys(keyfile)
-    else:
-        keylist = d.iterkeys()
-
-    for k in keylist:
-        try:
-            with open(ofile, 'a') as f:
-                f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, \
-                mwd[k]['median'], mwd[k]['n'], mcwd[k]['adjpval'], mcwd[k]['control']))
-                mx.append(np.max(mwd[k]['n']))
-                mi.append(np.min(mwd[k]['n']))
-        except KeyError:
-            continue
-
-    #with open(ofile, 'a') as f:
-        #f.write('Max n = {0}\n'.format(np.max(mx)))
-        #f.write('Min n = {0}\n'.format(np.min(mi)))
+    print(d)
+    return(d)
 
 
-def writeinfolatmean(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
+#### FUNCTIONS FOR WRITING RESULTS OF DATA ANALYSIS TO TEXT FILES ####
+
+def writeinfoaglatmean(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
     '''Writes into a file with information on the latency graphs plotted in 
     multiplot_1bar.'''
 
@@ -308,7 +285,7 @@ def writeinfolatmean(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
             mwd[k][2], mwd[k][3]))
 
 
-def writeinfoprop(ifile, ofile, kind, keyfile, iskeyfile='False'):
+def writeinfoagprop(ifile, ofile, kind, keyfile, iskeyfile='False'):
     '''Writes into a file with information on the 
     frequency graphs plotted in multiplot_1bar.'''
 
@@ -343,8 +320,189 @@ def writeinfoprop(ifile, ofile, kind, keyfile, iskeyfile='False'):
         #f.write('Min n = {0}\n'.format(np.min(mi)))
 
 
-def multiplot_1bar(kind, fname, ctrlkey, barwidth, ymin, ylabel, yaxisticks, 
-subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
+def writeproptestfile(ofile, d, kind, keyfile, iskeyfile='false'):
+    """Input is a dictionary in which the keywords are genotypes or conditions 
+    and the values are a list in which an entry of "100" = success and an 
+    entry of "0" = failure (output of dictfreq)"""
+    
+    if iskeyfile == 'True':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = sorted(d.keys())
+    
+    newd = {}
+    for k in keylist:
+        newd[k] = d[k]
+
+    pt = cl.dictproptest(newd)
+    with open(ofile, 'a') as f:
+        f.write('{0}\t{1}\n'.format(kind, pt))
+
+
+
+### FUNCTIONS FOR PLOTTING FIGURES ###
+
+def plotaglatbw(kind, d, iskeyfile = 'true', type='bw'):
+    '''Plots a box and whisker plot of the latency data.'''
+
+    md = cl.dictmeans(d)
+
+    if iskeyfile == 'true':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = sorted(d.keys())
+
+    ylabel = 'Latency (s)'
+    ftitle = 'Latency'
+
+    if kind == 'flare':
+        ftitle = 'Latency to first flare or wing threat'
+
+    if kind == 'charge':
+        ftitle = 'Latency to aggression'
+
+    if kind == 'escd':
+        ftitle = 'Latency to dominant escalation'
+        
+    if kind == 'escm':
+        ftitle = 'Latency to mutual escalation'
+    
+    
+    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
+    titlesize='large')
+    if kind == 'wing':
+        plt.ylim(0, 150)
+
+
+def plotagfreq(kind, d, iskeyfile = 'true', keyfile='keylist', type='b'):
+    """Generates a bar plot of the frequency of each type of behavior for 
+    each genotype.
+
+    kind = 'flare' (flare or wing threat alone), 
+    'charge' (wing threat + charge, orientation, or lunge),
+    'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    iskeyfile: specifies whether a keylist file exists; default is 'true'
+    keyfile: file with a list of the genotypes to be plotted; default name is 'keylist'
+    type: type of plot; default is 'b' which is a bar plot
+    """
+
+    md = cl.dictmeans(d)
+
+    if iskeyfile == 'true':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = sorted(d.keys())
+
+    ylabel = '%'
+    
+    ftitle = 'Percent displaying behavior'
+
+    if kind == 'flare':
+        ftitle = 'Percent with flared wings\nor aggression'
+
+    if kind == 'charge':
+        ftitle = 'Percent exhibiting aggression'
+
+    if kind == 'escd':
+        ftitle = 'Percent exhibiting dominant escalation'
+    
+    if kind == 'escm':
+        ftitle = 'Percent exhibiting mutual escalation'
+
+    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
+    titlesize='large', err='none')
+    plt.ylim(0, 110)
+
+
+def plotagnum(kind, d, iskeyfile='True', keyfile='keylist', type='b'):
+    """Generates a bar plot of the mean number of times each behavior occurs 
+    for each genotype.
+    
+    kind = 'charge' (wing threat + charge, orientation, or lunge),
+    'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    iskeyfile: specifies whether a keylist file exists; default is 'true'
+    keyfile: file with a list of the genotypes to be plotted; default name is 'keylist'
+    type: type of plot; default is 'b' which is a bar plot
+    """
+    md = cl.dictmeans(d)
+
+    if iskeyfile == 'True':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = sorted(d.keys())
+
+    ylabel = 'Avg num'
+    
+    ftitle = 'Mean number of instances observed'
+
+    if kind == 'charge':
+        ftitle = 'Mean number of charges observed'
+
+    if kind == 'escd':
+        ftitle = 'Mean number of bouts of dominant escalation'
+    
+    if kind == 'escm':
+        ftitle = 'Mean number of bouts of mutual escalation'
+
+    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
+    titlesize='large', err='none', figw=10, figh=8)
+    
+    plt.ylim(0)
+    
+
+def plotagdur(kind, d, iskeyfile='True', keyfile='keylist', type='b'):
+    """Generates a bar plot of the mean number of times each behavior occurs 
+    for each genotype.
+    
+    kind = 'charge' (wing threat + charge, orientation, or lunge),
+    'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    iskeyfile: specifies whether a keylist file exists; default is 'true'
+    keyfile: file with a list of the genotypes to be plotted; default name is 'keylist'
+    type: type of plot; default is 'b' which is a bar plot
+    """
+    md = cl.dictmeans(d)
+
+    if iskeyfile == 'True':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = sorted(d.keys())
+
+    ylabel = 'Seconds'
+    
+    ftitle = 'Mean duration of behavior'
+
+    if kind == 'escd':
+        ftitle = 'Mean duration of dominant escalation'
+    
+    if kind == 'escm':
+        ftitle = 'Mean duration of mutual escalation'
+
+    fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
+    titlesize='large', err='none', figw=10, figh=8)
+    
+    plt.ylim(0)
+
+
+#### FUNCTIONS FOR PLOTTING A PUBLICATION-QUALITY FIGURE ####
+
+def plotlattitle(kind):
+    
+    if kind == 'flare':
+        t = 'Latency to\nflared wings'
+    if kind == 'charge':
+        t = 'Latency to\nfighting'
+    if kind == 'escd':
+        t = 'Latency to\ndominant escalation'
+    if kind == 'escm':
+        t = 'Latency to\nmutual escalation'
+    return(t)
+
+
+def multiplot_barmw(metric, kind, fname, ctrlkey, barwidth, ymin, ylabel, 
+yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
     # ======== LOAD DATA =============
     if keyfile == 'no':
@@ -353,13 +511,9 @@ subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
         keylist = cmn.load_keys(keyfile)
         
     d = dictaglat(kind, fname)
-    #print('d', d)
-    mwd = dictmw(d, ctrlkey)
-    #print('mwd', mwd)
+    mwd = cl.dictmw(d, ctrlkey)
     adjpd = cl.mcpval(mwd, 'fdr', 'True', keyfile)
-    #print('adjpd', adjpd)
-        
-    
+   
     vals = []
     conds = []
     pvals = []
@@ -404,7 +558,6 @@ subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
     # =========== PLOT DATA =======================
 
     #Plots the box plot.
-    
     bp = plt.boxplot(vals, positions=x_list, sym='')
     pylab.setp(bp['boxes'], color='black')
     pylab.setp(bp['whiskers'], color='black', ls='-')
@@ -412,46 +565,30 @@ subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
     # Sets the x- and y-axis limits.
     xlim = x_list[-1]+1.5*barwidth
-
-    #print(kind)
     maxvals = [max(x) for x in vals]
     maxval = max(maxvals)
-    #print('maxval', maxval)
-    if kind == 'copsuc':
-        ylim = 1.3*maxval
-    elif kind == 'wing':
-        ylim = 1.6*maxval
-    else:
-        ylim = 1.2*maxval
-    ylim = cmn.myround(ylim)
+    ylim = cmn.myround(1.2*maxval)
 
-    #xlim=barnum*barwidth+1.5*barwidth
-    #xlim=barnum*barwidth+4*barwidth
-    #print('xlim', xlim)
     plt.axis( [0, xlim, ymin, ylim])
 
 
     # ========ADDS TICKS, LABELS and TITLES==========
 
-    # Adds labels to the x-axis at the x-coordinates specified in x_list; labels are specified in the conds list.
+    # Adds labels to the x-axis at the x-coordinates specified in x_list; 
+    #labels are specified in the conds list.
     plt.xticks(x_list, conds, fontproperties=fonti, rotation=45)
 
-    # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
+    # Labels the yaxis; labelpad is the space between the ticklabels and 
+    #y-axis label.
     plt.ylabel(ylabel, labelpad=2, fontproperties=fontv, multialignment='center')
 
     # Add title
-    if kind == 'flare':
-        plt.title('Latency to\nflared wings', fontsize=stitlesz)
-    if kind == 'charge':
-        plt.title('Latency to\nfighting', fontsize=stitlesz)
-    if kind == 'escd':
-        plt.title('Latency to\ndominant escalation', fontsize=stitlesz)
-    if kind == 'escm':
-        plt.title('Latency to\nmutual escalation', fontsize=stitlesz)
+    if metric == 'lat':
+        t = plotlattitle(kind)
+    plt.title(t, fontsize=stitlesz)
 
     # Add subplot label
     plt.text(-0.1, 1.1, subplotl, transform=ax.transAxes)
-
 
 
     # ========FORMATS THE PLOT==========
@@ -555,8 +692,6 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
         #print('graph prop', db[k]['prop'])
         #print('graph lowerci-calc', lowerci)
         #print('graph lowerci-raw', db[k]['lowerci'])
-        
-
 
     # Defines coordinates for each bar.
     barnum = len(keylist)
@@ -669,21 +804,5 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
         plt.text((x_list[i]+truebarw/2.), 0.7*ylim, '***', horizontalalignment='center', 
         fontsize=fontsz)
 
-
-def writeproptestfile(ofile, d, kind, keyfile, iskeyfile='false'):
-    """Input is a dictionary in which the keywords are genotypes or conditions and the values are a list in which an entry of "100" = success and an entry of "0" = failure (output of dictfreq)"""
-    
-    if iskeyfile == 'True':
-        keylist = cmn.load_keys(keyfile)
-    else:
-        keylist = sorted(d.keys())
-    
-    newd = {}
-    for k in keylist:
-        newd[k] = d[k]
-
-    pt = cl.dictproptest(newd)
-    with open(ofile, 'a') as f:
-        f.write('{0}\t{1}\n'.format(kind, pt))
 
 

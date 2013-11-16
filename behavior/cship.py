@@ -1,7 +1,6 @@
 from courtshiplib import *
 
 KINDLIST = ['wing', 'copsuc', 'copatt1']
-#FNAME = 'courtship_data.csv'
 FNAME = 'allcourtship.csv'
 PROPFILE = 'freq_of_courtship.txt'
 LATFILE = 'latency_to_courtship.txt'

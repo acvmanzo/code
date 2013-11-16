@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 import matplotlib
 import math
+import cmn.cmn as cmn
 
 
 def gendict(fname='peakf.txt'):
@@ -92,7 +93,7 @@ def savebar(fname = 'bargraph'):
 
 def plotdata(dictdata, dictmeans, keylist, ptype, ylabel, ftitle, datac='b', 
 meanc='r', bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, 
-end=1, titlesize='xx-large', xlabelsize='large'):
+end=1, titlesize='xx-large', xlabelsize='large', figw=4, figh=2, figdpi=1000):
     """Plots either a bar graph or a scatter plot using data from 'dictdata', with means taken from 'dictmeans' in the
     order specified by 'keylist'.
 
@@ -134,7 +135,7 @@ end=1, titlesize='xx-large', xlabelsize='large'):
     meansterr = []
 
 
-    fig1 = plt.figure()
+    fig1 = plt.figure(figsize=(figw, figh), dpi=figdpi)
 
     for condition in i:
 
@@ -184,9 +185,6 @@ end=1, titlesize='xx-large', xlabelsize='large'):
         if err == 'none':
             plt.bar(x_list, meanyvals, width=0.5, color=bcolor, ecolor=bcolor, label=label)
         xtoffset = xtoffset + 0.25
-        #This line specifies the x and y limits; modify as needed.
-        #plt.axis([0.5, num+end, ymin, ylim])
-        plt.xlim(0.5, num+end)
 
     if ptype == 's':
 
@@ -207,26 +205,22 @@ end=1, titlesize='xx-large', xlabelsize='large'):
             plt.errorbar(x_list, meanyvals, meanstdev, mfc=meanc, mec=meanc, ecolor=meanc, ms=7,
             elinewidth=2, barsabove='True', capsize=8, fmt='o')
 
-        #This line specifies the x and y limits; modify as needed.
-        #plt.axis([0.5, num+end, ymin, ylim])
-        plt.xlim(0.5, num+end)
-
     if ptype == 'bw':
         plt.boxplot(bwyvals)
-        plt.xlim(0.5, num+end)
-
-
+    
+    # Set x and y limits.
+    maxmean = max(meanyvals)
+    ylim = 2*maxmean
+    plt.axis( [0.5, num+end, 0, ylim])
     #xt specifies the x values for the x-axis labels.
     xt = [n+xtoffset for n in x_list]
 
 
-
     #If the length of the labels are > 25, then the labels are rotated.
     cond_list_len = [len(c) for c in cond_list]
-    if max(cond_list_len) > 15:
+    if max(cond_list_len) > 10:
         plt.xticks(xt, cond_list, rotation=90, fontsize=xlabelsize)
         fig1.subplots_adjust(bottom=0.35)
-
     else:
         plt.xticks(xt, cond_list, fontsize=xlabelsize)
 
