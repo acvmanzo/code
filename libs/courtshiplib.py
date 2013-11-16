@@ -134,10 +134,13 @@ def dictmeans(dict, label='data'):
 
 def dictmw(d, ctrlkey='cs', test='exact'):
 
-    """Returns a dictionary in which the keys are the genotypes and the values are the results of the Mann-Whitney test as implemented in R.
+    """Returns a dictionary in which the keys are the genotypes and the values 
+    are the results of the Mann-Whitney test as implemented in R.
 
-    datadict: a dictionary with the keys as the genotypes and the values as the raw data
-    ctrlkey: the name of the key for the dictionary entry that will serve as the control genotype; default is 'cs'
+    datadict: a dictionary with the keys as the genotypes and the values as 
+    the raw data
+    ctrlkey: the name of the key for the dictionary entry that will serve as 
+    the control genotype; default is 'cs'
     """
 
     r = robjects.r
@@ -165,7 +168,41 @@ def dictmw(d, ctrlkey='cs', test='exact'):
         mwdict[i]['control'] = ctrlkey
 
     return(mwdict)
+
+
+def dictttest(d, ctrlkey='cs'):
+
+    """Returns a dictionary in which the keys are the genotypes and the values 
+    are the results of the Welch Two Sample t-test as implemented in R.
+
+    datadict: a dictionary with the keys as the genotypes and the values as 
+    the raw data
+    ctrlkey: the name of the key for the dictionary entry that will serve as 
+    the control genotype; default is 'cs'
+    """
+
+    r = robjects.r
+    unlist = r['unlist']
+    mwdict = {}
+
+    for i,v in d.iteritems():
+        print(v)
+        if len(v) < 2:
+            continue
+            
+        v, ctrl = map(unlist, [v, d[ctrlkey]])
+
+        mw = rsl.ttest(v, ctrl)
+
+        mwdict[i] = {}
+        mwdict[i]['pval'] = mw.rx('p.value')[0][0]
+        mwdict[i]['sigtest'] = 'Welchs t-test'
+        mwdict[i]['n'] = len(v)
+        mwdict[i]['mean'] = np.mean(v).tolist()
+        mwdict[i]['control'] = ctrlkey
     
+    return(mwdict)    
+
 
 def dictbin(dict, conf=0.95, methods='wilson', label='data'):
     """Generates a new dictionary with binomical confidence intervals from 
@@ -373,6 +410,7 @@ def mcpval(pvaldict, method='fdr', iskeyfile = 'True', keyfile='keylist'):
         except ValueError:
             pass
 
+
     return(newdict)
 
 
@@ -433,6 +471,8 @@ def writeshapfile(fname, datadict, kind):
         print('v', v)
         if len(v) < 3:
             continue
+        if v == np.tile(v[0], len(v)).tolist():
+            continue
         v = unlist(v)
         x = rsl.shapirowilk(v)
         with open(fname, 'a') as f:
@@ -451,6 +491,7 @@ def createmwfile(fname):
         f.write('Condition\tBehavior\tControl\tSigtest\tMultCompar\tp-value\t\
         Adj p-value\n')
 
+
 def writemwfile(fname, pvaldict, kind):
 
     """Writes a file (specified in 'fname') listing the results of the 
@@ -464,6 +505,7 @@ def writemwfile(fname, pvaldict, kind):
     """
 
     for k, v in pvaldict.iteritems():
+        print(k)
         with open(fname, 'a') as f:
             f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, \
             v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], \
@@ -503,6 +545,7 @@ def createinfolat(ofile):
     multiplot_1bar.'''
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tMedian latency (s)\tn\tAdj p-value\tCtrl\n')
+
 
 def writeinfolat(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
     """Writes into a file with information on the latency graphs plotted in 

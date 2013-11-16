@@ -235,6 +235,7 @@ def dictagdur(kind, fname):
             nb = []
         else: 
             if adict['well'] != y:
+                print(sum(nb))
                 d[gen].append(sum(nb))
                 nb = []
         
@@ -244,13 +245,81 @@ def dictagdur(kind, fname):
             nb.append(int(adict[kdur]))
         elif adict[ks] == '-':
             pass
+    
 
         y = adict['well']
         genold = adict['gen']
         
     d[gen].append(sum(nb))
+
+    return(d)
+
+
+def dictagdur2(kind, fname):
+    """Generates a dictionary where the keywords are genotypes and the values 
+    indicate the duration over which each fly exhibits the behavior.
+
+    kind = 'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    fname = file with raw data
+    """
+
+    with open(fname, 'r') as g:
+        g.next()
+        g.next()
+        m = g.next()
+    startdict = agline(m)
+    genold = startdict['gen']
+
+    f = open(fname)
+    f.next()
+    f.next()
+    d = {}
+    y = '1'
+    nb = []
+    for l in f:
+        adict = agline(l)
+        kdur = kind + 'dur'
+        gen = adict['gen']
+        well = adict['well']
+
+        if adict['gen'] not in d:
+            d[gen] = []
+               
+        if gen != genold:
+            if sum(nb) != 0:
+                d[genold].append(sum(nb))
+                nb = []
+            elif sum(nb) == 0:
+                nb = []
+        else: 
+            if adict['well'] != y:
+                if sum(nb) != 0:
+                    d[gen].append(sum(nb))
+                    nb = []
+                elif sum(nb) == 0:
+                    nb = []
+        
+        #if adict[kdur] == '':
+            #nb.append(0)
+        #elif int(adict[kdur]) >= 0:
+            #nb.append(int(adict[kdur]))
+        #elif adict[ks] == '-':
+            #pass
+        
+        if adict[kdur] == '':
+            continue
+        elif int(adict[kdur]) > 0:
+            nb.append(int(adict[kdur]))
+        elif adict[ks] == '-':
+            pass
+
+        y = adict['well']
+        genold = adict['gen']
     
-    print(d)
+    if sum(nb) != 0:
+        d[gen].append(sum(nb))
+
     return(d)
 
 
@@ -283,6 +352,30 @@ def writeinfoaglatmean(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
         with open(ofile, 'a') as f:
             f.write('{0}\t{1}\t{2:.2f}\t{3:.2f}\t{4}\n'.format(k, nk, mwd[k][0], 
             mwd[k][2], mwd[k][3]))
+
+
+def writeinfomean(d, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
+
+    mwd = cl.dictmeans(d)
+    mcwd = mcpval(mwd)
+    mx = []
+    mi = []
+    
+    if iskeyfile == 'True':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = d.iterkeys()
+
+    for k in keylist:
+        with open(ofile, 'a') as f:
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, \
+            mwd[k]['median'], mwd[k]['n'], mcwd[k]['adjpval'], mcwd[k]['control']))
+            mx.append(np.max(mwd[k]['n']))
+            mi.append(np.min(mwd[k]['n']))
+            
+    with open(ofile, 'a') as f:
+        f.write('Max n = {0}\n'.format(np.max(mx)))
+        f.write('Min n = {0}\n'.format(np.min(mi)))
 
 
 def writeinfoagprop(ifile, ofile, kind, keyfile, iskeyfile='False'):

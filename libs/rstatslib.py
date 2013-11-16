@@ -22,7 +22,8 @@ def mannwhitney(x, y):
     return(test(x, y, alternative="two.sided"))
 
 def mannwhitneyexact(x, y):
-    # Nonparametric test to determine whether two populations are the same or not; this function calculates exact p-values in the presence of ties.
+    # Nonparametric test to determine whether two populations are the same or not; 
+    #this function calculates exact p-values in the presence of ties.
 
     library = r['library']
     library('exactRankTests')
@@ -30,12 +31,12 @@ def mannwhitneyexact(x, y):
     return(test(x, y, alternative="two.sided"))
 
 def padjust(p, method):
-    # Adjusts p-values according to the method specified; method often used is "fdr".
+    # Adjusts p-values according to the method specified; method often used is
+    #"fdr".
 
     test = r['p.adjust']
     return(test(p, method))
     
-
 
 def binomci_w(x, n, conflevel, methods='wilson'):
     # Generates binomnial confidence intervals with the Wilson method as the default.
@@ -75,6 +76,13 @@ def fishertest(nsuc1, nfail1, nsuc2, nfail2):
     x = matrix(c(nsuc1, nfail1, nsuc2, nfail2), nrow=2, 
     dimnames=rlist(c("Gen1", "Gen2"), c("Success", "Failure")))
     return(fishertest(x))
+
+def ttest(x, y):
+    test = r['t.test']
+    unlist = r['unlist']
+    x = unlist(x)
+    y = unlist(y)
+    return(test(x, y))
 
 #nsuc1 = 1
 #nfail1 = 12
