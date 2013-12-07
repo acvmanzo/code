@@ -21,7 +21,7 @@ def agline(line):
 
     """Generates dictionary with the values from line, with the parameters as 
     keywords.
-    fname is of the following format:
+    line is of the following format:
     Date, Movie, Offset (s), Well #, Genotype, 
     flare or wing threat (m), (s), 
     wing threat + charge, orient, or lunge (m), (s),
@@ -40,6 +40,38 @@ def agline(line):
         vals[item[0]] = item[1]
 
     return(vals)
+
+
+def agline2(line):
+    """Generates dictionary with the values from line, with the parameters as 
+    keywords.
+    line is of the following format:
+    Movie, Movie (Ryan's code), Offset (s), Well #, Aggressive Behavior 
+    (min), (sec), (dur), (type), (comments), Escalation (min), (sec), (dur), 
+    (type), (behaviors), (comments) 
+    """
+    
+    vals = {}
+
+
+    y = line.strip('\n').split(',')
+    y.extend(y[0].strip('.MTS').split('_'))
+    
+    print(y)
+    
+    x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
+    'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 
+    'esccomm', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
+    
+    z = zip(x, y)
+
+    for item in z:
+        vals[item[0]] = item[1]
+
+    return(vals)
+
+
+
 
 
 def dictaglat(kind, fname):
