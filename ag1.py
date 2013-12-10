@@ -1,23 +1,18 @@
 from libs.aglib import *
 
+KINDLIST = ['wingthreat', 'charge', 'anyag', 'escd', 'escm']
+#KIND = 'wingthreat'
+FNAME = '20131119_agdata_wms_sorted.csv'
+FREQDIR = 'freqfig'
 
-LNAME = 'testlist1.csv'
-COMBFILE = '20131119_agdata_wms_all.csv'
-
-if os.path.exists(COMBFILE) == True:
-    os.remove(COMBFILE)
-
-bname = '20131119_agdata_wms_part'
-nums = np.arange(1, 8)
-files = ['{0}{1}.csv'.format(bname, n) for n in nums]
-print(files)
-
-with open(COMBFILE, 'a') as g:
-    for fil in files:
-        with open(fil) as f:
-            f.next()
-            f.next()
-            for l in f:
-                g.write(l)
-            
+cmn.makenewdir(FREQDIR)
+for KIND in KINDLIST:
+    print(KIND)
+    d = dictagfreq2(KIND, FNAME)
+    
+    for k, v in d.iteritems():
+        print(k, sum(v)/100, len(v))
+    
+    plotagfreq(KIND, d, 'true')
+    plt.savefig('{0}/freq{1}.png'.format(FREQDIR, KIND))
 

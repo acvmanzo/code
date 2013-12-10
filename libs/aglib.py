@@ -57,7 +57,7 @@ def agline2(line):
     y = line.strip('\n').split(',')
     y.extend(y[0].strip('.MTS').split('_'))
     
-    print(y)
+    #print(y)
     
     x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
     'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 
@@ -165,6 +165,102 @@ def dictagfreq(kind, fname):
         
     return(d)
 
+def agfreqcmd(kind, blist, genlist):
+    
+    #print('blistcount', blist.count('wt'))
+    
+    if kind == 'wingthreat':
+        if blist.count('wt') > 0 or blist.count('xwt') > 0:
+            genlist.append(100)
+        else:
+            genlist.append(0)
+    
+    if kind == 'charge':
+        if blist.count('c') > 0 or blist.count('o') > 0:
+            genlist.append(100)
+        else:
+            genlist.append(0)
+    
+    if kind == 'anyag':
+        if blist.count('c') > 0 or \
+        blist.count('o') > 0 or \
+        blist.count('p') > 0 or \
+        blist.count('l') > 0 or \
+        blist.count('ch') > 0 or \
+        blist.count('g') > 0 or \
+        blist.count('h') > 0 or \
+        blist.count('d') > 0 or \
+        blist.count('m') > 0 or \
+        blist.count('wr') > 0:
+            genlist.append(100)
+        else:
+            genlist.append(0)
+        
+    
+    if kind == 'escd':
+        if blist.count('d') > 0:
+            genlist.append(100)
+        else:
+            genlist.append(0)
+    
+    if kind == 'escm':
+        if blist.count('m') > 0:
+            genlist.append(100)
+        else:
+            genlist.append(0)
+
+
+def dictagfreq2(kind, fname):
+    """Generates a dictionary where the keywords are genotypes and the values 
+    are a list in which an entry of "100" = success and an entry of "0" = failure.
+
+    kind = 'wingthreat' (wing threat), 
+    'charge' (wing threat + charge or orientation),
+    'anyag' (wing threat + charge, orientation, pushing, lunge, chase, grab, 
+    hold, dominant or mutual escalation)
+    'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    fname = file with sorted data
+    """
+    
+    #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
+    #'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 
+    #'esccomm', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
+
+    d = {}
+    f = open(fname)
+    y = '1'
+    b = []
+    
+    for l in f:
+        
+        adict = agline2(l)
+        #print(l)
+        
+        if adict['well'] != y:
+            
+            agfreqcmd(kind, b, d[gen])
+            b = []
+        
+        if adict['agtype'] != '-':
+            b.append(adict['agtype'])
+
+        if adict['esctype'] != '':
+            b.append(adict['esctype'])
+        
+        gen = adict['gen']   
+        if gen not in d:
+            d[gen] = [] 
+            
+        #print('b', b)
+        #print('well', adict['well'])
+        #print('gen', gen, 'd', d)
+                 
+        y = adict['well']
+    
+    agfreqcmd(kind, b, d[gen])
+    
+    return(d)
 
 def dictagnum(kind, fname):
     """Generates a dictionary where the keywords are genotypes and the values 
@@ -414,7 +510,7 @@ def writeinfoagprop(ifile, ofile, kind, keyfile, iskeyfile='False'):
     '''Writes into a file with information on the 
     frequency graphs plotted in multiplot_1bar.'''
 
-    d = dictfreq(kind, ifile)
+    d = dictagfreq2(kind, ifile)
     bd = cl.dictbin(d)
     
     if iskeyfile == 'True':
@@ -448,7 +544,7 @@ def writeinfoagprop(ifile, ofile, kind, keyfile, iskeyfile='False'):
 def writeproptestfile(ofile, d, kind, keyfile, iskeyfile='false'):
     """Input is a dictionary in which the keywords are genotypes or conditions 
     and the values are a list in which an entry of "100" = success and an 
-    entry of "0" = failure (output of dictfreq)"""
+    entry of "0" = failure (output of dictagfreq)"""
     
     if iskeyfile == 'True':
         keylist = cmn.load_keys(keyfile)
@@ -503,10 +599,13 @@ def plotagfreq(kind, d, iskeyfile = 'true', keyfile='keylist', type='b'):
     """Generates a bar plot of the frequency of each type of behavior for 
     each genotype.
 
-    kind = 'flare' (flare or wing threat alone), 
-    'charge' (wing threat + charge, orientation, or lunge),
+    kind = 'wingthreat' (wing threat), 
+    'charge' (wing threat + charge or orientation),
+    'anyag' (wing threat + charge, orientation, pushing, lunge, chase, grab, 
+    hold, dominant or mutual escalation)
     'escd' (dominant escalation), 
     'escm' (mutual escalation)
+    d: dictionary of frequencies, generated from dictagfreq2()
     iskeyfile: specifies whether a keylist file exists; default is 'true'
     keyfile: file with a list of the genotypes to be plotted; default name is 'keylist'
     type: type of plot; default is 'b' which is a bar plot
@@ -520,13 +619,17 @@ def plotagfreq(kind, d, iskeyfile = 'true', keyfile='keylist', type='b'):
         keylist = sorted(d.keys())
 
     ylabel = '%'
-    
-    ftitle = 'Percent displaying behavior'
 
     if kind == 'flare':
         ftitle = 'Percent with flared wings\nor aggression'
-
+        
+    if kind == 'wingthreat':
+        ftitle = 'Percent exhibiting wing threat'
+        
     if kind == 'charge':
+        ftitle = 'Percent exhibiting charges'
+
+    if kind == 'anyag':
         ftitle = 'Percent exhibiting aggression'
 
     if kind == 'escd':
@@ -536,8 +639,11 @@ def plotagfreq(kind, d, iskeyfile = 'true', keyfile='keylist', type='b'):
         ftitle = 'Percent exhibiting mutual escalation'
 
     fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
-    titlesize='large', err='none')
-    plt.ylim(0, 110)
+    titlesize='large', err='none', figw=6, figh=4)
+    if kind == 'escd' or kind == 'escm':
+        plt.ylim(0, 30)
+    else:
+        plt.ylim(0, 110)
 
 
 def plotagnum(kind, d, iskeyfile='True', keyfile='keylist', type='b'):
@@ -618,7 +724,9 @@ def plotlattitle(kind):
     if kind == 'flare':
         t = 'Latency to\nflared wings'
     if kind == 'charge':
-        t = 'Latency to\nfighting'
+        t = 'Latency to\ncharging'
+    if kind == 'anyag':
+        t = 'Latency to\naggression'
     if kind == 'escd':
         t = 'Latency to\ndominant escalation'
     if kind == 'escm':
@@ -788,7 +896,7 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
 
     # ======== LOAD DATA =============
     keylist = cmn.load_keys(keyfile)
-    d = dictfreq(kind, fname)
+    d = dictagfreq2(kind, fname)
     db = cl.dictbin(d, conf, label=kind)
     #ppd = cl.dictpptest(d, ctrlkey)
     #adjppd = cl.mcpval(ppd, 'fdr')
@@ -859,8 +967,14 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
     # Add title
     if kind == 'flare':
         plt.title('% pairs with\nflared wings', fontsize=stitlesz)
-
+    
+    if kind == 'wingthreat':
+        plt.title('% pairs with\nwingthreat', fontsize=stitlesz)
+    
     if kind == 'charge':
+        plt.title('% pairs charging', fontsize=stitlesz)
+
+    if kind == 'anyag':
         plt.title('% pairs fighting', fontsize=stitlesz)
 
     if kind == 'escd':
@@ -871,7 +985,7 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
 
 
     # Labels the subplot
-    plt.text(-0.1, 1.1, subplotl, transform=ax.transAxes)
+    plt.text(-0.1, 1.0, subplotl, transform=ax.transAxes)
 
 
     # ======== FORMATS THE PLOT==========

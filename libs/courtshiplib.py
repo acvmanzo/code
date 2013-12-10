@@ -255,7 +255,7 @@ def dictbin(dict, conf=0.95, methods='wilson', label='data'):
 
 
 def dictpptest(d, ctrlkey='cs'):
-    """Returns a dictionary with p-values of resulting from a proportion test
+    """Returns a dictionary with p-values resulting from a proportion test
     to determine whether each experimental condition differs from the control
     condition. The proportion test used is R's prop.test.
        
