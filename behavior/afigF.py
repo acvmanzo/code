@@ -9,7 +9,7 @@ import matplotlib as mpl
 import libs.aglib as al
 import libs.courtshiplib as cl
 import cmn.cmn as cmn
-from afigset2 import *
+from afigFset import *
 
 print('data filename, ctrlkey')
 FNAME = sys.argv[1] # File with data to be analyzed.

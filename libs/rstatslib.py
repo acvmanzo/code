@@ -1,4 +1,6 @@
-# Wrappers for R functions. See R documentation for each function. Note that the data is often returned as a string or float vector and needs to be subscripted for use in python code.
+# Wrappers for R functions. See R documentation for each function. Note that 
+#the data is often returned as a string or float vector and needs to be 
+#subscripted for use in python code.
 
 import numpy as np
 import os
