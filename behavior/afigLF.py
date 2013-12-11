@@ -34,7 +34,7 @@ for k in ks1:
     if k[0] == 'flare' or k[0] == 'escm':
         continue
     try:
-        al.multiplot_barmw('lat', k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
+        al.multiplot_1barmw('lat', k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
         YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2], \
         keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
     except cmn.EmptyValueError:

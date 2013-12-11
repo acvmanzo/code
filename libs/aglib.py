@@ -228,35 +228,33 @@ def dictagfreq2(kind, fname):
     #'esccomm', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
 
     d = {}
-    f = open(fname)
     y = '1'
     b = []
     
-    for l in f:
-        
-        adict = agline2(l)
-        #print(l)
-        
-        if adict['well'] != y:
+    with open(fname) as f:
+        for l in f:
+            adict = agline2(l)
+            #print(l)
             
-            agfreqcmd(kind, b, d[gen])
-            b = []
-        
-        if adict['agtype'] != '-':
-            b.append(adict['agtype'])
+            if adict['well'] != y:
+                agfreqcmd(kind, b, d[gen])
+                b = []
+            
+            if adict['agtype'] != '-':
+                b.append(adict['agtype'])
 
-        if adict['esctype'] != '':
-            b.append(adict['esctype'])
-        
-        gen = adict['gen']   
-        if gen not in d:
-            d[gen] = [] 
+            if adict['esctype'] != '':
+                b.append(adict['esctype'])
             
-        #print('b', b)
-        #print('well', adict['well'])
-        #print('gen', gen, 'd', d)
-                 
-        y = adict['well']
+            gen = adict['gen']   
+            if gen not in d:
+                d[gen] = [] 
+                
+            #print('b', b)
+            #print('well', adict['well'])
+            #print('gen', gen, 'd', d)
+                     
+            y = adict['well']
     
     agfreqcmd(kind, b, d[gen])
     
@@ -327,6 +325,7 @@ def dictagnum(kind, fname):
         
     return(d)
 
+    
 def dictagdur(kind, fname):
     """Generates a dictionary where the keywords are genotypes and the values 
     indicate the duration over which each fly exhibits the behavior.
@@ -383,7 +382,8 @@ def dictagdur(kind, fname):
     return(d)
 
 
-def dictagdur2(kind, fname):
+
+def dictagdurb(kind, fname):
     """Generates a dictionary where the keywords are genotypes and the values 
     indicate the duration over which each fly exhibits the behavior.
 
@@ -447,6 +447,98 @@ def dictagdur2(kind, fname):
     
     if sum(nb) != 0:
         d[gen].append(sum(nb))
+
+    return(d)
+    
+def agdurcmd(kind, blist, durlist, genlist):
+    
+    #print('blistcount', blist.count('wt'))
+    blist, durlist = map(np.array, [blist, durlist])
+    #print('new')
+    #print('durlist', durlist)
+    #print('blist', blist)
+    durlist = durlist.astype(int)
+    
+    if len(durlist) > 0:
+    
+        #print('durlist', len(durlist), durlist)
+        
+        if kind == 'charge':
+            val = np.sum(durlist[blist=='c'])
+            if val > 0:
+                genlist.append(val)
+
+        if kind =='wingthreat':
+            ind = (blist=='wt')+(blist=='xwt')
+            val = np.sum(durlist[ind])
+            #print(val)
+            if val > 0:
+                genlist.append(val)
+        
+        if kind =='anyag':
+            ind = (blist=='c')+(blist=='o')+(blist=='p')+(blist=='l')+\
+            (blist=='g')+(blist=='h')+(blist=='g')+(blist=='wr')+(blist=='b')
+            val = np.sum(durlist[ind])
+            #print(val)
+            if val > 0:
+                genlist.append(val)
+
+        if kind =='escd':
+            val = np.sum(durlist[blist=='d'])
+            if val > 0:
+                genlist.append(val)        
+        if kind =='escm':
+            val = np.sum(durlist[blist=='m'])
+            if val > 0:
+                genlist.append(val)   
+                         
+
+def dictagdur2(kind, fname):
+    """Generates a dictionary where the keywords are genotypes and the values 
+    indicate the duration over which each fly exhibits the behavior.
+
+    kind = 'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    fname = file with raw data
+    """
+
+    #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
+    #'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 
+    #'esccomm', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
+
+    d = {}
+    y = '1'
+    b = []
+    dur = []
+    
+    with open(fname) as f:
+        for l in f:
+            #print(l)
+            adict = agline2(l)
+            
+            if adict['well'] != y:
+                if len(dur) > 0:
+                    agdurcmd(kind, b, dur, d[gen])
+                b = []
+                dur = []
+            
+            if adict['agtype'] != '-' and adict['agtype'] != 'x' and \
+            adict['agdur'] != '':
+                b.append(adict['agtype'])
+                dur.append(adict['agdur'])
+            
+            if adict['esctype'] != '' and adict['escdur'] != '':
+                b.append(adict['esctype'])
+                dur.append(adict['escdur'])
+
+            gen = adict['gen']
+            #print(gen)
+            if gen not in d:
+                d[gen] = []
+                
+            y = adict['well']
+    
+    agdurcmd(kind, b, dur, d[gen])
 
     return(d)
 
@@ -733,8 +825,23 @@ def plotlattitle(kind):
         t = 'Latency to\nmutual escalation'
     return(t)
 
-
-def multiplot_barmw(metric, kind, fname, ctrlkey, barwidth, ymin, ylabel, 
+def plotdurtitle(kind):
+    
+    if kind == 'wingthreat':
+        t = 'Wing threat duration'
+    if kind == 'charge':
+        t = 'Charge duration'
+    if kind == 'anyag':
+        t = 'Courtship index'
+    if kind == 'escd':
+        t = 'Duration of\ndominant escalation'
+    if kind == 'escm':
+        t = 'Duration of\nmutual escalation'
+    return(t)
+    
+    
+    
+def multiplot_1barmw(metric, kind, fname, ctrlkey, barwidth, ymin, ylabel, 
 yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
     # ======== LOAD DATA =============
@@ -742,10 +849,16 @@ yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
         keylist = sorted(d.keys())
     else:
         keylist = cmn.load_keys(keyfile)
-        
-    d = dictaglat(kind, fname)
-    mwd = cl.dictmw(d, ctrlkey)
-    adjpd = cl.mcpval(mwd, 'fdr', 'True', keyfile)
+    
+    if metric == 'lat':
+        d = dictaglat(kind, fname)
+        mwd = cl.dictmw(d, ctrlkey)
+        adjpd = cl.mcpval(mwd, 'fdr', 'True', keyfile)
+    
+    if metric == 'dur':
+        d = dictagdur2(kind, fname)
+        mwd = cl.dictmw(d, ctrlkey)
+        adjpd = cl.mcpval(mwd, 'fdr', 'True', keyfile)
    
     vals = []
     conds = []
@@ -798,9 +911,22 @@ yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
 
     # Sets the x- and y-axis limits.
     xlim = x_list[-1]+1.5*barwidth
-    maxvals = [max(x) for x in vals]
-    maxval = max(maxvals)
-    ylim = cmn.myround(1.2*maxval)
+    
+    if metric == 'dur':
+        if kind == 'wingthreat':
+            ylim = 300
+        if kind == 'charge':
+            ylim = 30
+        if kind == 'anyag':
+            ylim = 50
+        if kind == 'escd':
+            ylim = 150
+        if kind == 'escm':
+            ylim = 20
+    else:
+        maxvals = [max(x) for x in vals]
+        maxval = max(maxvals)
+        ylim = cmn.myround(1*maxval)
 
     plt.axis( [0, xlim, ymin, ylim])
 
@@ -818,6 +944,8 @@ yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
     # Add title
     if metric == 'lat':
         t = plotlattitle(kind)
+    if metric == 'dur':
+        t = plotdurtitle(kind)
     plt.title(t, fontsize=stitlesz)
 
     # Add subplot label

@@ -5,7 +5,7 @@ import os
 KEYFILE = 'keylist'
 DIR = 'presfig/' # Directory that figure will be saved in.
 CDIR = os.path.basename(os.path.abspath('.'))
-OUTPUTFIG = '{0}agfig_{1}.png'.format(DIR, CDIR) # Name of figure.
+OUTPUTFIG = '{0}agfigprop_{1}.png'.format(DIR, CDIR) # Name of figure.
 OFILEPROP = '{0}agpropinfo_{1}.txt'.format(DIR, CDIR) # Name of file with 
 #frequency info.
 #OFILEMULTIPROPTEST= DIR+'multiproptest.txt' # Name of file with results of the R 

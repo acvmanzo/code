@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 from libs.aglib import *
 
 
@@ -20,7 +22,7 @@ with open(NEWFILE, 'a') as h:
             assay = k.strip('\n')[:-8]
             movie1 = k.strip('\n')
             movie2 = movie1.replace('1.MTS', '2.MTS')
-            print(movie1, movie2)
+            #print(movie1, movie2)
             
             for x in np.arange(1, 13).tolist(): # Number of wells.
             
