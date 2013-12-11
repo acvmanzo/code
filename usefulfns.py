@@ -337,8 +337,23 @@ def genbgim(imdir, nframes, fntype, imext, split=5):
         #for x in np.linspace(1, moviel-1, nframes):
             #c = np.array(Image.open(files[int(x)])).astype(float)
             #bg = np.dstack((bg, c))      
-        
-
-    
-        
     #return(medarrs)
+
+####### CREATING/WRITING FILES ################
+def createproptestfile(fname):
+    """Creates a file (specified in 'fname') that will list the results of the 
+    proportion test as implemented in R.
+    """
+
+    with open(fname, 'w') as f:
+        f.write('Proportion test results\n')
+        f.write('Kind\tp-value\n')
+
+def writeproptestfile(ofile, d, kind):
+    """Input is a dictionary in which the keywords are genotypes or conditions
+    and the values are a list in which an entry of "100" = success and an 
+    entry of "0" = failure (output of dictfreq)"""
+
+    pt = dictproptest(d)
+    with open(ofile, 'a') as f:
+        f.write('{0}\t{1}\n'.format(kind, pt))

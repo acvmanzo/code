@@ -19,9 +19,9 @@ CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be
 cmn.makenewdir(DIR)
 cl.createinfolat(OFILELAT)
 cl.createinfoprop(OFILEPROP)
-cl.createpptestfile(OFILEMULTIPROPTEST)
+cl.createstatfile(OFILEMULTIPROPTEST, 'Multi Prop Test')
 #cl.createproptestfile(PTFILE)
-cl.createpptestfile(FISHTFILE)
+cl.createstatfile(FISHTFILE, 'Fisher\'s Exact Test')
 
 # Creates a figure of the indicated size and dpi.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \

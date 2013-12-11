@@ -16,23 +16,35 @@ FNAME = sys.argv[1] # File with data to be analyzed.
 CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be 
 #compared to.
 
+# Creates output text files.
 cmn.makenewdir(DIR)
 cl.createshapfile(SHAPFILE)
-cl.createmwfile(MWFILE)
+cl.createstatfile(MWFILE, 'Mann Whitney U Test')
+cl.createstatfile(TFILE, 'T Test')
+cl.createinfodur(DURFILE, 'median')
+cl.createinfodur(DURFILE2, 'mean')
 
+
+# Loads data and writes output text files.
 for kind in KINDLIST:
     d = al.dictagdur2(kind, FNAME)
     mwd = cl.dictmw(d, CTRLKEY)
-    adjpd = cl.mcpval(mwd, 'fdr', 'True', KEYFILE)
-    print(d)
+    pmwd = cl.mcpval(mwd, 'fdr', 'True', KEYFILE)
+    
+    md = cl.dictttest(d, CTRLKEY)
+    pmd = cl.mcpval(md, 'fdr', 'True', KEYFILE)
+    
     cl.writeshapfile(SHAPFILE, d, kind)
-    cl.writemwfile(MWFILE, adjpd, kind)
+    cl.writestatfile(MWFILE, pmwd, kind)
+    cl.writestatfile(TFILE, pmd, kind)
+    cl.writeinfodur(DURFILE, d, kind, CTRLKEY, 'median')
+    cl.writeinfodur(DURFILE2, d, kind, CTRLKEY, 'mean')
 
-# Creates a figure of the indicated size and dpi.
+# Creates figures.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
 edgecolor='k')
 
-# Creates duration plots. 
+# Creates box and whisker duration plots.
 ks1 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS)
 for k in ks1:
     try:
@@ -41,46 +53,24 @@ for k in ks1:
         keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
     except cmn.EmptyValueError:
         continue
-        
-# Adjusts figure areas.
 plt.tight_layout()
 plt.savefig(OUTPUTFIG) #Saves figure.
-
-for kind in KINDLIST:
-    print(kind)
-    d = al.dictagdur2(kind, FNAME)
-    md = cl.dictmeans(d)
-    print(md)
+plt.close()
 
 
-#d = dictagdur2(kind, FNAME)
-
-
-#md = cl.dictttest(d, ctrlkey='cs-Apr')
-##md = cl.dictmw(d, ctrlkey='cs-Apr')
-#mtd = cl.mcpval(md)
-#cl.createmwfile(kind+'_num_ttest_results.txt')
-#cl.writemwfile(kind+'_num_ttest_results.txt', mtd, kind)
-##cl.createmwfile(kind+'_num_mw_results.txt')
-##cl.writemwfile(kind+'_num_mw_results.txt', mtd, kind)
-
-#cl.createshapfile('shapfile_num.txt')
-#cl.writeshapfile('shapfile_num.txt', d, kind)
-
-#fig1 = plt.figure(figsize=(8, 6), dpi=1200, facecolor='w', edgecolor='k')
-#plotagnum(kind, d)
-#plt.savefig('{0}_num.png'.format(kind))
-
+# Creates bar duration plots.
+fig2 = plt.figure(figsize=(FIGW2, FIGH2), dpi=FIGDPI2, facecolor='w', \
+edgecolor='k')
+ks2 = zip(KINDLIST2, SUBPLOTNS2, SUBPLOTLS2)
+for k in ks2:
+    try:
+        al.multiplot_1barmean('dur', k[0], FNAME, CTRLKEY, BARWIDTH, YMIN2, \
+        YLABEL, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2], \
+        keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
+    except cmn.EmptyValueError:
+        continue
+# Adjusts figure areas.
+plt.tight_layout()
+plt.savefig(OUTPUTFIG2) #Saves figure.
+plt.close()
     
-#for kind in KINDLIST:
-    #print(kind)
-    #d = dictagdur(kind, FNAME)
-    #print(d)
-    #md = cl.dictmw(d, ctrlkey='cs-Apr')
-    #mtd = cl.mcpval(md)
-    #print('mtd', mtd)
-    #cl.createmwfile(kind+'_dur_mw_results.txt')
-    #cl.writemwfile(kind+'_dur_mw_results.txt', mtd, kind)
-    #fig1 = plt.figure(figsize=(8, 6), dpi=1200, facecolor='w', edgecolor='k')
-    #plotagdur(kind, d)
-    #plt.savefig('{0}_dur.png'.format(kind))

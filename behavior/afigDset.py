@@ -3,24 +3,30 @@ import os
 KEYFILE = 'keylist'
 DIR = 'presfig/' # Directory that figure will be saved in.
 CDIR = os.path.basename(os.path.abspath('.'))
-OUTPUTFIG = '{0}agdurfig_{1}.png'.format(DIR, CDIR) # Name of figure.
+OUTPUTFIG = '{0}agdurfig_{1}.png'.format(DIR, CDIR) # Name of figure with box 
+#and whisker plots.
+OUTPUTFIG2 = '{0}agdurfigbar_{1}.png'.format(DIR, CDIR) # Name of figure with bar 
+#plots
+
+DURFILE = '{0}agdurinfo_{1}.txt'.format(DIR, CDIR) # Name of file with 
+#results of Shapiro test for normality.
+DURFILE2 = '{0}agdurinfomean_{1}.txt'.format(DIR, CDIR) # Name of file with 
+#results of Shapiro test for normality.
+
 SHAPFILE = '{0}agdurshap_{1}.txt'.format(DIR, CDIR) # Name of file with 
 #results of Shapiro test for normality.
 MWFILE = '{0}agdurmwtest_{1}.txt'.format(DIR, CDIR) # Name of file with results 
 #of Mann-Whitney test.
+TFILE = '{0}agdurttest_{1}.txt'.format(DIR, CDIR)
 
 
 
-# Info about figure content.
+# Info about figure content - box and whisker plots.
 KINDLIST = ['wingthreat', 'charge', 'anyag', 'escd', 'escm'] # Behaviors to be analyzed.
-#KINDLIST = ['wingthreat'] # Behaviors to be analyzed.
-#KINDLIST = ['charge'] # Behaviors to be analyzed.
 
-
-# Figure parameters.
+# Figure parameters - box and whisker plots.
 SUBPLOTNS = [231, 232, 233, 234, 235] # Subplots of the figure for frequency.
 SUBPLOTLS = ['A', 'B', 'C', 'D', 'E'] # Labels for the subplots.
-
 FIGDPI=1200 # Figure DPI.
 FIGW=12 # Figure width.
 FIGH=8 # Figure height.
@@ -29,8 +35,26 @@ FONTSZ=11 # Size of font.
 LW = 1 # Width of lines in the figure.
 STITLESZ=12 # Title font size.
 
-# Options for bar plots.
 BARWIDTH=1
 YMIN=-10
 YLABEL = 'sec'
 YAXISTICKS = 5
+
+
+# Info about figure content - bar plots.
+KINDLIST2 = ['escd', 'escm'] # Behaviors to be analyzed. # Behaviors to be analyzed.
+
+# Figure parameters - bar plots.
+SUBPLOTNS2 = [121, 122] # Subplots of the figure for frequency.
+SUBPLOTLS2 = ['A', 'B'] # Labels for the subplots.
+FIGDPI2=1200 # Figure DPI.
+FIGW2=8 # Figure width.
+FIGH2=4 # Figure height.
+
+# Options for bar plots.
+BARWIDTH2=1
+YMIN2=0
+YAXISTICKS2 = 5
+
+
+

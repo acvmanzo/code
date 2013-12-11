@@ -186,7 +186,7 @@ def dictttest(d, ctrlkey='cs'):
     mwdict = {}
 
     for i,v in d.iteritems():
-        print(v)
+        #print(v)
         if len(v) < 2:
             continue
             
@@ -200,6 +200,8 @@ def dictttest(d, ctrlkey='cs'):
         mwdict[i]['n'] = len(v)
         mwdict[i]['mean'] = np.mean(v).tolist()
         mwdict[i]['control'] = ctrlkey
+        mwdict[i]['stdev'] = np.std(v).tolist()
+        mwdict[i]['sterr'] = np.std(v).tolist()/np.sqrt(len(v))
     
     return(mwdict)    
 
@@ -285,6 +287,7 @@ def dictpptest(d, ctrlkey='cs'):
             mwdict[i]['pval'] = pt.rx('p.value')[0][0]
         mwdict[i]['n'] = len(v)
         mwdict[i]['control'] = ctrlkey
+        mwdict[i]['sigtest'] = 'Proportion test'
 
     return(mwdict)
 
@@ -323,6 +326,7 @@ def dictfishtest(d, ctrlkey='cs'):
             mwdict[i]['pval'] = ft.rx('p.value')[0][0]
         mwdict[i]['n'] = len(v)
         mwdict[i]['control'] = ctrlkey
+        mwdict[i]['sigtest'] = 'Fisher\'s exact test'
 
     return(mwdict)
 
@@ -394,11 +398,11 @@ def mcpval(pvaldict, method='fdr', iskeyfile = 'True', keyfile='keylist'):
     if len(pvals) >= 2:
         try:
             pvals.pop(gens.index(ctrl[0]))
-            print('pvals-noctrl', pvals)
+            #print('pvals-noctrl', pvals)
             gens.remove(ctrl[0])
 
             adjpvals = list(rsl.padjust(pvals, method))
-            print('adjpvals', adjpvals)
+            #print('adjpvals', adjpvals)
             newptuple = zip(gens, adjpvals)
 
             for t in newptuple:
@@ -416,24 +420,6 @@ def mcpval(pvaldict, method='fdr', iskeyfile = 'True', keyfile='keylist'):
 
 
 #### FUNCTIONS FOR WRITING RESULTS OF DATA ANALYSIS TO TEXT FILES ####
-
-def createproptestfile(fname):
-    """Creates a file (specified in 'fname') that will list the results of the 
-    proportion test as implemented in R.
-    """
-
-    with open(fname, 'w') as f:
-        f.write('Proportion test results\n')
-        f.write('Kind\tp-value\n')
-
-def writeproptestfile(ofile, d, kind):
-    """Input is a dictionary in which the keywords are genotypes or conditions
-    and the values are a list in which an entry of "100" = success and an 
-    entry of "0" = failure (output of dictfreq)"""
-
-    pt = dictproptest(d)
-    with open(ofile, 'a') as f:
-        f.write('{0}\t{1}\n'.format(kind, pt))
 
 
 def createshapfile(fname):
@@ -467,8 +453,8 @@ def writeshapfile(fname, datadict, kind):
     unlist = r['unlist']
 
     for n, v in datadict.iteritems():
-        print('n', n)
-        print('v', v)
+        #print('n', n)
+        #print('v', v)
         if len(v) < 3:
             continue
         if v == np.tile(v[0], len(v)).tolist():
@@ -479,66 +465,36 @@ def writeshapfile(fname, datadict, kind):
             f.write('{0}\t{1}\t{2:.4g}\n'.format(n, kind, x[1][0]))
 
 
-def createmwfile(fname):
+def createstatfile(fname, test):
 
-    """Creates a file (specified in 'fname') that will list the results of the
-    Mann-Whitney significance test as implemented in R.
+    """Creates a file (specified in 'fname') that will list the results of 
+    the selected significance test as implemented in R.
     """
 
     with open(fname, 'w') as f:
-        f.write('Mann-Whitney U Test corrected for Multiple Comparisons\n')
-
+        f.write('{0} corrected for Multiple Comparisons\n'.format(test))
         f.write('Condition\tBehavior\tControl\tSigtest\tMultCompar\tp-value\t\
         Adj p-value\n')
 
 
-def writemwfile(fname, pvaldict, kind):
+def writestatfile(fname, pvaldict, kind):
 
     """Writes a file (specified in 'fname') listing the results of the 
-    Mann-Whitney significance test as implemented in R.
+    selected significance test as implemented in R.
 
     fname = file to write to
     pvaldict = dictionary where the keys are genotypes and the values include 
     p-values derived from a statistical test; output of the mcpval function.
-    kind = type of behavior - 'wing' (wing extension), 'copatt1' (first 
-    copulation attempt), 'copsuc' (successful copulation)
+    kind = type of behavior
     """
 
     for k, v in pvaldict.iteritems():
-        print(k)
+        #print(k)
         with open(fname, 'a') as f:
             f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, \
             v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], \
             v['adjpval']))
 
-
-def createpptestfile(fname):
-    """Creates a file (specified in 'fname') that will list the results of a
-    test for proportions, adjusted for multiple comparisons.
-    """
-
-    with open(fname, 'w') as f:
-        f.write('Proportion test corrected for Multiple Comparisons\n')
-
-        f.write('Condition\tBehavior\tControl\tMultCompar\tp-value\t\
-        Adj p-value\n')
-
-def writepptestfile(ofile, pvaldict, kind):
-    """Writes to a file that will list the results of a test for proportions, 
-    adjusted for multiple comparisons.
-    
-    ofile: file to write to
-    pvaldict: dictionary where the keys are genotypes and the values are 
-    p-values derived from a statistical test
-    kind: type of behavior - 'wing' (wing extension), 'copatt1' (first 
-    copulation attempt), 'copsuc' (successful copulation)
-    """
-
-    for k, v in pvaldict.iteritems():
-        with open(ofile, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, \
-            v['control'], v['adjpvaltest'], v['pval'], v['adjpval']))    
-    
 
 def createinfolat(ofile):
     '''Creates a file with information on the latency graphs plotted in 
@@ -616,6 +572,50 @@ def writeinfolatmean(ifile, ofile, kind, ctrlkey):
     
 
 
+def createinfodur(fname, measure):
+    
+    if measure == 'mean':
+        with open(fname, 'w') as g:
+            g.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
+            'Mean Duration (s)', 'Std Error (s)', '# pairs exhibiting behavior'))
+
+    if measure == 'median':
+        with open(fname, 'w') as g:
+            g.write('{0}\t{1}\t{2}\t{3}\n'.format('Genotype', 'Behavior', \
+            'Median Duration (s)', '# pairs exhibiting behavior'))
+
+
+def writeinfodur(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
+keyfile='keylist'):
+    '''measure = mean or median'''
+    
+    if iskeyfile == 'True':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = d.iterkeys()
+    
+    if measure == 'mean':
+        md = dictttest(d)
+        for k in keylist:
+            try:
+                with open(ofile, 'a') as f:
+                    f.write('{0}\t{1}\t{2:.2f}\t{3:.2f}\t{4}\n'.format(k, kind, 
+                    md[k]['mean'], md[k]['sterr'], md[k]['n']))
+            except KeyError:
+                continue
+                
+    if measure == 'median':
+        md = dictmw(d)
+        for k in keylist:
+            try:
+                with open(ofile, 'a') as f:
+                    f.write('{0}\t{1}\t{2:.2f}\t{3}\n'.format(k, kind, 
+                    md[k]['median'], md[k]['n']))  
+            except KeyError:
+                continue
+
+
+
 def createinfoprop(ofile):
     '''Creates a file with information on the frequency graphs plotted with
     'multiplot_1barf'.
@@ -624,7 +624,8 @@ def createinfoprop(ofile):
         f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format('Genotype', 'Behavior', \
         '# pairs exhibiting behavior', '# pairs tested', \
         '% exhibiting behavior', 'ci_lower', 'ci_upper' ))
-   
+
+
 def writeinfoprop(ifile, ofile, kind, keyfile, iskeyfile='false'):
     '''Writes into a file with information on the frequency graphs plotted in 
     multiplot_1barf.'''

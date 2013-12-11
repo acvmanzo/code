@@ -19,7 +19,7 @@ CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be
 # Creates directory and output text files.
 cmn.makenewdir(DIR)
 cl.createinfoprop(OFILEPROP)
-cl.createpptestfile(FISHTFILE)
+cl.createstatfile(FISHTFILE, 'Fisher\'s test')
 
 # Creates a figure of the indicated size and dpi.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
@@ -33,8 +33,6 @@ for k in ks2:
     al.multiplot_1barf(k[0], FNAME, CTRLKEY, BARWIDTH, KEYFILE, conf=0.95, 
     ylabel=YLABEL2, yaxisticks=YAXISTICKS2, ymin=YMIN2, ylim=YLIM2,
     subplotn=k[1], subplotl=k[2], fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
-    
-    al.writeinfoagprop(FNAME, OFILEPROP, k[0], KEYFILE, 'True')
 
 # Adjusts figure areas.
 plt.tight_layout()
@@ -43,9 +41,10 @@ plt.tight_layout()
 plt.savefig(OUTPUTFIG)
 
 
-# Writes the results of the statistical tests.
+# Writes the results of the statistical tests and graph info.
 for k in KINDLIST:
     pd = al.dictagfreq2(k, FNAME)
     fd = cl.dictfishtest(pd, ctrlkey=CTRLKEY)
     adjfd = cl.mcpval(fd, 'fdr')
-    cl.writepptestfile(FISHTFILE, adjfd, k)
+    cl.writestatfile(FISHTFILE, adjfd, k)
+    al.writeinfoagprop(pd, OFILEPROP, k[0], KEYFILE, 'True')

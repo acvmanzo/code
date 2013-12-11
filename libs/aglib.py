@@ -362,7 +362,7 @@ def dictagdur(kind, fname):
             nb = []
         else: 
             if adict['well'] != y:
-                print(sum(nb))
+                #print(sum(nb))
                 d[gen].append(sum(nb))
                 nb = []
         
@@ -568,7 +568,7 @@ def writeinfoaglatmean(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
         if kind == 'escm':
             nk = 'mutual escalation'
 
-        print(mwd[k][0])
+        #print(mwd[k][0])
         with open(ofile, 'a') as f:
             f.write('{0}\t{1}\t{2:.2f}\t{3:.2f}\t{4}\n'.format(k, nk, mwd[k][0], 
             mwd[k][2], mwd[k][3]))
@@ -598,11 +598,12 @@ def writeinfomean(d, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
         f.write('Min n = {0}\n'.format(np.min(mi)))
 
 
-def writeinfoagprop(ifile, ofile, kind, keyfile, iskeyfile='False'):
+def writeinfoagprop(d, ofile, kind, keyfile, iskeyfile='False'):
     '''Writes into a file with information on the 
-    frequency graphs plotted in multiplot_1bar.'''
+    frequency graphs plotted in multiplot_1bar.
+    d = dictionary with proportion data
+    '''
 
-    d = dictagfreq2(kind, ifile)
     bd = cl.dictbin(d)
     
     if iskeyfile == 'True':
@@ -832,7 +833,7 @@ def plotdurtitle(kind):
     if kind == 'charge':
         t = 'Charge duration'
     if kind == 'anyag':
-        t = 'Courtship index'
+        t = 'Fighting index'
     if kind == 'escd':
         t = 'Duration of\ndominant escalation'
     if kind == 'escm':
@@ -852,13 +853,12 @@ yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
     
     if metric == 'lat':
         d = dictaglat(kind, fname)
-        mwd = cl.dictmw(d, ctrlkey)
-        adjpd = cl.mcpval(mwd, 'fdr', 'True', keyfile)
     
     if metric == 'dur':
         d = dictagdur2(kind, fname)
-        mwd = cl.dictmw(d, ctrlkey)
-        adjpd = cl.mcpval(mwd, 'fdr', 'True', keyfile)
+    
+    mwd = cl.dictmw(d, ctrlkey)
+    adjpd = cl.mcpval(mwd, 'fdr', 'True', keyfile)
    
     vals = []
     conds = []
@@ -1005,6 +1005,8 @@ yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
         fontsize=fontsz)
 
 
+
+
 def multiplot_1barf(kind, fname, ctrlkey, barwidth, keyfile, conf, ylabel, 
 yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
 
@@ -1059,7 +1061,7 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
     lastbar = (1.5*barnum*barwidth)-barwidth
     x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
     x_list = x_gen1 
-    print(x_list)
+    #print(x_list)
                 
     # =========== PLOT DATA =======================
     
@@ -1173,3 +1175,169 @@ yaxisticks, ymin, ylim, subplotn, subplotl, fontsz, stitlesz, lw=1):
 
 
 
+
+def multiplot_1barmean(metric, kind, fname, ctrlkey, barwidth, ymin, ylabel, 
+yaxisticks, subplotn, subplotl, keyfile='keylist', fontsz=9, stitlesz=10, lw=1):
+
+    # ======== LOAD DATA =============
+    if keyfile == 'no':
+        keylist = sorted(d.keys())
+    else:
+        keylist = cmn.load_keys(keyfile)
+    
+    if metric == 'dur':
+        d = dictagdur2(kind, fname)
+        
+    md = cl.dictttest(d, ctrlkey)
+    adjpd = cl.mcpval(md, 'fdr', 'True', keyfile)
+   
+    vals = []
+    conds = []
+    n = []
+    stdev = []
+    sterr = []
+    pvals = []
+    
+    for k in keylist:
+               
+        if not d[k]:
+            continue
+        try:
+            vals.append(md[k]['mean'])
+            #conds.append('{0}\nn={1}'.format(k, mwd[k]['n']))
+            conds.append('{0}; n={1}'.format(k, md[k]['n']))
+            n.append(md[k]['n'])
+            stdev.append(md[k]['stdev'])
+            sterr.append(md[k]['sterr'])
+            pvals.append(adjpd[k]['adjpval'])
+        except KeyError:
+            continue
+    
+    if not vals:
+        m = 'No values'
+        raise cmn.EmptyValueError(m)
+    
+    
+    # ======== SET INITIAL FIGURE PROPERTIES =============
+    mpl.rc('axes', linewidth=lw)
+    mpl.rc('axes.formatter', limits = [-6, 6])
+
+    # Sets font to Arial and assigns font properties.
+    fontv = mpl.font_manager.FontProperties()
+    fontv = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/arial.ttf')
+    fontv.set_size(fontsz)
+    # Sets italicized font.
+    fonti = mpl.font_manager.FontProperties(fname='/home/andrea/.matplotlib/ariali.ttf')
+    fonti.set_size(fontsz)
+
+    # Defines coordinates for each bar.
+    barnum = len(vals)
+    lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
+    x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
+    x_list = x_gen1 
+
+    # Defines the axes.
+    ax = plt.subplot(subplotn)
+
+    # =========== PLOT DATA =======================
+
+    #Plots the box plot.
+    truebarw = 0.35*barwidth
+    bp = plt.bar(x_list, vals, yerr=sterr, width=truebarw, color='#d3d3d3', \
+    bottom=0, ecolor='k', capsize=0.5, linewidth=lw)    
+    
+
+    # Sets the x- and y-axis limits.
+    xlim = x_list[-1]+1.5*barwidth
+    
+    if metric == 'dur':
+        if kind == 'wingthreat':
+            ylim = 300
+        if kind == 'charge':
+            ylim = 30
+        if kind == 'anyag':
+            ylim = 50
+        if kind == 'escd':
+            ylim = 150
+        if kind == 'escm':
+            ylim = 20
+    else:
+        maxvals = [max(x) for x in vals]
+        maxval = max(maxvals)
+        ylim = cmn.myround(1*maxval)
+
+    plt.axis( [0, xlim, ymin, ylim])
+
+
+    # ========ADDS TICKS, LABELS and TITLES==========
+
+    # Adds labels to the x-axis at the x-coordinates specified in x_list; 
+    #labels are specified in the conds list.
+    plt.xticks(x_list, conds, fontproperties=fonti, rotation=45)
+
+    # Labels the yaxis; labelpad is the space between the ticklabels and 
+    #y-axis label.
+    plt.ylabel(ylabel, labelpad=2, fontproperties=fontv, multialignment='center')
+
+    # Add title
+    if metric == 'lat':
+        t = plotlattitle(kind)
+    if metric == 'dur':
+        t = plotdurtitle(kind)
+    plt.title(t, fontsize=stitlesz)
+
+    # Add subplot label
+    plt.text(-0.1, 1.1, subplotl, transform=ax.transAxes)
+
+
+    # ========FORMATS THE PLOT==========
+
+    # Removes borders
+    for loc, spine in ax.spines.iteritems():
+        if loc in ['left','bottom']:
+            pass
+        elif loc in ['right','top']:
+            spine.set_color('none') # don't draw spine
+        else:
+            raise ValueError('unknown spine location: %s'%loc)
+
+
+    # ========FORMATS THE TICKS=========
+
+    #Uncomment lines below to display ticks only where there are borders.
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
+    #Removes the tickmarks on the x-axis but leaves the labels and the spline.
+    for line in ax.get_xticklines():
+        line.set_visible(False)
+
+    # Formats the y ticks.
+    plt.yticks(fontproperties=fontv)
+
+    # Specifies the number of tickmarks/labels on the yaxis.
+    ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(yaxisticks))
+
+
+    # ========ADDS SIGNIFICANCE STARS============
+
+    #print('pvals',pvals)
+
+    p05i = [i for i, pval in enumerate(pvals) if pval <0.05 and pval >= 0.01]
+    
+    #print(p05i)
+    for i in p05i:
+        plt.text(x_list[i], 0.85*ylim, '*', horizontalalignment='center', 
+        fontsize=fontsz)
+
+    p01i = [i for i, pval in enumerate(pvals) if pval <0.01 and pval >= 0.001]
+    #print(p01i)
+    for i in p01i:
+        plt.text(x_list[i], 0.85*ylim, '**', horizontalalignment='center', 
+        fontsize=fontsz)
+
+    p001i = [i for i, pval in enumerate(pvals) if pval <0.001]
+    #print(p001i)
+    for i in p001i:
+        plt.text(x_list[i], 0.85*ylim, '***', horizontalalignment='center', 
+        fontsize=fontsz)

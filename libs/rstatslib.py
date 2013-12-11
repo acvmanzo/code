@@ -71,6 +71,7 @@ def pairwiseproptest(x, n, method, confleveln=0.95):
     return(pptest(x, n, method, **{'conf.level': confleveln}))
 
 def fishertest(nsuc1, nfail1, nsuc2, nfail2):
+    
     fishertest = r['fisher.test']
     matrix = r['matrix']
     rlist = r['list']
@@ -80,6 +81,8 @@ def fishertest(nsuc1, nfail1, nsuc2, nfail2):
     return(fishertest(x))
 
 def ttest(x, y):
+    # With these options, uses the Welch t test for unequal variances.
+
     test = r['t.test']
     unlist = r['unlist']
     x = unlist(x)
