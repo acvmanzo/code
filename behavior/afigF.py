@@ -32,10 +32,8 @@ for k in ks2:
     binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
     lw=LW, starpos=k[4])
 
-
 # Adjusts figure areas.
 plt.tight_layout()
-
 # Saves figure
 plt.savefig(OUTPUTFIG)
 
@@ -46,4 +44,4 @@ for k in KINDLIST:
     fd = acl.dictfishtest(pd, ctrlkey=CTRLKEY)
     adjfd = acl.mcpval(fd, 'fdr')
     acl.writestatfile(FISHTFILE, adjfd, k)
-    acl.writeinfoprop(pd, PROPFILE, k[0], KEYFILE, 'True')
+    acl.writeinfoprop(pd, PROPFILE, k[0], 'True', KEYFILE)

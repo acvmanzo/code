@@ -262,11 +262,65 @@ def cline2(line):
     return(cvals)
 
 
+def dictclat(kind, fname):
+      
+    if kind == 'copatt1':
+        kind = 'ca'
+    if kind == 'copsuc':
+        kind = 'cs'
+    
+    d = {}
+    
+    with open(fname) as f:
+        f.next()
+        f.next()
+        for l in f:
+            #print(l)
+            cd = cline2(l)
+            gen = cd['gen']
+            #print(gen)
+            if gen not in d:
+                d[gen] = []
+                
+            if cd['ctype'] == kind and cd['cmin'] != 'x' and cd['cmin'] != '-':
+                offset, cmin, csec = map(int, [cd['offset'], cd['cmin'], \
+                cd['csec']])
+                d[gen].append(cmn.convtosec(cmin, csec)-offset)
+    return(d)
+
+
+def dictcprop(kind, fname):
+
+    if kind == 'copatt1':
+        kind = 'ca'
+    if kind == 'copsuc':
+        kind = 'cs'
+
+    d = {}
+    
+    with open(fname) as f:
+        f.next()
+        f.next()
+        for l in f:
+            #print(l)
+            cd = cline2(l)
+            gen = cd['gen']
+            #print(gen)
+            if gen not in d:
+                d[gen] = []
+                
+            if cd['ctype'] == kind and cd['cmin'] != 'x' and cd['cmin'] != '-':
+                d[gen].append(100)
+            if cd['ctype'] == kind and cd['cmin'] == 'x':
+                d[gen].append(0)
+    return(d)
+    
+
 #### FUNCTIONS FOR CONSTRUCTING DICTIONARIES WITH RESULTS OF STATISTICAL 
 #TESTS####
 
 
-def dictbin(dict, conf=0.95, methods='wilson', label='data'):
+def dictbin(dict, conf, methods='wilson', label='data'):
     """Generates a new dictionary with binomical confidence intervals from 
     frequency data.
     Input:
@@ -575,10 +629,11 @@ def createinfolat(ofile):
     '''Creates a file with information on the latency graphs plotted in 
     multiplot_1bar.'''
     with open(ofile, 'w') as f:
-        f.write('Genotype\tBehavior\tMedian latency (s)\tn\tAdj p-value\tCtrl\n')
+        f.write('Genotype\tBehavior\tMedian latency (s)\tn\n')
 
 
-def writeinfolat(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
+def writeinfolat(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
+keyfile='keylist'):
     """Writes into a file with information on the latency graphs plotted in 
     multiplot_1bar.
     
@@ -591,27 +646,25 @@ def writeinfolat(ifile, ofile, kind, ctrlkey, keyfile, iskeyfile='False'):
     "False"
     """
 
-    d = dictlat(kind, ifile)
-    mwd = dictmw(d, ctrlkey)
-    mcwd = mcpval(mwd)
-    mx = []
-    mi = []
-    
+   
     if iskeyfile == 'True':
         keylist = cmn.load_keys(keyfile)
     else:
         keylist = d.iterkeys()
 
-    for k in keylist:
-        with open(ofile, 'a') as f:
-            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, \
-            mwd[k]['median'], mwd[k]['n'], mcwd[k]['adjpval'], mcwd[k]['control']))
-            mx.append(np.max(mwd[k]['n']))
-            mi.append(np.min(mwd[k]['n']))
-            
-    with open(ofile, 'a') as f:
-        f.write('Max n = {0}\n'.format(np.max(mx)))
-        f.write('Min n = {0}\n'.format(np.min(mi)))
+    if measure == 'median':
+        mwd = dictmw(d, ctrlkey)
+        for k in keylist:
+            with open(ofile, 'a') as f:
+                f.write('{0}\t{1}\t{2}\t{3}\n'.format(k, kind, mwd[k]['median'],\
+                mwd[k]['n']))
+
+    if measure == 'mean':
+        md = dictttest(d, ctrlkey)
+        for k in keylist:
+            with open(ofile, 'a') as f:
+                f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, \
+                md[k]['mean'], md[k]['stdev'], md[k]['sterr'], md[k]['n']))
 
 
 def createinfodur(fname, measure):
@@ -627,7 +680,7 @@ def createinfodur(fname, measure):
             'Median Duration (s)', '# pairs exhibiting behavior'))
 
 
-def writeinfodur(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
+def writeinfodur(ofile, d, kind, measure, iskeyfile='True', 
 keyfile='keylist'):
     '''measure = mean or median'''
     
@@ -667,13 +720,13 @@ def createinfoprop(ofile):
         '% exhibiting behavior', 'ci_lower', 'ci_upper' ))
 
 
-def writeinfoprop(d, ofile, kind, keyfile, iskeyfile='False'):
+def writeinfoprop(ofile, d, binconf, kind, iskeyfile='True', keyfile='keylist'):
     '''Writes into a file with information on the 
     frequency graphs plotted in multiplot_1bar.
     d = dictionary with proportion data
     '''
 
-    bd = dictbin(d)
+    bd = dictbin(d, binconf)
     
     if iskeyfile == 'True':
         keylist = cmn.load_keys(keyfile)
@@ -727,7 +780,7 @@ def plotlatbw(kind, d, iskeyfile = 'true', type='bw'):
     
     fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
     titlesize='large')
-    if kind == 'wing':
+    if kind == 'we':
         plt.ylim(0, 150)
 
 
@@ -827,69 +880,62 @@ def plotdur(kind, d, iskeyfile='True', keyfile='keylist', type='b'):
 
 #### FUNCTIONS FOR PLOTTING A PUBLICATION-QUALITY FIGURE ####
 
-def plottitlelat(kind):
+def plottitle(metric, kind):
     
-    if kind == 'flare':
-        t = 'Latency to\nflared wings'
-    if kind == 'charge':
-        t = 'Latency to\ncharging'
-    if kind == 'anyag':
-        t = 'Latency to\naggression'
-    if kind == 'escd':
-        t = 'Latency to\ndominant escalation'
-    if kind == 'escm':
-        t = 'Latency to\nmutual escalation'
-    if kind == 'we':
-        t = 'Latency to\nwing extension'
-    if kind == 'copsuc':
-        t = 'Latency to\ncopulation'
-    if kind == 'copatt1':
-        t = 'Latency to \n1st copulation attempt'
-    return(t)
-
-
-def plottitledur(kind):
+    if metric == 'aglatmed' or metric == 'clatmed' or metric == 'clatmean':
+        if kind == 'flare':
+            t = 'Latency to\nflared wings'
+        if kind == 'charge':
+            t = 'Latency to\ncharging'
+        if kind == 'anyag':
+            t = 'Latency to\naggression'
+        if kind == 'escd':
+            t = 'Latency to\ndominant escalation'
+        if kind == 'escm':
+            t = 'Latency to\nmutual escalation'
+        if kind == 'we':
+            t = 'Latency to\nwing extension'
+        if kind == 'copsuc':
+            t = 'Latency to\ncopulation'
+        if kind == 'copatt1':
+            t = 'Latency to\n1st copulation attempt'
     
-    if kind == 'wingthreat':
-        t = 'Wing threat duration'
-    if kind == 'charge':
-        t = 'Charge duration'
-    if kind == 'anyag':
-        t = 'Fighting index'
-    if kind == 'escd':
-        t = 'Duration of\ndominant escalation'
-    if kind == 'escm':
-        t = 'Duration of\nmutual escalation'
-    return(t)
-    
-    
-def plottitleprop(kind):
-       
-    if kind == 'wingthreat':
-        t = '% pairs with\nwingthreat'
-    if kind == 'charge':
-        t = '% pairs charging'
-    if kind == 'anyag':
-        t = '% pairs fighting'
-    if kind == 'escd':
-        t = '% pairs with\ndominant escalation'
-    if kind == 'escm':
-        t = '% pairs with\nmutual escalation'
-    if kind == 'we':
-        t = '% flies displaying wing extension'
-    if kind == 'copsuc':
-        t = '% flies copulating'
-    if kind == 'copatt1':
-        t = '% flies attempting copulation'
-        
+    if metric == 'aglatmed' or metric == 'agdurmean':
+        if kind == 'wingthreat':
+            t = 'Wing threat duration'
+        if kind == 'charge':
+            t = 'Charge duration'
+        if kind == 'anyag':
+            t = 'Fighting index'
+        if kind == 'escd':
+            t = 'Duration of\ndominant escalation'
+        if kind == 'escm':
+            t = 'Duration of\nmutual escalation'
+            
+    if metric == 'agprop' or metric == 'cprop':
+        if kind == 'wingthreat':
+            t = '% pairs with\nwingthreat'
+        if kind == 'charge':
+            t = '% pairs charging'
+        if kind == 'anyag':
+            t = '% pairs fighting'
+        if kind == 'escd':
+            t = '% pairs with\ndominant escalation'
+        if kind == 'escm':
+            t = '% pairs with\nmutual escalation'
+        if kind == 'we':
+            t = '% flies displaying\nwing extension'
+        if kind == 'copsuc':
+            t = '% flies copulating'
+        if kind == 'copatt1':
+            t = '% flies attempting\ncopulation'
+            
     return(t)
 
 
 
 def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
     # Load data for use in fancy multiplots.
-
-    #plotdict = {}
     
     # For all plots.
     vals = []
@@ -912,18 +958,17 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         keylist = cmn.load_keys(keyfile)
     
     # Define dictionaries.
-    
-    if metric == 'aglat':
+    if metric == 'aglatmed':
         d = dictaglat(kind, fname)
         mwd = dictmw(d, ctrlkey)
         adjpd = mcpval(mwd, 'fdr', 'True', keyfile)
     
-    if metric == 'agdurmw':
+    if metric == 'aglatmed':
         d = dictagdur2(kind, fname)
         mwd = dictmw(d, ctrlkey)
         adjpd = mcpval(mwd, 'fdr', 'True', keyfile)
     
-    if metric == 'agdurt':
+    if metric == 'agdurmean':
         d = dictagdur2(kind, fname)
         md = dictttest(d, ctrlkey)
         adjpd = mcpval(md, 'fdr', 'True', keyfile)
@@ -932,9 +977,28 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         d = dictagfreq2(kind, fname)
         db = dictbin(d, binconf, label=kind)
         fd = dictfishtest(d, ctrlkey=ctrlkey)
-        adjppd = mcpval(fd, 'fdr')
+        adjppd = mcpval(fd, 'fdr', 'True', keyfile)
 
-    if metric == 'aglat' or metric == 'agdurmw':
+    if metric == 'clatmed':
+        d = dictclat(kind, fname)
+        mwd = dictmw(d, ctrlkey)
+        adjpd = mcpval(mwd, 'fdr', 'True', keyfile)
+    
+    if metric == 'clatmean':
+        d = dictclat(kind, fname)
+        md = dictttest(d, ctrlkey)
+        adjpd = mcpval(md, 'fdr', 'True', keyfile)
+        
+    if metric == 'cprop':
+        d = dictcprop(kind, fname)
+        db = dictbin(d, binconf, label=kind)
+        fd = dictfishtest(d, ctrlkey=ctrlkey)
+        adjppd = mcpval(fd, 'fdr')
+        
+        
+    # Generate coordinate and pvalue lists.
+    
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed':
         for k in keylist:
             if not d[k]:
                 continue
@@ -945,7 +1009,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
             except KeyError:
                 continue
     
-    if metric == 'agdurt':
+    if metric == 'agdurmean' or metric == 'clatmean':
         for k in keylist:
             if not d[k]:
                 continue
@@ -960,7 +1024,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
             except KeyError:
                 continue
 
-    if metric == 'agprop':
+    if metric == 'agprop' or metric == 'cprop':
         for k in keylist:
             vals.append(db[k]['prop'])
             #conds.append('{0}\nn={1}'.format(k, db[k]['n']))
@@ -971,16 +1035,32 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
             upperci.append(db[k]['upperci']-db[k]['prop'])
             pvals.append(adjppd[k]['adjpval'])
     
-    #plotdict['vals'], plotdict['conds'], plotdict['pvals'], plotdict['n'], \
-    #plotdict['stdev'], plotdict['sterr'], plotdict['lowerci'], \
-    #plotdict['upperci'], plotdict['nsuc'] = \
-    #[vals, conds, pvals, n, stdev, sterr, lowerci, upperci, nsuc]
-    
     return(vals, conds, pvals, n, stdev, sterr, lowerci, upperci, nsuc)  
 
 
+def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
+
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed':
+    #Plots the box and whisker plot.
+        bp = plt.boxplot(vals, positions=x_list, sym='')
+        pylab.setp(bp['boxes'], color='black')
+        pylab.setp(bp['whiskers'], color='black', ls='-')
+        pylab.setp(bp['medians'], color='black')
+    
+    if metric == 'agdurmean' or metric == 'clatmean':
+    # Plots a bar plot displaying means.
+        bp = plt.bar(x_list, vals, yerr=sterr, width=truebarw, color='#d3d3d3', \
+        bottom=0, ecolor='k', capsize=0.5, linewidth=lw)    
+    
+    if metric == 'agprop' or metric == 'cprop':
+    # Plots a bar plot displaying proportions.
+        plt.bar(x_list, vals, yerr=[lowerci,upperci], width=truebarw, 
+        color='#d3d3d3', bottom=0, ecolor='k', capsize=0.5, linewidth=lw)
+
+
+
 def multiplot(metric, kind, fname, ctrlkey, barwidth, ymin, ylim, ylabel, 
-yaxisticks, subplotn, subplotl, binconf=0.95, keyfile='keylist', fontsz=9, 
+yaxisticks, subplotn, subplotl, binconf, keyfile='keylist', fontsz=9, 
 stitlesz=10, lw=1, starpos=0.75):
     
 
@@ -988,7 +1068,6 @@ stitlesz=10, lw=1, starpos=0.75):
 
     vals, conds, pvals, n, stdev, sterr, lowerci, upperci, nsuc = \
     loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile)
-    
 
     # ======== SET INITIAL FIGURE PROPERTIES =============
     mpl.rc('axes', linewidth=lw)
@@ -1017,23 +1096,8 @@ stitlesz=10, lw=1, starpos=0.75):
 
     # =========== PLOT DATA =======================
     
-    if metric == 'aglat' or metric == 'agdurmw':
-    #Plots the box and whisker plot.
-        bp = plt.boxplot(vals, positions=x_list, sym='')
-        pylab.setp(bp['boxes'], color='black')
-        pylab.setp(bp['whiskers'], color='black', ls='-')
-        pylab.setp(bp['medians'], color='black')
+    plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci)
     
-    if metric == 'agdurt':
-    # Plots a bar plot displaying means.
-        bp = plt.bar(x_list, vals, yerr=sterr, width=truebarw, color='#d3d3d3', \
-        bottom=0, ecolor='k', capsize=0.5, linewidth=lw)    
-    
-    if metric == 'agprop':
-    # Plots a bar plot displaying proportions.
-        plt.bar(x_list, vals, yerr=[lowerci,upperci], width=truebarw, 
-        color='#d3d3d3', bottom=0, ecolor='k', capsize=0.5, linewidth=lw)
-        
     
     # ======== ADDS TICKS, LABELS and TITLES==========
     # Sets the x- and y-axis limits.
@@ -1049,18 +1113,11 @@ stitlesz=10, lw=1, starpos=0.75):
     
 
     # Add title
-    if metric == 'aglat':
-        t = plottitlelat(kind)
-    if metric == 'agdurmw' or metric == 'agdurt':
-        t = plottitledur(kind)
-    if metric == 'agprop':
-        t = plottitleprop(kind)
-    
-    # Add title
+    t = plottitle(metric, kind)
     plt.title(t, fontsize=stitlesz)
     
     # Labels the subplot
-    plt.text(-0.1, 1.0, subplotl, transform=ax.transAxes)
+    plt.text(-0.2, 1.0, subplotl, transform=ax.transAxes)
     
     
     # ========FORMATS THE PLOT==========

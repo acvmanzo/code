@@ -5,35 +5,78 @@
 import sys
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-import libs.aglib as al
-import libs.courtshiplib as cl
 import cmn.cmn as cmn
+import libs.agcourtlib as acl
 from cfigLF6set import *
 
 
 # Creates directory and output text files.
 cmn.makenewdir(DIR)
-cl.createinfolat(LATFILE)
-cl.createinfoprop(PROPFILE)
-cl.createstatfile(LATMWFILE)
-cl.createstatfile(FISHTFILE)
+acl.createshapfile(SHAPFILE)
+acl.createinfolat(LATFILEMED)
+acl.createinfolat(LATFILEMEAN)
+acl.createinfoprop(PROPFILE)
+acl.createstatfile(LATMWFILE, 'Mann-Whitney Test')
+acl.createstatfile(FISHTFILE, 'Fisher\'s Exact Test')
 
-# Creates a figure of the indicated size and dpi.
+# Creates a 6-panel latency (top) and frequency (bottom) figure.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
 edgecolor='k')
 
-# Creates latency bar plots.
-ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1)
+# Creates latency bar subplots.
+ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1, YLIMS1, STARPOS1)
 for k in ks1:
-    cl.multiplot_1bar(k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
-    YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2], \
-    keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
+    acl.multiplot('clatmed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
+    ylabel=YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2],
+    binconf=BINCONF, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
+    lw=LW, starpos=k[4])
 
-# Creates frequency bar plots.
-ks2 = zip(KINDLIST, SUBPLOTNS2, SUBPLOTLS2)
+# Creates frequency bar subplots.
+ks2 = zip(KINDLIST, SUBPLOTNS2, SUBPLOTLS2, YLIMS2, STARPOS2)
 for k in ks2:
-    cl.multiplot_1bar(k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
-    YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2], \
-    keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
+    acl.multiplot('cprop', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
+    ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
+    binconf=BINCONF, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
+    lw=LW, starpos=k[4])
+
+# Saves figure.
+plt.tight_layout()
+plt.savefig(OUTPUTFIG) #Saves figure.
+plt.close()
 
 
+# Creates a 3-panel latency figure, with means and bar plots instead of a box 
+#and whisker plot.
+fig2 = plt.figure(figsize=(FIGW3, FIGH3), dpi=FIGDPI, facecolor='w', \
+edgecolor='k')
+# Creates latency bar plots.
+ks3 = zip(KINDLIST, SUBPLOTNS3, SUBPLOTLS3, YLIMS3, STARPOS3)
+for k in ks1:
+    acl.multiplot('clatmean', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
+    ylabel=YLABEL1, yaxisticks=YAXISTICKS3, subplotn=k[1], subplotl=k[2],
+    binconf=BINCONF, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
+    lw=LW, starpos=k[4])
+    
+# Saves figure.
+plt.tight_layout()
+plt.savefig(OUTPUTFIG2) #Saves figure.
+plt.close()
+
+
+# Writes output text files.
+for kind in KINDLIST:
+    
+    ld = acl.dictclat(kind, FNAME)
+    mwd = acl.dictmw(ld, CTRLKEY)
+    ldadjpd = acl.mcpval(mwd, 'fdr', 'True', KEYFILE)
+    
+    pd = acl.dictcprop(kind, FNAME)
+    fd = acl.dictfishtest(pd, CTRLKEY)
+    fdadjpd = acl.mcpval(fd, 'fdr')
+    
+    acl.writeshapfile(SHAPFILE, ld, kind)
+    acl.writestatfile(LATMWFILE, ldadjpd, kind)
+    acl.writestatfile(FISHTFILE, fdadjpd, kind)
+    acl.writeinfolat(LATFILEMED, ld, kind, CTRLKEY, 'median', 'True', KEYFILE)
+    acl.writeinfolat(LATFILEMEAN, ld, kind, CTRLKEY, 'mean', 'True', KEYFILE)
+    acl.writeinfoprop(PROPFILE, pd, BINCONF, kind, 'True', KEYFILE)

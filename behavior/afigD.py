@@ -24,21 +24,6 @@ acl.createinfodur(DURFILE, 'median')
 acl.createinfodur(DURFILE2, 'mean')
 
 
-# Loads data and writes output text files.
-for kind in KINDLIST:
-    d = acl.dictagdur2(kind, FNAME)
-    mwd = acl.dictmw(d, CTRLKEY)
-    pmwd = acl.mcpval(mwd, 'fdr', 'True', KEYFILE)
-    
-    md = acl.dictttest(d, CTRLKEY)
-    pmd = acl.mcpval(md, 'fdr', 'True', KEYFILE)
-    
-    acl.writeshapfile(SHAPFILE, d, kind)
-    acl.writestatfile(MWFILE, pmwd, kind)
-    acl.writestatfile(TFILE, pmd, kind)
-    acl.writeinfodur(DURFILE, d, kind, CTRLKEY, 'median')
-    acl.writeinfodur(DURFILE2, d, kind, CTRLKEY, 'mean')
-
 # Creates figures.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
 edgecolor='k')
@@ -47,7 +32,7 @@ edgecolor='k')
 ks1 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
 for k in ks1:
     try:
-        acl.multiplot('agdurmw', k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
+        acl.multiplot('agdurmed', k[0], FNAME, CTRLKEY, BARWIDTH, YMIN, \
         ylim = k[3], ylabel=YLABEL, yaxisticks=YAXISTICKS, subplotn=k[1], \
         subplotl=k[2], binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, \
         stitlesz=STITLESZ, lw=LW, starpos=k[4])
@@ -64,7 +49,7 @@ edgecolor='k')
 ks2 = zip(KINDLIST2, SUBPLOTNS2, SUBPLOTLS2, YLIMS2, STARPOS2)
 for k in ks2:
     try:
-        acl.multiplot('agdurt', k[0], FNAME, CTRLKEY, BARWIDTH, YMIN2, k[3], \
+        acl.multiplot('agdurmean', k[0], FNAME, CTRLKEY, BARWIDTH, YMIN2, k[3], \
         YLABEL, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2], \
         binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW,\
         starpos=k[4])
@@ -75,3 +60,18 @@ plt.tight_layout()
 plt.savefig(OUTPUTFIG2) #Saves figure.
 plt.close()
     
+
+# Writes output text files.
+for kind in KINDLIST:
+    d = acl.dictagdur2(kind, FNAME)
+    mwd = acl.dictmw(d, CTRLKEY)
+    pmwd = acl.mcpval(mwd, 'fdr', 'True', KEYFILE)
+    
+    md = acl.dictttest(d, CTRLKEY)
+    pmd = acl.mcpval(md, 'fdr', 'True', KEYFILE)
+    
+    acl.writeshapfile(SHAPFILE, d, kind)
+    acl.writestatfile(MWFILE, pmwd, kind)
+    acl.writestatfile(TFILE, pmd, kind)
+    acl.writeinfodur(DURFILE, d, kind, 'median')
+    acl.writeinfodur(DURFILE2, d, kind, 'mean')

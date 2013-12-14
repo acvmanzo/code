@@ -30,7 +30,7 @@ def courtshipline(line):
     cvals = {}
     x = ['date', 'movie', 'offset', 'well', 'gen', 'wingm', 'wings', 'copsucm',
     'copsucs', 'copatt1m', 'copatt1s']
-    y = line.split(',')[0:11]
+    y = line.strip('\n').split(',')[0:11]
     z = zip(x, y)
 
     for item in z:

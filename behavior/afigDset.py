@@ -3,12 +3,12 @@ import os
 KEYFILE = 'keylist'
 DIR = 'presfig/' # Directory that figure will be saved in.
 CDIR = os.path.basename(os.path.abspath('.'))
-OUTPUTFIG = '{0}agdurfig_{1}.png'.format(DIR, CDIR) # Name of figure with box 
+OUTPUTFIG = '{0}agdurfigmed_{1}.png'.format(DIR, CDIR) # Name of figure with box 
 #and whisker plots.
-OUTPUTFIG2 = '{0}agdurfigbar_{1}.png'.format(DIR, CDIR) # Name of figure with bar 
+OUTPUTFIG2 = '{0}agdurfigmean_{1}.png'.format(DIR, CDIR) # Name of figure with bar 
 #plots
 
-DURFILE = '{0}agdurinfo_{1}.txt'.format(DIR, CDIR) # Name of file with 
+DURFILE = '{0}agdurinfomed_{1}.txt'.format(DIR, CDIR) # Name of file with 
 #results of Shapiro test for normality.
 DURFILE2 = '{0}agdurinfomean_{1}.txt'.format(DIR, CDIR) # Name of file with 
 #results of Shapiro test for normality.
