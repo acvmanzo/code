@@ -39,6 +39,30 @@ def courtshipline(line):
     return(cvals)
 
 
+def cline2(line):
+    """Generates dictionary with the values from line, with the parameters as 
+    keywords.
+
+    fname is of the following format:
+    Movie, Movie (Ryan's code),  Genotype, Offset (s), Well #, Courtship 
+    Behavior (min), (sec), (dur), (type), (comments)
+    """
+
+    cvals = {}
+    x = ['movie', 'moviecode', 'gen', 'offset', 'well', 'cmin', 'csec', 
+    'cdur', 'ctype', 'ccomm', 'gens', 'date', 'assay', 'fps', 'flyid', 'side']
+    y = line.strip('\n').split(',')
+    y.extend(y[0].strip('.MTS').split('_'))
+    
+    z = zip(x, y)
+
+    for item in z:
+        cvals[item[0]] = item[1]
+
+    return(cvals)
+    
+    
+
 def dictlat(kind, fname):
     """
     Generates a dictionary from data in 'fname' where the keywords are 
@@ -718,6 +742,7 @@ def plotlatbw(kind, fname, iskeyfile = 'true', keyfile='keylist', type='bw'):
     fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle)
     if kind == 'wing':
         plt.ylim(0, 150)
+
 
 def plotlat(kind, fname, iskeyfile = 'true', keyfile='keylist', type='b'):
 

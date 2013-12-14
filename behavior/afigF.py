@@ -5,9 +5,7 @@
 import os
 import sys
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-import libs.aglib as al
-import libs.courtshiplib as cl
+import libs.agcourtlib as acl
 import cmn.cmn as cmn
 from afigFset import *
 
@@ -18,21 +16,22 @@ CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be
 
 # Creates directory and output text files.
 cmn.makenewdir(DIR)
-cl.createinfoprop(OFILEPROP)
-cl.createstatfile(FISHTFILE, 'Fisher\'s test')
+acl.createinfoprop(PROPFILE)
+acl.createstatfile(FISHTFILE, 'Fisher\'s test')
 
 # Creates a figure of the indicated size and dpi.
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
 edgecolor='k')
 
-  
 # Creates frequency bar plots.
-ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS)
+ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
 for k in ks2:
     print('behavior', k)
-    al.multiplot_1barf(k[0], FNAME, CTRLKEY, BARWIDTH, KEYFILE, conf=0.95, 
-    ylabel=YLABEL2, yaxisticks=YAXISTICKS2, ymin=YMIN2, ylim=YLIM2,
-    subplotn=k[1], subplotl=k[2], fontsz=FONTSZ, stitlesz=STITLESZ, lw=LW)
+    acl.multiplot('agprop', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
+    ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
+    binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
+    lw=LW, starpos=k[4])
+
 
 # Adjusts figure areas.
 plt.tight_layout()
@@ -43,8 +42,8 @@ plt.savefig(OUTPUTFIG)
 
 # Writes the results of the statistical tests and graph info.
 for k in KINDLIST:
-    pd = al.dictagfreq2(k, FNAME)
-    fd = cl.dictfishtest(pd, ctrlkey=CTRLKEY)
-    adjfd = cl.mcpval(fd, 'fdr')
-    cl.writestatfile(FISHTFILE, adjfd, k)
-    al.writeinfoagprop(pd, OFILEPROP, k[0], KEYFILE, 'True')
+    pd = acl.dictagfreq2(k, FNAME)
+    fd = acl.dictfishtest(pd, ctrlkey=CTRLKEY)
+    adjfd = acl.mcpval(fd, 'fdr')
+    acl.writestatfile(FISHTFILE, adjfd, k)
+    acl.writeinfoprop(pd, PROPFILE, k[0], KEYFILE, 'True')

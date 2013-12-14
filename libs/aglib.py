@@ -52,8 +52,6 @@ def agline2(line):
     """
     
     vals = {}
-
-
     y = line.strip('\n').split(',')
     y.extend(y[0].strip('.MTS').split('_'))
     

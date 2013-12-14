@@ -20,6 +20,12 @@ MWFILE = '{0}agdurmwtest_{1}.txt'.format(DIR, CDIR) # Name of file with results
 TFILE = '{0}agdurttest_{1}.txt'.format(DIR, CDIR)
 
 
+# Parameters for both plots.
+YLABEL = 'sec'
+FONTSZ=11 # Size of font.
+LW = 1 # Width of lines in the figure.
+STITLESZ=12 # Title font size.
+
 
 # Info about figure content - box and whisker plots.
 KINDLIST = ['wingthreat', 'charge', 'anyag', 'escd', 'escm'] # Behaviors to be analyzed.
@@ -27,19 +33,16 @@ KINDLIST = ['wingthreat', 'charge', 'anyag', 'escd', 'escm'] # Behaviors to be a
 # Figure parameters - box and whisker plots.
 SUBPLOTNS = [231, 232, 233, 234, 235] # Subplots of the figure for frequency.
 SUBPLOTLS = ['A', 'B', 'C', 'D', 'E'] # Labels for the subplots.
+YLIMS = [300, 30, 50, 150, 20]
+STARPOS = [0.75, 0.75, 0.75, 0.75]
+
 FIGDPI=1200 # Figure DPI.
 FIGW=12 # Figure width.
 FIGH=8 # Figure height.
 
-FONTSZ=11 # Size of font.
-LW = 1 # Width of lines in the figure.
-STITLESZ=12 # Title font size.
-
 BARWIDTH=1
 YMIN=-10
-YLABEL = 'sec'
 YAXISTICKS = 5
-
 
 # Info about figure content - bar plots.
 KINDLIST2 = ['escd', 'escm'] # Behaviors to be analyzed. # Behaviors to be analyzed.
@@ -47,11 +50,13 @@ KINDLIST2 = ['escd', 'escm'] # Behaviors to be analyzed. # Behaviors to be analy
 # Figure parameters - bar plots.
 SUBPLOTNS2 = [121, 122] # Subplots of the figure for frequency.
 SUBPLOTLS2 = ['A', 'B'] # Labels for the subplots.
+STARPOS2 = [0.75, 0.75]
+
+YLIMS2 = [150, 20]
 FIGDPI2=1200 # Figure DPI.
 FIGW2=8 # Figure width.
 FIGH2=4 # Figure height.
 
-# Options for bar plots.
 BARWIDTH2=1
 YMIN2=0
 YAXISTICKS2 = 5
