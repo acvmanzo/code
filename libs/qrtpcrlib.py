@@ -7,12 +7,12 @@ import sys
 
 #graphtype = sys.argv[1]
 
-#GRAPHTYPES = ['allpoints', 'avgpoints', 'no_outliers', 'avg+no_outliers']
-GRAPHTYPES = ['avg+no_outliers']
+GRAPHTYPES = ['allpoints', 'avgpoints', 'no_outliers', 'avg+no_outliers']
+#GRAPHTYPES = ['avg+no_outliers']
 #GRAPHTYPES = ['avgpoints']
 FNAMES = ['sc_nhe3_en_rev.csv', 'sc_bintnu_cg34127.csv', \
-'sc_gapdh_pten_nrxiv_nrxi.csv', 'sc_gapdh.csv']
-FNAMES = ['sc_bintnu_cg34127.csv']
+'sc_gapdh_pten_nrxiv_nrxi.csv', 'sc_gapdh.csv', 'sc_gapdh_20130918.csv']
+#FNAMES = ['sc_gapdh_20130918.csv']
 
 
 
@@ -39,8 +39,7 @@ def usepoints(datalist, vals, cqindex, logsqindex):
         logsq = np.float(vals[logsqindex])
         datalist.append((cq, logsq))
 
-def loaddata(fname, graphtype):
-    d = {}
+def loaddata(d, fname, graphtype):
     cqs = []
     logsqs = []
     with open(fname, 'r') as f:
@@ -52,9 +51,13 @@ def loaddata(fname, graphtype):
     with open(fname, 'r') as f:
         f.next()
         for l in f:
-            print(l)
+            #print(l)
             vals = l.strip('\n').split(',')
             gene = vals[3]
+            if vals[3] == 'GAPDH-2' or vals[3] == 'GAPDH-3':
+                gene = 'GAPDH'
+            if 'NTC' in vals[4] or 'NRT' in vals[4]:
+                continue
             
             if gene not in d:
                 d[gene] = []
@@ -64,7 +67,7 @@ def loaddata(fname, graphtype):
                             
             if graphtype == 'no_outliers':
                 usepoints(d[gene], vals, 6, 13)
-            
+    
             if graphtype == 'avgpoints':
                 if vals[4] == content:
                     if vals[5] != '':
@@ -84,11 +87,14 @@ def loaddata(fname, graphtype):
                         logsqs.append(np.float(vals[13]))
                 content = vals[4]
                 oldgene = vals[3]
+                if vals[3] == 'GAPDH-2' or vals[3] == 'GAPDH-3':
+                    oldgene = 'GAPDH'
 
             if graphtype == 'avg+no_outliers':
-                print('cqs', cqs)
-                print('logsqs', logsqs)
-                print(vals[4], content)
+                #print('cqs', cqs)
+                #print('logsqs', logsqs)
+                #print(vals[4], content)
+                #print(vals[6])
                 if vals[4] == content:
                     if vals[6] != '':
                         cqs.append(np.float(vals[6]))
@@ -107,24 +113,27 @@ def loaddata(fname, graphtype):
                         logsqs.append(np.float(vals[13]))
                 content = vals[4]
                 oldgene = vals[3]
+                if vals[3] == 'GAPDH-2' or vals[3] == 'GAPDH-3':
+                    oldgene = 'GAPDH'
     
     
     if graphtype == 'avgpoints' or graphtype == 'avg+no_outliers':
-        cq = np.mean(cqs)
-        logsq = np.mean(logsqs)
-        d[gene].append((cq, logsq))
+        if cqs:
+            cq = np.mean(cqs)
+            logsq = np.mean(logsqs)
+            d[gene].append((cq, logsq))
     return(d)
 
 
 def create_efile(efile):
     with open(efile, 'w') as g:
-        g.write('Gene\tEfficiency\tr^2\n')
+        g.write('Gene\tEfficiency\tr^2\tMethod\n')
     
     
-def write_efile(efile, params, gene):
+def write_efile(efile, params, gene, graphtype):
     e, r2 = params['e'], params['r2']
     with open(efile, 'a') as g:
-        g.write('{0}\t{1:.3f}\t{2:.3f}\n'.format(gene, e, r2))
+        g.write('{0}\t{1:.3f}\t{2:.3f}\t{3}\n'.format(gene, e, r2, graphtype))
 
 
 def fitline(logsq, cq):
@@ -183,23 +192,50 @@ def plotstdcurve(params, gene, resdir, graphtype):
     plt.close()
     
 
-for graphtype in GRAPHTYPES:
+for graphtype in ['avg+no_outliers']:
     print('GRAPHTYPE', graphtype)
     efile = defresdir(graphtype)+'efficiencies_'+graphtype+'.txt'
     create_efile(efile)
+    d = {}
     for fname in FNAMES:
         print(fname)
-        d = loaddata(fname, graphtype)
-        print(d)
-        for k, v in d.iteritems():
-            print(k)
-            cq = np.array(zip(*v)[0])
-            logsq = np.array(zip(*v)[1])
-            params = fitline(logsq, cq)
-            plotstdcurve(params, k, defresdir(graphtype), graphtype)
-            write_efile(efile, params, k)
+        d = loaddata(d, fname, graphtype)
+    print(d)
+    for k, v in d.iteritems():
+        print(k)
+        cq = np.array(zip(*v)[0])
+        logsq = np.array(zip(*v)[1])
+        params = fitline(logsq, cq)
+        plotstdcurve(params, k, defresdir(graphtype), graphtype)
+        write_efile(efile, params, k, graphtype)
 
 
+def plotallgapdh():
+    for graphtype in ['avg+no_outliers']:
+        print('GRAPHTYPE', graphtype)
+        efile = defresdir(graphtype)+'efficiencies_'+graphtype+'.txt'
+        create_efile(efile)
+        d = {}
+        for fname in FNAMES:
+            print(fname)
+            d = loaddata(d, fname, graphtype)
+            print(d)
+            for k in [('GAPDH', 'b'), ('GAPDH-2', 'g'), ('GAPDH-3', 'y')]:
+                if k[0] not in d:
+                    continue
+                ##print(d[k[0]])
+                cq = np.array(zip(*d[k[0]])[0])
+                logsq = np.array(zip(*d[k[0]])[1])
+                params = fitline(logsq, cq)
 
-
+                logsq, cq, m, c, e, r2 = params['logsq'], params['cq'], params['m'], \
+                params['c'], params['e'], params['r2']
+                
+                #fig = plt.figure(figsize=(5, 5), dpi=1000)
+                #ax = plt.gca()
+                plt.scatter(logsq, cq, c=k[1])
+                #plt.plot(logsq, m*logsq+c, 'r')
+                plt.ylabel('cq')
+                plt.xlabel('log (starting quantity)')
+    plt.savefig('all_gapdh')
 
