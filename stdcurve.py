@@ -1,34 +1,21 @@
-from libs.qrtpcrlib2 import *
+from libs.qrtpcrlib import *
 
 DATADIR = 'data'
-FNAMES = ['20130919a_sc_gapdh_pten_nrxiv_nrxi.csv', '20130919b_sc_gapdh.csv']
-POINTS = 'nooutliers'
-GROUPBY = 'plate'
-USEAVG = 'points'
+FNAMES = ['20130919a_sc_gapdh_pten_nrxiv_nrxi.csv', '20130919b_sc_gapdh.csv', 
+'20130920_sc_bintnu_cg34127.csv', '20131001_sc_nhe3_en_rev.csv']
+
+POINTSS = ['nooutliers', 'allpoints']
+GROUPBYS = ['plate', 'pool']
+USEAVGS = ['points', 'avg']
 
 
 datafiles = [os.path.join(DATADIR, f) for f in FNAMES]
-d = {}
-for fname in datafiles:
-    loadscdata(d, fname, POINTS, GROUPBY)
 
-getsc(d, USEAVG, POINTS, GROUPBY)
+for points in POINTSS:
+    for groupby in GROUPBYS:
+        d = {}
+        for fname in datafiles:
+            loadscdata(d, fname, points, groupby)
+            for useavg in USEAVGS:
+                getsc(d, useavg, points, groupby)
 
-
-
-#for graphtype in ['no_outliers']:
-    #print('GRAPHTYPE', graphtype)
-    #efile = ql.defresdir(graphtype)+'efficiencies_'+graphtype+'.txt'
-    #ql.create_efile(efile)
-    #d = {}
-    #for fname in FNAMES:
-        #print(fname)
-        #d = ql.loaddata(d, fname, graphtype)
-    #print(d)
-    #for k, v in d.iteritems():
-        #print(k)
-        #cq = np.array(zip(*v)[0])
-        #logsq = np.array(zip(*v)[1])
-        #params = ql.fitline(logsq, cq)
-        #ql.plotstdcurve(params, k, ql.defresdir(graphtype), graphtype)
-        #ql.write_efile(efile, params, k, graphtype)

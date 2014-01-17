@@ -6,9 +6,14 @@ import sys
 import os
 
 
+### FUNCTIONS FOR GENERATING STANDARD CURVES AND CALCULATING EFFICIENCIES ###
 def loadscdata(d, fname, selected, groupby):
-    '''Loads standard curve data from a csv file with a specific format into 
-    a dictionary.
+    '''Loads standard curve data from a csv file with the format described 
+    below into a dictionary.
+    The csv file should contain the following columns:
+    Well,Fluor,Label,Target,Content,Cq,Cq-no_outliers,Cq Mean,
+    Cq Mean-no_outliers,Cq Std. Dev,CV,>0.17?,Starting Quantity (SQ),
+    Log Starting Quantity,SQ Mean,SQ Std. Dev,Set Point,Well Note
     
     Input:
     d = dictionary to add data to
@@ -90,11 +95,17 @@ def avgpoints(d):
             
 
 def create_efile(efile):
+    '''Creates a file listing the efficiencies calculated from the standard 
+    curve.'''
+    
     with open(efile, 'w') as g:
         g.write('Gene\tEfficiency\tr^2\tAvg\tPoints\tGroup by\n')
     
     
 def write_efile(efile, params, gene, useavg, selected, groupby):
+    '''Writes into a file listing the efficiencies calculated from the standard 
+    curve.'''
+    
     e, r2 = params['e'], params['r2']
     with open(efile, 'a') as g:
         g.write('{0}\t{1:.3f}\t{2:.3f}\t{3}\t{4}\t{5}\n'.format(gene, e, r2, useavg, 
@@ -164,57 +175,17 @@ def plotstdcurve(params, gene, resdir, useavg, selected, groupby, meansterr=0):
     figname = resdir+'sc_'+gene+'_'+useavg+'_'+selected+'_'+groupby
     plt.savefig(figname)
     plt.close()
-    
-
-def plotallgapdh():
-    for graphtype in ['avg+no_outliers']:
-        print('GRAPHTYPE', graphtype)
-        efile = defresdir(graphtype)+'efficiencies_'+graphtype+'.txt'
-        create_efile(efile)
-        d = {}
-        for fname in FNAMES:
-            print(fname)
-            d = loaddata(d, fname, graphtype)
-            print(d)
-            for k in [('GAPDH', 'b'), ('GAPDH-2', 'g'), ('GAPDH-3', 'y')]:
-                if k[0] not in d:
-                    continue
-                ##print(d[k[0]])
-                cq = np.array(zip(*d[k[0]])[0])
-                logsq = np.array(zip(*d[k[0]])[1])
-                params = fitline(logsq, cq)
-
-                logsq, cq, m, c, e, r2 = params['logsq'], params['cq'], params['m'], \
-                params['c'], params['e'], params['r2']
-                
-                #fig = plt.figure(figsize=(5, 5), dpi=1000)
-                #ax = plt.gca()
-                plt.scatter(logsq, cq, c=k[1])
-                #plt.plot(logsq, m*logsq+c, 'r')
-                plt.ylabel('cq')
-                plt.xlabel('log (starting quantity)')
-    plt.savefig('all_gapdh')
-    
-#for graphtype in ['avg+no_outliers']:
-    #print('GRAPHTYPE', graphtype)
-    #efile = defresdir(graphtype)+'efficiencies_'+graphtype+'.txt'
-    #create_efile(efile)
-    #d = {}
-    #for fname in FNAMES:
-        #print(fname)
-        #d = loaddata(d, fname, graphtype)
-    #print(d)
-    #for k, v in d.iteritems():
-        #print(k)
-        #cq = np.array(zip(*v)[0])
-        #logsq = np.array(zip(*v)[1])
-        #params = fitline(logsq, cq)
-        #plotstdcurve(params, k, defresdir(graphtype), graphtype)
-        #write_efile(efile, params, k, graphtype)
-
-
 
 def convertpoints(d):
+    '''Convert the dictionary output of loadscdata() to another dictionary 
+    used as input to plotstdcurve().
+    Input: 
+    d = output of loadscdata()
+    Output:
+    A dictionary in which each keyword is a genotype and the values are 
+    comprised of two lists; the first list contains the log[starting 
+    quantity] values and the second list contains the Cq values.    
+    '''    
     e = {}
     for k in d.iterkeys():
         a = []
@@ -226,6 +197,16 @@ def convertpoints(d):
     return(e)
 
 def convertavg(d):
+    '''Convert the dictionary output of avgpoints() to another dictionary 
+    used as input to plotstdcurve().
+    Input: 
+    d = output of avgpoints()
+    Output:
+    A dictionary in which each keyword is a genotype and the values are 
+    comprised of three lists; the first list contains the log[starting 
+    quantity] values; the second list contains the average Cq values, and the 
+    third list contains the standard error of the average Cq values.
+    '''       
     e = {}
     for k in d.iterkeys():
         print(k)
@@ -238,7 +219,6 @@ def convertavg(d):
             sterr.append(meanparams[3])
         e[k] = (x, y, sterr)
     return(e)
-
 
 
 def getsc(d, useavg, selected, groupby):
@@ -265,97 +245,4 @@ def getsc(d, useavg, selected, groupby):
         plotstdcurve(params, k, resdir, useavg, selected, 
         groupby, meansterr)
         write_efile(efile, params, k, useavg, selected, groupby)
-
-
-
-
-
-
-
-#FNAMES = ['sc_gapdh.csv', 'sc_gapdh_pten_nrxiv_nrxi.csv', 
-#'sc_gapdh_20130918.csv']
-#FNAMES = ['sc_gapdh_pten_nrxiv_nrxi.csv']
-#FNAMES = ['sc_gapdh.csv']
-#FNAMES = ['sc_gapdh_20130918.csv']
-
-#d = {}
-#for fname in FNAMES:
-    #print(fname)
-    #d = loaddata(d, fname, 'no_outliers')
-    #print(d)
-    #for k in [('GAPDH', 'b'), ('GAPDH-2', 'g')]:
-        #if k[0] not in d:
-            #continue
-        ###print(d[k[0]])
-        #cq = np.array(zip(*d[k[0]])[0])
-        #logsq = np.array(zip(*d[k[0]])[1])
-        #params = fitline(logsq, cq)
-
-        #logsq, cq, m, c, e, r2 = params['logsq'], params['cq'], params['m'], \
-        #params['c'], params['e'], params['r2']
-        
-        #plt.scatter(logsq, cq, c=k[1])
-        ##plt.plot(logsq, m*logsq+c, 'r')
-        #plt.ylabel('cq')
-        #plt.xlabel('log (starting quantity)')
-        ##plt.legend()
-#plt.savefig('no_outliers_gapdh_1+2')
-
-#d = {}
-#for fname in FNAMES:
-    #print(fname)
-    #d = loaddata2(d, fname, 'no_outliers')
-#print(d.keys())
-#print(d['GAPDH'])
-#avgd = avgpoints(d)
-#print(avgd['GAPDH'])
-#avgpts = getavgpoints(avgd)
-#print(avgpts['GAPDH'])
-
-
-
-    
-#logsq = avgpts['GAPDH'][0]
-#cq = avgpts['GAPDH'][1]
-#meansterr = avgpts['GAPDH'][2]
-
-#params = fitline(logsq, cq)
-
-#logsq, cq, m, c, e, r2 = params['logsq'], params['cq'], params['m'], \
-#params['c'], params['e'], params['r2']
-
-#fig = plt.figure()
-#ax = plt.gca()
-#plt.scatter(logsq, cq)        
-#plt.errorbar(logsq, cq, meansterr, mfc='k', mec='k', ecolor='k', ms=7,
-#elinewidth=2, barsabove='True', capsize=8, fmt='o')
-#plt.plot(logsq, m*logsq+c, 'r')
-#plt.ylabel('cq')
-#plt.xlabel('log (starting quantity)')
-#plt.text(0.3, 0.9, 'y = {0:.3f}*x+ {1:.3f}'.format(m, c), \
-#transform=ax.transAxes)
-#plt.text(0.3, 0.85, 'E = 10^(-1/slope) - 1 = {0:.3f}'.format(e), \
-#transform=ax.transAxes)
-#plt.text(0.3, 0.8, 'r^2 = {0:.3f}'.format(r2), transform=ax.transAxes)
-
-#plt.title('No Outliers GAPDH')
-#plt.ylim(10, 40)
-
-#plt.tight_layout()
-#plt.savefig('stdcurve_no_outliers_gapdh_3_avg')
-#plt.close()
-
-
-#allp = getpoints(d)
-#resdir = 'test/'
-#cmn.makenewdir(resdir)
-#graphtype = 'allpoints'
-
-
-#for k, v in allp.iteritems():
-    #allp_params = fitline(v[0], v[1])
-    #print(allp_params)
-    #plotstdcurve(allp_params, k, resdir, graphtype)
-
-
 
