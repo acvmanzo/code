@@ -3,170 +3,79 @@ import numpy as np
 import scipy.stats as stats
 import cmn.cmn as cmn
 import sys
+import os
 
 
-#graphtype = sys.argv[1]
-
-#GRAPHTYPES = ['allpoints', 'avgpoints', 'no_outliers', 'avg+no_outliers']
-##GRAPHTYPES = ['avg+no_outliers']
-##GRAPHTYPES = ['avgpoints']
-#FNAMES = ['sc_nhe3_en_rev.csv', 'sc_bintnu_cg34127.csv', \
-#'sc_gapdh_pten_nrxiv_nrxi.csv', 'sc_gapdh.csv', 'sc_gapdh_20130918.csv']
-#FNAMES = ['sc_gapdh_20130918.csv']
-
-
-
-def defresdir(graphtype):
-    if graphtype == 'allpoints':
-        resdir = 'allpoints/'
-
-    if graphtype == 'avgpoints':
-        resdir = 'avgpoints/'
-
-    if graphtype == 'no_outliers':
-        resdir = 'no_outliers/'
-        
-    if graphtype == 'avg+no_outliers':
-        resdir = 'avg+no_outliers/'
-        
-    cmn.makenewdir(resdir)
-    return(resdir)
-
-def usepoints(datalist, vals, cqindex, logsqindex):
+def loadscdata(d, fname, selected, groupby):
+    '''Loads standard curve data from a csv file with a specific format into 
+    a dictionary.
     
-    if vals[cqindex] != '':
-        cq = np.float(vals[cqindex])
-        logsq = np.float(vals[logsqindex])
-        datalist.append((cq, logsq))
-
-def loaddata(d, fname, graphtype):
-    cqs = []
-    logsqs = []
+    Input:
+    d = dictionary to add data to
+    fname = csv file containing data    
+    points = 'allpoints' or 'nooutliers'
+    groupby = 'plate' or 'pool'
+    
+    Return:
+    Dictionary in which the keywords are genes and the values are 
+    subdictionaries of points. Keywords in this subdictionary are the 
+    the log [starting quantity], and the values are lists of Cq values.
+    '''
+    
     with open(fname, 'r') as f:
         f.next()
         l = f.next()
         vals = l.strip('\n').split(',')
-        content = vals[4]
         gene = vals[3]
     with open(fname, 'r') as f:
         f.next()
         for l in f:
             #print(l)
             vals = l.strip('\n').split(',')
-            gene = vals[3]
-            #if vals[3] == 'GAPDH-2' or vals[3] == 'GAPDH-3':
-                #gene = 'GAPDH'
             if 'NTC' in vals[4] or 'NRT' in vals[4]:
                 continue
             
-            if gene not in d:
-                d[gene] = []
-                    
-            if graphtype == 'allpoints':
-                usepoints(d[gene], vals, 5, 13)
-                            
-            if graphtype == 'no_outliers':
-                usepoints(d[gene], vals, 6, 13)
-    
-            if graphtype == 'avgpoints':
-                if vals[4] == content:
-                    if vals[5] != '':
-                        cqs.append(np.float(vals[5]))
-                        logsqs.append(np.float(vals[13]))
-                    if vals[5] == '':
-                        continue
-                elif vals[4] != content:
-                    if cqs:
-                        cq = np.mean(cqs)
-                        logsq = np.mean(logsqs)
-                        d[oldgene].append((cq, logsq))
-                        cqs = []
-                        logsqs = []
-                    if vals[5] != '':
-                        cqs.append(np.float(vals[5]))
-                        logsqs.append(np.float(vals[13]))
-                content = vals[4]
-                oldgene = vals[3]
-                #if vals[3] == 'GAPDH-2' or vals[3] == 'GAPDH-3':
-                    #oldgene = 'GAPDH'
-
-            if graphtype == 'avg+no_outliers':
-                #print('cqs', cqs)
-                #print('logsqs', logsqs)
-                #print(vals[4], content)
-                #print(vals[6])
-                if vals[4] == content:
-                    if vals[6] != '':
-                        cqs.append(np.float(vals[6]))
-                        logsqs.append(np.float(vals[13]))
-                    if vals[6] == '':
-                        continue
-                elif vals[4] != content:
-                    if cqs:
-                        cq = np.mean(cqs)
-                        logsq = np.mean(logsqs)
-                        d[oldgene].append((cq, logsq))
-                        cqs = []
-                        logsqs = []
-                    if vals[6] != '':
-                        cqs.append(np.float(vals[6]))
-                        logsqs.append(np.float(vals[13]))
-                content = vals[4]
-                oldgene = vals[3]
-                if vals[3] == 'GAPDH-2' or vals[3] == 'GAPDH-3':
-                    oldgene = 'GAPDH'
-    
-    
-    if graphtype == 'avgpoints' or graphtype == 'avg+no_outliers':
-        if cqs:
-            cq = np.mean(cqs)
-            logsq = np.mean(logsqs)
-            d[gene].append((cq, logsq))
-    return(d)
-
-
-
-def loaddata2(d, fname, graphtype):
-    with open(fname, 'r') as f:
-        f.next()
-        l = f.next()
-        vals = l.strip('\n').split(',')
-        gene = vals[3]
-    with open(fname, 'r') as f:
-        f.next()
-        for l in f:
-            print(l)
-            vals = l.strip('\n').split(',')
-            gene = vals[3]
-
-            if 'NTC' in vals[4] or 'NRT' in vals[4]:
-                continue
-            xval = '{0:.3f}'.format(float(vals[13]))
-            if vals[3] == 'GAPDH-2' or vals[3] == 'GAPDH-3':
-                gene = 'GAPDH'
-                
+            logsq = '{0:.3f}'.format(float(vals[13]))
+            
+            # Removes the '-#' from the genotype if results are to be pooled.
+            if groupby == 'pool':
+                gene = vals[3].split('-')[0]
+            elif groupby == 'plate':
+                gene = vals[3]
+            
             if gene not in d:
                 d[gene] = {}
             
-            if graphtype == 'allpoints' or graphtype == 'avgpoints':
-                if xval not in d[gene] and vals[5] != '':
-                    d[gene][xval] = []
+            if selected == 'allpoints':
+                if logsq not in d[gene] and vals[5] != '':
+                    d[gene][logsq] = []
                 if vals[5] != '':
-                    d[gene][xval].append(np.float(vals[5]))
+                    d[gene][logsq].append(np.float(vals[5]))
                             
-            if graphtype == 'no_outliers' or graphtype == 'avg+no_outliers':
-                print(xval)
-                print(vals[6])
-                if xval not in d[gene] and vals[6] != '':
-                    d[gene][xval] = []
+            if selected == 'nooutliers':
+                if logsq not in d[gene] and vals[6] != '':
+                    d[gene][logsq] = []
                 if vals[6] != '':
-                    d[gene][xval].append(np.float(vals[6]))
+                    d[gene][logsq].append(np.float(vals[6]))
                 #print(d[gene][xval])
-                
     return(d)
 
 
 def avgpoints(d):
+    '''Averages the points in a dictionary output by loadscdata() and returns 
+    a new dictionary.
+    Input:
+    d = dictionary, returned by the function loadscdata()
+    Output:
+    A dictionary in which the keywords are genes and the values are  
+    subdictionaries of points. Keywords in the subdictionary are the 
+    log[starting quantity] and the values are lists with the values 
+    [mean, stdev, n, sterr].
+        mean = mean cq
+        stdev = stdev of cq
+        n = number of points averaged
+        sterr = standard error of the mean
+    '''
     e = {}
     for k in d.iterkeys():
         e[k] = {}
@@ -182,13 +91,14 @@ def avgpoints(d):
 
 def create_efile(efile):
     with open(efile, 'w') as g:
-        g.write('Gene\tEfficiency\tr^2\tMethod\n')
+        g.write('Gene\tEfficiency\tr^2\tAvg\tPoints\tGroup by\n')
     
     
-def write_efile(efile, params, gene, graphtype):
+def write_efile(efile, params, gene, useavg, selected, groupby):
     e, r2 = params['e'], params['r2']
     with open(efile, 'a') as g:
-        g.write('{0}\t{1:.3f}\t{2:.3f}\t{3}\n'.format(gene, e, r2, graphtype))
+        g.write('{0}\t{1:.3f}\t{2:.3f}\t{3}\t{4}\t{5}\n'.format(gene, e, r2, useavg, 
+        selected, groupby))
 
 
 def fitline(logsq, cq):
@@ -215,21 +125,26 @@ def fitline(logsq, cq):
     return(params)
 
 
-def plotstdcurve(params, gene, resdir, graphtype):
+def plotstdcurve(params, gene, resdir, useavg, selected, groupby, meansterr=0):
+    '''
+    useavg = 'avg' or 'points'
+    '''
     
     logsq, cq, m, c, e, r2 = params['logsq'], params['cq'], params['m'], \
     params['c'], params['e'], params['r2']
     
     fig = plt.figure(figsize=(5, 5), dpi=1000)
     ax = plt.gca()
-    plt.scatter(logsq, cq)        
-    if graphtype == 'avgpoints' or graphtype == 'avg+no_outliers':
-        plt.errorbar(x_list, meanyvals, meansterr, mfc=meanc, mec=meanc, ecolor=meanc, ms=7,
-        elinewidth=2, barsabove='True', capsize=8, fmt='o')
+    if useavg=='points':
+        plt.scatter(logsq, cq, c='b')        
+    if useavg=='avg':
+        plt.errorbar(logsq, cq, meansterr, mfc='b', mec='b', ecolor='k', ms=7,
+        elinewidth=2, barsabove='True', capsize=5, fmt='o')
+
     plt.plot(logsq, m*logsq+c, 'r')
     plt.ylabel('cq')
     plt.xlabel('log (starting quantity)')
-    if k == 'Itgbetanu':
+    if gene == 'Itgbetanu':
         plt.text(0.05, 0.2, 'y = {0:.3f}*x+ {1:.3f}'.format(m, c), \
         transform=ax.transAxes)
         plt.text(0.05, 0.15, 'E = 10^(-1/slope) - 1 = {0:.3f}'.format(e), \
@@ -246,7 +161,8 @@ def plotstdcurve(params, gene, resdir, graphtype):
     plt.ylim(15, 40)
     
     plt.tight_layout()
-    plt.savefig(resdir+'stdcurve_'+gene+'_'+graphtype)
+    figname = resdir+'sc_'+gene+'_'+useavg+'_'+selected+'_'+groupby
+    plt.savefig(figname)
     plt.close()
     
 
@@ -298,7 +214,7 @@ def plotallgapdh():
 
 
 
-def getpoints(d):
+def convertpoints(d):
     e = {}
     for k in d.iterkeys():
         a = []
@@ -309,7 +225,7 @@ def getpoints(d):
         e[k] = (a, b)
     return(e)
 
-def getavgpoints(d):
+def convertavg(d):
     e = {}
     for k in d.iterkeys():
         print(k)
@@ -322,13 +238,45 @@ def getavgpoints(d):
             sterr.append(meanparams[3])
         e[k] = (x, y, sterr)
     return(e)
+
+
+
+def getsc(d, useavg, selected, groupby):
+    if useavg == 'avg':
+        avgd = avgpoints(d)
+        plotdict = convertavg(avgd)
     
+    if useavg == 'points':
+        plotdict = convertpoints(d)
+
+    resdir = 'results/'+useavg+'_'+selected+'_'+groupby+'/'
+    cmn.makenewdir(resdir)
+    efile = resdir + 'efficiencies_'+useavg+'_'+selected+'_'+groupby+'.txt'
+    create_efile(efile)
+    
+    for k, v in plotdict.iteritems():
+        logsq = v[0]
+        cq = v[1]
+        if useavg == 'avg':
+            meansterr = v[2]
+        if useavg == 'points':
+            meansterr = 0
+        params = fitline(logsq, cq)        
+        plotstdcurve(params, k, resdir, useavg, selected, 
+        groupby, meansterr)
+        write_efile(efile, params, k, useavg, selected, groupby)
+
+
+
+
+
+
 
 #FNAMES = ['sc_gapdh.csv', 'sc_gapdh_pten_nrxiv_nrxi.csv', 
 #'sc_gapdh_20130918.csv']
 #FNAMES = ['sc_gapdh_pten_nrxiv_nrxi.csv']
 #FNAMES = ['sc_gapdh.csv']
-FNAMES = ['sc_gapdh_20130918.csv']
+#FNAMES = ['sc_gapdh_20130918.csv']
 
 #d = {}
 #for fname in FNAMES:
@@ -353,46 +301,49 @@ FNAMES = ['sc_gapdh_20130918.csv']
         ##plt.legend()
 #plt.savefig('no_outliers_gapdh_1+2')
 
-d = {}
-for fname in FNAMES:
-    print(fname)
-    d = loaddata2(d, fname, 'no_outliers')
-print(d.keys())
-print(d['GAPDH'])
-avgd = avgpoints(d)
-print(avgd['GAPDH'])
-avgpts = getavgpoints(avgd)
-print(avgpts['GAPDH'])
+#d = {}
+#for fname in FNAMES:
+    #print(fname)
+    #d = loaddata2(d, fname, 'no_outliers')
+#print(d.keys())
+#print(d['GAPDH'])
+#avgd = avgpoints(d)
+#print(avgd['GAPDH'])
+#avgpts = getavgpoints(avgd)
+#print(avgpts['GAPDH'])
 
-logsq = avgpts['GAPDH'][0]
-cq = avgpts['GAPDH'][1]
-meansterr = avgpts['GAPDH'][2]
 
-params = fitline(logsq, cq)
 
-logsq, cq, m, c, e, r2 = params['logsq'], params['cq'], params['m'], \
-params['c'], params['e'], params['r2']
+    
+#logsq = avgpts['GAPDH'][0]
+#cq = avgpts['GAPDH'][1]
+#meansterr = avgpts['GAPDH'][2]
 
-fig = plt.figure()
-ax = plt.gca()
-plt.scatter(logsq, cq)        
-plt.errorbar(logsq, cq, meansterr, mfc='k', mec='k', ecolor='k', ms=7,
-elinewidth=2, barsabove='True', capsize=8, fmt='o')
-plt.plot(logsq, m*logsq+c, 'r')
-plt.ylabel('cq')
-plt.xlabel('log (starting quantity)')
-plt.text(0.3, 0.9, 'y = {0:.3f}*x+ {1:.3f}'.format(m, c), \
-transform=ax.transAxes)
-plt.text(0.3, 0.85, 'E = 10^(-1/slope) - 1 = {0:.3f}'.format(e), \
-transform=ax.transAxes)
-plt.text(0.3, 0.8, 'r^2 = {0:.3f}'.format(r2), transform=ax.transAxes)
+#params = fitline(logsq, cq)
 
-plt.title('No Outliers GAPDH')
-plt.ylim(10, 40)
+#logsq, cq, m, c, e, r2 = params['logsq'], params['cq'], params['m'], \
+#params['c'], params['e'], params['r2']
 
-plt.tight_layout()
-plt.savefig('stdcurve_no_outliers_gapdh_3_avg')
-plt.close()
+#fig = plt.figure()
+#ax = plt.gca()
+#plt.scatter(logsq, cq)        
+#plt.errorbar(logsq, cq, meansterr, mfc='k', mec='k', ecolor='k', ms=7,
+#elinewidth=2, barsabove='True', capsize=8, fmt='o')
+#plt.plot(logsq, m*logsq+c, 'r')
+#plt.ylabel('cq')
+#plt.xlabel('log (starting quantity)')
+#plt.text(0.3, 0.9, 'y = {0:.3f}*x+ {1:.3f}'.format(m, c), \
+#transform=ax.transAxes)
+#plt.text(0.3, 0.85, 'E = 10^(-1/slope) - 1 = {0:.3f}'.format(e), \
+#transform=ax.transAxes)
+#plt.text(0.3, 0.8, 'r^2 = {0:.3f}'.format(r2), transform=ax.transAxes)
+
+#plt.title('No Outliers GAPDH')
+#plt.ylim(10, 40)
+
+#plt.tight_layout()
+#plt.savefig('stdcurve_no_outliers_gapdh_3_avg')
+#plt.close()
 
 
 #allp = getpoints(d)
