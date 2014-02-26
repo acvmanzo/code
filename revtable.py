@@ -1,6 +1,6 @@
 import re
 
-OLDTABLE = 'table1.txt'
+OLDTABLE = 'table.txt'
 NEWTABLE = 'revtable.txt'
 KEYTABLE = '../berkeley_manifests/2014-0218_samples.csv'
 DATE = '[[RNASeq-Autism-Berkeley#2014-0218|2014-0218]]'
@@ -80,6 +80,36 @@ def csvtowikitable(oldtable, newtable):
                 newelist = '||' + '||'.join(elist) + '||\n'
                 g.write(newelist)
 
+def add_bioanalyzer_attachment(oldtable, newtable):
+    
+     with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.split('||')
+                blabel = elist[13].rstrip(' ')
+                #print l
+                try:
+                    datesent = elist[11].split('|')[1].replace('-', '').rstrip(']] ')
+                    print datesent
+                    bioanalyzerlink = '[[attachment:RNASeq-Autism-BioanalyzerResults/{0}_{1}.pdf|ok]]'.format(datesent, blabel)
+                    print bioanalyzerlink
+                    elist[10] = bioanalyzerlink
+                    
+                except IndexError:
+                    pass
+                g.write('||'.join(elist))
+                    #p = re.search('201.-..-..', e)
+                    #if p != None:
+                        #date = p.group()
+                        #e = e.replace('[[Andrea\'s Notebook/{0}'.format(date), 
+                        #'[[Andrea\'s Notebook/{0}|{1}'.format(date, date))
+                
+                    #newelist.append(e)
+                #newline = '||'.join(newelist)
+                #g.write(newline)   
+
 #csvtowikitable(OLDTABLE, NEWTABLE)
 
-add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
+#add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
+
+add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
