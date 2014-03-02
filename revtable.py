@@ -80,6 +80,6 @@ def csvtowikitable(oldtable, newtable):
                 newelist = '||' + '||'.join(elist) + '||\n'
                 g.write(newelist)
 
-#csvtowikitable(OLDTABLE, NEWTABLE)
+csvtowikitable(OLDTABLE, NEWTABLE)
 
-add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
+#add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
