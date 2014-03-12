@@ -1,9 +1,13 @@
 import re
+import itertools
 
 OLDTABLE = 'table.txt'
 NEWTABLE = 'revtable.txt'
 KEYTABLE = '../berkeley_manifests/2014-0218_samples.csv'
-DATE = '[[RNASeq-Autism-Berkeley#2014-0218|2014-0218]]'
+#DATE = '[[RNASeq-Autism-Berkeley#2014-0218|2014-0218]]'
+DATE = '[[RNASeq-Autism-Berkeley#2014-0225|2014-0225]]'
+KEYFILE = '20140225_seq.csv'
+QUBITFILE = '140221_SarahJ.csv'
 
 def shortdate(oldtable, newtable):
     '''In a table, changes the notation [[Andrea's Notebook/2014-02-14]] to [[Andrea's 
@@ -27,7 +31,7 @@ def shortdate(oldtable, newtable):
                 g.write(newline)
     
 
-def addcols(oldtable, newtable):
+def addcolstoend(oldtable, newtable):
     
     with open(newtable, 'w') as g:
         with open(oldtable, 'r') as f:
@@ -42,6 +46,74 @@ def addcols(oldtable, newtable):
                 print elist
                 newline = '||'.join(elist) + '\n'
                 g.write(newline)
+
+
+def addcol(oldtable, newtable, newcol, newcolentry):
+    
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                elist.insert(newcol, '{0}'.format(newcolentry))
+                newline = '||'.join(elist) + '\n'
+                g.write(newline)
+
+def get_samples_for_seq(keyfile):
+    with open(keyfile, 'r') as h:
+        h.next()
+        #for l in f:
+        #elist = l.strip('\n').strip(' ').split(',')
+        
+        forseqlines = list(itertools.takewhile(lambda x: x !='Samples we don\'t plan to sequence,,,,,,,\n', \
+        h))
+
+    forseq = [x.split(',')[0] for x in forseqlines]
+    return forseq
+    
+def insert_berkeley_seq_date(oldtable, newtable, keyfile, newcol, newentry):
+    
+    forseq = get_samples_for_seq(keyfile)
+    print forseq[7]
+    #print forseq
+    
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                sample = elist[13]
+
+                if sample.strip(' ') in forseq:
+                    print 'yes'
+                    elist.insert(newcol, newentry)
+                else:
+                    elist.insert(newcol, ' ') 
+                #print elist
+                newline = '||'.join(elist) + '\n'
+                g.write(newline)
+    
+    
+def add_berkeley_seq_date(oldtable, newtable, keyfile, col, entry):
+    
+    forseq = get_samples_for_seq(keyfile)
+    print forseq[7]
+    #print forseq
+    
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                sample = elist[13]
+
+                if sample.strip(' ') in forseq:
+                    print 'yes'
+                    elist[col] = entry
+
+                #print elist
+                newline = '||'.join(elist) + '\n'
+                g.write(newline)
+    
+    
+
 
 def add_berkeley_labeldate(keytable, newtable, oldtable, date):
     d = {}
@@ -107,9 +179,54 @@ def add_bioanalyzer_attachment(oldtable, newtable):
                     #newelist.append(e)
                 #newline = '||'.join(newelist)
                 #g.write(newline)   
+                
 
-#csvtowikitable(OLDTABLE, NEWTABLE)
+def switch_columns(oldtable, newtable, col1, col2):
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                ecol1 = elist[col1]
+                ecol2 = elist[col2]
+                elist[col1] = ecol2
+                elist[col2] = ecol1
+                newline = '||'.join(elist) + '||\n'
+                g.write(newline)
 
+def get_qubit(qubitfile):
+    d = {}
+    with open(qubitfile, 'r') as h:
+        h.next()
+        for l in h:
+            elist = l.strip('\n').strip(' ').split(',')
+            d[elist[0].strip(' ')] = elist[2]
+        
+    return d
+
+def insert_qubit(oldtable, newtable, qubitfile, col):
+    
+    d = get_qubit(qubitfile)
+        
+
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                sample = elist[13].strip(' ')
+
+                if sample in d:
+                    print 'yes'
+                    elist.insert(col, d[sample])
+                else:
+                    elist.insert(col, ' ')
+                newline = '||'.join(elist) + '||\n'
+                g.write(newline)
+    
+
+
+csvtowikitable(OLDTABLE, NEWTABLE)
 #add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
-
-add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
+#add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
+#switch_columns(OLDTABLE, NEWTABLE, 10, 11)
+#add_berkeley_seq_date(OLDTABLE, NEWTABLE, KEYFILE, 14, DATE)
+#insert_qubit(OLDTABLE, NEWTABLE, QUBITFILE, 12)
