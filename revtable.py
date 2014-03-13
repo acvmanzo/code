@@ -153,11 +153,11 @@ def add_berkeley_labeldate(keytable, newtable, oldtable, date):
     
 
 
-def csvtowikitable(oldtable, newtable):
+def txttowikitable(oldtable, newtable, delimiter):
     with open(newtable, 'w') as g:
         with open(oldtable, 'r') as f:
             for l in f:
-                elist = l.strip('\n').split(',')
+                elist = l.strip('\n').split(delimiter)
                 newelist = '||' + '||'.join(elist) + '||\n'
                 g.write(newelist)
 
@@ -233,7 +233,7 @@ def insert_qubit(oldtable, newtable, qubitfile, col):
     
 
 
-csvtowikitable(OLDTABLE, NEWTABLE)
+txttowikitable(OLDTABLE, NEWTABLE, '\t')
 #add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
 #add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
 #switch_columns(OLDTABLE, NEWTABLE, 10, 11)
