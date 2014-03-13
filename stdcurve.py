@@ -3,7 +3,8 @@ from libs.qrtpcrlib import *
 DATADIR = 'data'
 FNAMES = ['20130919a_sc_gapdh_pten_nrxiv_nrxi.csv', '20130919b_sc_gapdh.csv', 
 '20130920_sc_bintnu_cg34127.csv', '20131001_sc_nhe3_en_rev.csv', 
-'20140116_sc_pten_bintnu.csv', '20140218_sc_pten_bintnu.csv']
+'20140116_sc_pten_bintnu.csv', '20140218_sc_pten_bintnu.csv', 
+'20140304_sc_bintnu_cg34127_nrxi.csv', '20140310_sc_bintnu_gapdh.csv']
 
 POINTSS = ['nooutliers', 'allpoints']
 #POINTSS = ['nooutliers']

@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import re
 import itertools
 
@@ -143,6 +145,13 @@ def add_berkeley_labeldate(keytable, newtable, oldtable, date):
 
                 newline = '||'.join(elist) + '\n'
                 g.write(newline)
+
+
+#def insert_berkeley_label2(keytable, oldtable, newtable):
+    
+    
+    
+
 
 def csvtowikitable(oldtable, newtable):
     with open(newtable, 'w') as g:
