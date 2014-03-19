@@ -2,14 +2,83 @@
 
 import re
 import itertools
+import os
 
 OLDTABLE = 'table.txt'
 NEWTABLE = 'revtable.txt'
-KEYTABLE = '../berkeley_manifests/2014-0218_samples.csv'
-#DATE = '[[RNASeq-Autism-Berkeley#2014-0218|2014-0218]]'
-DATE = '[[RNASeq-Autism-Berkeley#2014-0225|2014-0225]]'
-KEYFILE = '20140225_seq.csv'
-QUBITFILE = '140221_SarahJ.csv'
+COLNAMES = {
+'berk_sample_name': "\'\'\'Berk Label1\'\'\' ",
+'berk_id_name': "\'\'\'Berk Label2\'\'\' ",
+'qubit': "\'\'\'[[RNASeq-Autism-BioanalyzerResults|Qubit]]\'\'\' ",
+'bioanalyzer': "\'\'\'[[RNASeq-Autism-BioanalyzerResults|Bioanalyzer]]\'\'\' ",
+'berk_send_date': "\'\'\'Date sent to UCB\'\'\' "
+'berk_seq_date': "\'\'\'Date seq\'\'\' "
+}
+
+
+### CONVERT TABLE TO WIKI FORMAT ###
+
+def txttowikitable(oldtable, newtable, delimiter):
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split(delimiter)
+                newelist = '||' + '|| '.join(elist) + '||\n'
+                g.write(newelist)
+
+
+### FUNCTIONS FOR MANIPULATING TABLE SHAPE ###
+
+def addcol(oldtable, newtable, newcol, newcolentry):
+    
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                elist.insert(newcol, '{0}'.format(newcolentry))
+                newline = '||'.join(elist) + '\n'
+                g.write(newline)
+
+
+def add_cols_to_end(oldtable, newtable):
+    
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                print elist
+                print len(elist)
+                if len(elist) < 14:
+                    elist.append(' ')
+                    elist.append('2014-02-17')
+                    elist.append(' ')
+                print elist
+                newline = '||'.join(elist) + '\n'
+                g.write(newline)
+
+
+def remove_cols_from_end(oldtable, newtable, colstokeep):
+    
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')[:colstokeep]
+                newline = '||'.join(elist) + '||\n'
+                g.write(newline)
+
+
+def switch_columns(oldtable, newtable, col1, col2):
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                ecol1 = elist[col1]
+                ecol2 = elist[col2]
+                elist[col1] = ecol2
+                elist[col2] = ecol1
+                newline = '||'.join(elist) + '||\n'
+                g.write(newline)
+
 
 def shortdate(oldtable, newtable):
     '''In a table, changes the notation [[Andrea's Notebook/2014-02-14]] to [[Andrea's 
@@ -31,34 +100,31 @@ def shortdate(oldtable, newtable):
                     newelist.append(e)
                 newline = '||'.join(newelist)
                 g.write(newline)
-    
-
-def addcolstoend(oldtable, newtable):
-    
-    with open(newtable, 'w') as g:
-        with open(oldtable, 'r') as f:
-            for l in f:
-                elist = l.strip('\n').split('||')
-                print elist
-                print len(elist)
-                if len(elist) < 14:
-                    elist.append(' ')
-                    elist.append('2014-02-17')
-                    elist.append(' ')
-                print elist
-                newline = '||'.join(elist) + '\n'
-                g.write(newline)
 
 
-def addcol(oldtable, newtable, newcol, newcolentry):
+
+
+### FUNCTIONS FOR INSERTING/ADDING VALUES TO AUTISM PREP TABLE ###
+
+def add_values(oldtable, newtable, infodict, keycolname, valcolname):
     
     with open(newtable, 'w') as g:
         with open(oldtable, 'r') as f:
+            colnames = f.next().strip('\n').split('||')
+            keycol = colnames.index(keycolname)
+            valcol = colnames.index(valcolname)
+            g.write('||'.join(colnames) + '||\n')
+            
             for l in f:
                 elist = l.strip('\n').split('||')
-                elist.insert(newcol, '{0}'.format(newcolentry))
-                newline = '||'.join(elist) + '\n'
+                key = elist[keycol].strip(' ')
+                if key in infodict:
+                    print 'yes'
+                    elist[valcol] = infodict[key]
+
+                newline = '||'.join(elist) + '||\n'
                 g.write(newline)
+
 
 def get_samples_for_seq(keyfile):
     with open(keyfile, 'r') as h:
@@ -71,7 +137,8 @@ def get_samples_for_seq(keyfile):
 
     forseq = [x.split(',')[0] for x in forseqlines]
     return forseq
-    
+
+
 def insert_berkeley_seq_date(oldtable, newtable, keyfile, newcol, newentry):
     
     forseq = get_samples_for_seq(keyfile)
@@ -92,7 +159,7 @@ def insert_berkeley_seq_date(oldtable, newtable, keyfile, newcol, newentry):
                 #print elist
                 newline = '||'.join(elist) + '\n'
                 g.write(newline)
-    
+
     
 def add_berkeley_seq_date(oldtable, newtable, keyfile, col, entry):
     
@@ -113,54 +180,83 @@ def add_berkeley_seq_date(oldtable, newtable, keyfile, col, entry):
                 #print elist
                 newline = '||'.join(elist) + '\n'
                 g.write(newline)
-    
-    
+ 
 
-
-def add_berkeley_labeldate(keytable, newtable, oldtable, date):
+def get_berkeley_id(orderfile):
+    '''Generates a dictionary where the keys are the sample names (ex., 
+    "Bintnu-MD") and the values are the Berkeley ID (ex., "RGAM009A") using 
+    info in the file "orderfile" with delimiter "delimiter". Orderfile must be in
+    the following format: Berkeley #, Sample Name, Index #, Index Sequence
+    '''
     d = {}
-    with open(keytable, 'r') as h:
-        h.next()
+    with open(orderfile, 'r') as h:
+        colnames = h.next().strip('\n').strip(' ').split(',')
+        samplecol = colnames.index("Sample Name")
+        idcol = colnames.index("Berkeley #")
+
         for l in h:
-            #print l
-            alist = l.strip('\n').split(',')
-            #print alist[1]
-            d[alist[1]] = alist[0]
-    #print d['Bintnu_MA']
+            elist = l.strip('\n').strip(' ').split(',')
+            d[elist[samplecol]] = elist[idcol]
 
-    with open(newtable, 'w') as g:
-        with open(oldtable, 'r') as f:
-            #f.next()
-            for l in f:
-                #print l
-                elist = l.strip('\n').split('||')
-                #print elist[12]
-                #print d[elist[12].strip(' ')]
-                try:
-                    elist[13] = d[elist[12].strip(' ')]
-                    elist[11] = date
-                except KeyError:
-                    pass
-                
-
-                newline = '||'.join(elist) + '\n'
-                g.write(newline)
+    return d
 
 
-#def insert_berkeley_label2(keytable, oldtable, newtable):
+def add_berkeley_id(oldtable, newtable, orderfile):
+    '''For use with autism library preps table. Generates a new table where 
+    the Berkeley ID (ex., "RGAM009A") is inserted into the table based on 
+    info in the csv file "orderfile". Orderfile must be in
+    the following format: Berkeley #, Sample Name, Index #, Index Sequence.
+    '''
     
+    infodict = get_berkeley_id(orderfile)
+    add_values(oldtable, newtable, infodict, 
+    COLNAMES['berk_sample_name'], COLNAMES['berk_id_name'])           
+
+
+def add_berkeley_send_date(oldtable, newtable, orderfile):
     
+    d = get_berkeley_id(orderfile)
     
+    date1 = os.path.basename(orderfile).split('_')[0]
+    date = date1[:7] + '-' + date1[7:]
+    date_entry = '[[RNASeq-Autism-Berkeley#A{0}|{0}]]'.format(date)
+    
+    infodict = {}
+    for k in d.iterkeys():
+        infodict[k] = date_entry
+
+    print infodict
+    
+    add_values(oldtable, newtable, infodict, COLNAMES['berk_sample_name'], 
+    COLNAMES['berk_send_date'])
 
 
-def txttowikitable(oldtable, newtable, delimiter):
-    with open(newtable, 'w') as g:
-        with open(oldtable, 'r') as f:
-            for l in f:
-                elist = l.strip('\n').split(delimiter)
-                newelist = '||' + '||'.join(elist) + '||\n'
-                g.write(newelist)
+def get_qubit(qubitfile):
+    '''Generates a dictionary where the keys are the Berkeley ID 
+    (ex., "RGAM009A") and the values are the qubit results. Sample column 
+    header must be "Sample" and Qubit column header must include the term 'ng'.
+    '''
+    
+    d = {}
+    with open(qubitfile, 'r') as h:
+        colnames = h.next().strip('\n').strip(' ').split(',')
+        samplecol = colnames.index("Sample")
+        for i, x in enumerate(colnames):
+            if 'ng' in x:
+               qubitcol = i
+        for l in h:
+            elist = l.strip('\n').strip(' ').split(',')
+            d[elist[samplecol].strip(' ')] = elist[qubitcol]
+    return d
 
+
+def add_qubit(oldtable, newtable, qubitfile):
+    
+    infodict = get_qubit(qubitfile)
+    add_values(oldtable, newtable, infodict, 
+    COLNAMES['berk_id_name'], COLNAMES['qubit'])
+
+               
 def add_bioanalyzer_attachment(oldtable, newtable):
     
      with open(newtable, 'w') as g:
@@ -188,54 +284,20 @@ def add_bioanalyzer_attachment(oldtable, newtable):
                     #newelist.append(e)
                 #newline = '||'.join(newelist)
                 #g.write(newline)   
-                
-
-def switch_columns(oldtable, newtable, col1, col2):
-    with open(newtable, 'w') as g:
-        with open(oldtable, 'r') as f:
-            for l in f:
-                elist = l.strip('\n').split('||')
-                ecol1 = elist[col1]
-                ecol2 = elist[col2]
-                elist[col1] = ecol2
-                elist[col2] = ecol1
-                newline = '||'.join(elist) + '||\n'
-                g.write(newline)
-
-def get_qubit(qubitfile):
-    d = {}
-    with open(qubitfile, 'r') as h:
-        h.next()
-        for l in h:
-            elist = l.strip('\n').strip(' ').split(',')
-            d[elist[0].strip(' ')] = elist[2]
-        
-    return d
-
-def insert_qubit(oldtable, newtable, qubitfile, col):
-    
-    d = get_qubit(qubitfile)
-        
-
-    with open(newtable, 'w') as g:
-        with open(oldtable, 'r') as f:
-            for l in f:
-                elist = l.strip('\n').split('||')
-                sample = elist[13].strip(' ')
-
-                if sample in d:
-                    print 'yes'
-                    elist.insert(col, d[sample])
-                else:
-                    elist.insert(col, ' ')
-                newline = '||'.join(elist) + '||\n'
-                g.write(newline)
-    
+  
 
 
-txttowikitable(OLDTABLE, NEWTABLE, '\t')
-#add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
-#add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
-#switch_columns(OLDTABLE, NEWTABLE, 10, 11)
-#add_berkeley_seq_date(OLDTABLE, NEWTABLE, KEYFILE, 14, DATE)
-#insert_qubit(OLDTABLE, NEWTABLE, QUBITFILE, 12)
+if __name__ == "__main__":
+    remove_excess_cols('misc/table.txt', 'misc/revtable.txt', 17)
+    #add_berkeley_send_date('misc/table.txt', 'misc/revtable2.txt', 
+    #'berkeley_orders/2014-0311_samples.csv'
+    #add_berkeley_send_date('misc/table.txt', 'misc/revtable2.txt', 
+    #'berkeley_orders/2014-0311_samples.csv')
+    #txttowikitable('2014-0317_qubit.csv', '2014-0317_qubit_wiki.txt', ',')
+    #get_qubit('2014-0317_qubit.csv')
+    #insert_qubit('misc/tab mle.txt', 'misc/revtable.txt', 
+    #'bioanalyzer_results/2014-0311/2014-0317_qubit.csv')
+    #add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
+    #add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
+    #switch_columns(OLDTABLE, NEWTABLE, 10, 11)
+
