@@ -11,7 +11,7 @@ COLNAMES = {
 'berk_id_name': "\'\'\'Berk Label2\'\'\' ",
 'qubit': "\'\'\'[[RNASeq-Autism-BioanalyzerResults|Qubit]]\'\'\' ",
 'bioanalyzer': "\'\'\'[[RNASeq-Autism-BioanalyzerResults|Bioanalyzer]]\'\'\' ",
-'berk_send_date': "\'\'\'Date sent to UCB\'\'\' "
+'berk_send_date': "\'\'\'Date sent to UCB\'\'\' ",
 'berk_seq_date': "\'\'\'Date seq\'\'\' "
 }
 
@@ -26,6 +26,14 @@ def txttowikitable(oldtable, newtable, delimiter):
                 newelist = '||' + '|| '.join(elist) + '||\n'
                 g.write(newelist)
 
+def wikitocsv(oldtable, newtable):
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            for l in f:
+                elist = l.strip('\n').split('||')
+                elist = [x.strip(' ') for x in elist]
+                newline = ','.join(elist[1:-1]) + '\n'
+                g.write(newline)
 
 ### FUNCTIONS FOR MANIPULATING TABLE SHAPE ###
 
@@ -288,7 +296,7 @@ def add_bioanalyzer_attachment(oldtable, newtable):
 
 
 if __name__ == "__main__":
-    remove_excess_cols('misc/table.txt', 'misc/revtable.txt', 17)
+    #remove_excess_cols('misc/table.txt', 'misc/revtable.txt', 17)
     #add_berkeley_send_date('misc/table.txt', 'misc/revtable2.txt', 
     #'berkeley_orders/2014-0311_samples.csv'
     #add_berkeley_send_date('misc/table.txt', 'misc/revtable2.txt', 
@@ -300,4 +308,4 @@ if __name__ == "__main__":
     #add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
     #add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
     #switch_columns(OLDTABLE, NEWTABLE, 10, 11)
-
+    wikitocsv('20140319_wiki.txt', '20140319_db.csv')
