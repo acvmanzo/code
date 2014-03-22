@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+
+
 import os
 import itertools
 import numpy as np
@@ -13,10 +16,11 @@ print pdfs
 
 samples = []
 pdfs = glob.glob('2100*.pdf')
+
 for pdf in pdfs:
     pdfname, ext = os.path.splitext(pdf)
     # Converts pdf to a text file.
-    cmd = 'pdf2txt.py -o {0}.txt {0}.pdf'.format(pdfname)
+    cmd = 'pdf2txt -o {0}.txt {0}.pdf'.format(pdfname)
     os.system(cmd)
     #samples = []
     #pointer = False
@@ -63,7 +67,7 @@ for pdf in pdfs:
     #print (s)
     for i, sample in enumerate(s):
         slist = list(sample)
-        print slist
+        #print slist
         if len(sample) < 8:
             print sample
             slist.insert(-2, '0')
@@ -75,11 +79,14 @@ for pdf in pdfs:
     endpages = [x-1 for x in startpages[1:]]
     endpages.append(startpages[-1]+1)
     
+    
     startpage_endpage_sample = zip(startpages, endpages, s)
     print startpage_endpage_sample
+    print pdf
     
     date = os.path.basename(os.path.abspath('.'))
     for sp, ep, sa in startpage_endpage_sample:
+        print sa
         cmd = 'pdftk A={0} cat {1}-{2} 4-5 output {3}_{4}.pdf'.format(pdf, sp, ep, 
-        date, sa)
+        date, sa[:8])
         os.system(cmd)

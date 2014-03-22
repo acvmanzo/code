@@ -292,10 +292,51 @@ def add_bioanalyzer_attachment(oldtable, newtable):
                     #newelist.append(e)
                 #newline = '||'.join(newelist)
                 #g.write(newline)   
-  
 
+def replace_link_with_date(oldtable, newtable):
+    
+    with open(newtable, 'w') as g:
+        with open(oldtable, 'r') as f:
+            n = 1
+            for l in f:
+                n = n+1
+                #print n
+                elist = l.split(',')
+                #print elist
+                for i, e in enumerate(elist):
+                    if '|' in e and 'Bioanalyzer' not in e:
+                        elist[i] = e.strip(']]').split('|')[1]
+                        #print elist[i]
+                        #if elist[i][-1] != 'i':
+                    if 'Bioanalyzer' in e:
+                        #print elist[i]
+                        elist[i]= e.strip(']]').split('|')[0].split('/')[1]
+                
+                newelist = ','.join(elist)
+                    #print newelist
+                g.write(newelist)
 
+def add_date_to_end(samplefile):
+    
+    date1 = os.path.basename(samplefile).split('_')[0]
+    date = date1[:7] + '-' + date1[7:]
+    
+    root, ext = os.path.splitext(samplefile)
+    newfile = root+'_date'+ext
+    
+    with open(newfile, 'w') as g:
+        with open(samplefile, 'r') as f:
+            header = f.next().strip('\n')+',Date\n'
+            g.write(header)
+            for l in f:
+                newline = l.strip('\n') +',' + date + ('\n')
+                g.write(newline)
+                
+    
 if __name__ == "__main__":
+    #for x in ['2014-0221/2014-0221_qbit.csv', '2014-0311/2014-0317_qbit.csv']:
+        #add_date_to_end(x)
+
     #remove_excess_cols('misc/table.txt', 'misc/revtable.txt', 17)
     #add_berkeley_send_date('misc/table.txt', 'misc/revtable2.txt', 
     #'berkeley_orders/2014-0311_samples.csv'
@@ -308,4 +349,4 @@ if __name__ == "__main__":
     #add_berkeley_labeldate(KEYTABLE, NEWTABLE, OLDTABLE, DATE)
     #add_bioanalyzer_attachment(OLDTABLE, NEWTABLE)
     #switch_columns(OLDTABLE, NEWTABLE, 10, 11)
-    wikitocsv('20140319_wiki.txt', '20140319_db.csv')
+    #replace_link_with_date('20140320_db.csv', '20140320_db_date.csv')
