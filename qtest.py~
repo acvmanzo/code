@@ -1,0 +1,25 @@
+from libs.qrtpcrlib import *
+import glob
+
+
+
+DATAFILES = glob.glob('*.csv')
+
+GROUPBYS = ['plate', 'pool']
+USEAVGS = ['points', 'avg']
+POINTS = ['allpoints']
+
+for points in POINTS:
+    for groupby in GROUPBYS:
+        d = {}
+        for fname in DATAFILES:
+            loadscdata(d, fname)
+            for useavg in USEAVGS:
+                getsc(d, useavg, points, groupby)
+                
+#d = {}
+#fnames = ['2013-0919_1_sc_sarah.csv', '2013-0919_2_sc_sarah.csv']
+#for fname in fnames:
+#    loadscdata(d, fname)
+#print 'original dictionary', d['GAPDH_2013-0919_1'], d['GAPDH_2013-0919_2']
+##print 'pooled dictionary', platetopool(d)['GAPDH']
