@@ -334,8 +334,8 @@ def add_date_to_end(samplefile):
                 
     
 if __name__ == "__main__":
-    #for x in ['2014-0221/2014-0221_qbit.csv', '2014-0311/2014-0317_qbit.csv']:
-        #add_date_to_end(x)
+    for x in ['qubit/2014-0324_qubit.csv']:
+        add_date_to_end(x)
 
     #remove_excess_cols('misc/table.txt', 'misc/revtable.txt', 17)
     #add_berkeley_send_date('misc/table.txt', 'misc/revtable2.txt', 
