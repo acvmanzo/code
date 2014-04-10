@@ -31,7 +31,13 @@ def primertogene():
     d['pten-Ryan'] = 'pten' 
     d['NrxI-Takeo'] = 'NrxI' 
     d['bintnu-gp1'] = 'Bintnu'
-    
+    d['Nhe3'] = 'Nhe3'
+    d['NrXIV'] = 'NrxIV'
+    d['en3'] = 'En'
+    d['NrxIV-Ralph'] = 'NrxIV'
+    d['en-Diana'] = 'En'
+
+    print d
     return d
 
 
@@ -300,7 +306,7 @@ def combinedata(gname, datadir='.'):
 
     dataid = 999
     with open(gname, 'w') as g:
-        g.write('DataID,Date,Well,Target,Content,Sample,Cq\n')
+        g.write('DataID,Date,Expt,Well,Target,Content,Sample,Cq\n')
         for fname in fnames:
             date = fname.split('_')[0][:7] + '-' + fname.split('_')[0][7:]
             exptid = fname.split('_mut_')[0]

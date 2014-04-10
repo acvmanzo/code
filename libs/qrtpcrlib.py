@@ -31,7 +31,14 @@ def primertogene():
     d['pten-Ryan'] = 'pten' 
     d['NrxI-Takeo'] = 'NrxI' 
     d['bintnu-gp1'] = 'Bintnu'
+    d['Nhe3'] = 'Nhe3'
+    d['NrXIV'] = 'NrxIV'
+    d['en3'] = 'En'
+    d['NrxIV-Ralph'] = 'NrxIV'
+    d['en-Diana'] = 'En'
+    d['Nhe3-Dhruv'] = 'Nhe3'
     
+    #print d
     return d
 
 
