@@ -35,14 +35,15 @@ def getcqdict(sqlstring, targetlist):
         d[t] = [cq[0] for cq in cur.fetchall()]
     return d
 
-def sqlsearch_t_ref_CS(exptd):
-    # Getting CQs of target and reference gene expression in CS flies.
-    d_cs_cq = {}
 
-    for t in uniquet:
-        cur.execute("SELECT cq FROM qpcr_mut WHERE exptd = '{0}' AND target = '{1}' AND sample ~* 'CS';".format(exptd, t))
-        d_cs_cq[t] = [cq[0] for cq in cur.fetchall()]
-    print 'CS flies', d_cs_cq
+
+# Getting CQs of target and reference gene expression in CS flies.
+d_cs_cq = {}
+
+for t in uniquet:
+    cur.execute("SELECT cq FROM qpcr_mut WHERE exptd = '{0}' AND target = '{1}' AND sample ~* 'CS';".format(exptd, t))
+    d_cs_cq[t] = [cq[0] for cq in cur.fetchall()]
+print 'CS flies', d_cs_cq
 
 #ss_cs_cq = "SELECT cq FROM qpcr_mut WHERE exptd = '{0}' AND target = '{1}' AND sample ~* 'CS';".format(exptd, t)
 #d_cs_cq = getcqdict(ss_cs_cq, uniquet)

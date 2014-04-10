@@ -28,6 +28,8 @@ def primertogene():
     d['betaintnu3'] = 'Bintnu'
     d['bintnu-M'] = 'Bintnu'
     d['pten-R'] = 'pten'
+    d['pten-Ryan'] = 'pten' 
+    d['NrxI-Takeo'] = 'NrxI' 
     d['bintnu-gp1'] = 'Bintnu'
     
     return d
@@ -299,14 +301,15 @@ def combinedata(gname, datadir='.'):
     dataid = 999
     with open(gname, 'w') as g:
         g.write('DataID,Date,Well,Target,Content,Sample,Cq\n')
-        for fname in FNAMES:
+        for fname in fnames:
             date = fname.split('_')[0][:7] + '-' + fname.split('_')[0][7:]
+            exptid = fname.split('_mut_')[0]
             with open(fname, 'r') as f:
                     for l in f:
                         dataid = dataid + 1
                         blank, well, fluor, target, content, sample, biolset, cq, cqmean, cqstd = l.split(',')[:10]
                         if well == 'Well':
                             continue
-                        newlist = [str(dataid), date, well, target, content, sample, cq]
+                        newlist = [str(dataid), date, exptid, well, target, content, sample, cq]
                         newline = ','.join(newlist) + '\n'
                         g.write(newline)
