@@ -1,3 +1,4 @@
+import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
@@ -5,6 +6,8 @@ import cmn.cmn as cmn
 import sys
 import os
 import psycopg2
+
+RESDIR = '/home/andrea/Documents/lab/qRT-PCR/2_results/'
 
 ### ACCESSING DATABASE ###
 
@@ -19,6 +22,14 @@ def primertogene():
     allrows = cur.fetchall()
     for r in allrows:
         d[r[1]] = r[0]
+    
+    d['cg34127-gp1'] = 'CG34127'
+    d['nrxi-gp1'] = 'NrxI'
+    d['betaintnu3'] = 'Bintnu'
+    d['bintnu-M'] = 'Bintnu'
+    d['pten-R'] = 'pten'
+    d['bintnu-gp1'] = 'Bintnu'
+    
     return d
 
 
@@ -60,7 +71,7 @@ def loadscdata(d, fname):
             
             if target not in d:
                 d[target] = {}
-            if logsq not in d[target] and cqmean != '':
+            if logsq not in d[target] and (cqmean != '' or cqmean != '0'):
                 d[target][logsq] = []
             if cq != '':
                 d[target][logsq].append(np.float(cq))
@@ -89,11 +100,14 @@ def avgpoints(d):
         e[k] = {}
         #print('firstkey', d[k])
         for x, ys in d[k].iteritems():
+            if not ys:
+                continue
             mean = np.mean(ys)
             stdev = np.std(ys)
             n = len(ys)
             sterr = stdev/np.sqrt(n)
             e[k][x] = [mean, stdev, n, sterr]
+    #print 'avgd', e
     return(e)
             
 
@@ -105,14 +119,13 @@ def create_efile(efile):
         g.write('Gene\tEfficiency\tr^2\tAvg\tPoints\tGroup by\n')
     
     
-def write_efile(efile, params, gene, useavg, selected, groupby):
+def write_efile(efile, params, gene, useavg, groupby):
     '''Writes into a file listing the efficiencies calculated from the standard 
     curve.'''
     
     e, r2 = params['e'], params['r2']
     with open(efile, 'a') as g:
-        g.write('{0}\t{1:.3f}\t{2:.3f}\t{3}\t{4}\t{5}\n'.format(gene, e, r2, useavg, 
-        selected, groupby))
+        g.write('{0}\t{1:.3f}\t{2:.3f}\t{3}\t{4}\n'.format(gene, e, r2, useavg, groupby))
 
 
 def fitline(logsq, cq):
@@ -139,7 +152,7 @@ def fitline(logsq, cq):
     return(params)
 
 
-def plotstdcurve(params, gene, resdir, useavg, selected, groupby, meansterr=0):
+def plotstdcurve(params, target, resdir, useavg, groupby, primertogenedict,  meansterr=0):
     '''
     useavg = 'avg' or 'points'
     '''
@@ -158,7 +171,10 @@ def plotstdcurve(params, gene, resdir, useavg, selected, groupby, meansterr=0):
     plt.plot(logsq, m*logsq+c, 'r')
     plt.ylabel('cq')
     plt.xlabel('log (starting quantity)')
-    if gene == 'Itgbetanu':
+    
+    gene = primertogene()[target.split('_')[0]]
+    
+    if gene == 'Bintnu':
         plt.text(0.05, 0.2, 'y = {0:.3f}*x+ {1:.3f}'.format(m, c), \
         transform=ax.transAxes)
         plt.text(0.05, 0.15, 'E = 10^(-1/slope) - 1 = {0:.3f}'.format(e), \
@@ -171,11 +187,11 @@ def plotstdcurve(params, gene, resdir, useavg, selected, groupby, meansterr=0):
         transform=ax.transAxes)
         plt.text(0.3, 0.8, 'r^2 = {0:.3f}'.format(r2), transform=ax.transAxes)
     
-    plt.title(gene)
+    plt.title(gene+'_'+target)
     plt.ylim(15, 40)
     
     plt.tight_layout()
-    figname = resdir+'sc_'+gene+'_'+useavg+'_'+selected+'_'+groupby
+    figname = resdir+gene+'_'+target+'_'+useavg+'_'+groupby
     plt.savefig(figname)
     plt.close()
 
@@ -212,7 +228,7 @@ def convertavg(d):
     '''       
     e = {}
     for k in d.iterkeys():
-        print(k)
+        #print(k)
         x = []
         y = []
         sterr = []
@@ -239,11 +255,10 @@ def platetopool(d):
             
     return(e)
 
-def getsc(d, useavg, selected, groupby):
+def getsc(d, useavg, groupby):
     
-    if groupby = 'pool':
+    if groupby == 'pool':
         d = platetopool(d)
-
     
     if useavg == 'avg':
         avgd = avgpoints(d)
@@ -252,20 +267,46 @@ def getsc(d, useavg, selected, groupby):
     if useavg == 'points':
         plotdict = convertpoints(d)
 
-    resdir = 'prelim_results/'+useavg+'_'+selected+'_'+groupby+'/'
+    scdir = os.path.basename(os.path.abspath('.'))
+    resdir = '{0}{1}/{2}_{3}/'.format(RESDIR, scdir, useavg, groupby)
     cmn.makenewdir(resdir)
-    efile = resdir + 'efficiencies_'+useavg+'_'+selected+'_'+groupby+'.txt'
+    efile = resdir + 'efficiencies_'+useavg+'_'+groupby+'.txt'
     create_efile(efile)
     
     for k, v in plotdict.iteritems():
+        print k
         logsq = v[0]
         cq = v[1]
         if useavg == 'avg':
             meansterr = v[2]
         if useavg == 'points':
             meansterr = 0
-        params = fitline(logsq, cq)        
-        plotstdcurve(params, k, resdir, useavg, selected, 
-        groupby, meansterr)
-        write_efile(efile, params, k, useavg, selected, groupby)
+        params = fitline(logsq, cq)
+  
+        plotstdcurve(params, k, resdir, useavg, groupby, meansterr)
+        write_efile(efile, params, k, useavg, groupby)
 
+### FUNCTIONS FOR TESTING MUTANT VS CONTROL GENE EXPRESSION ###
+
+def combinedata(gname, datadir='.'):
+    '''Combines csv files in the datadir directory into one csv file with the following columns:
+    DataID,Date,Well,Target,Content,Sample,Cq'''
+
+    os.chdir(datadir)
+    fnames = sorted(glob.glob('*.csv'))
+    #gname = os.path.dirname(os.path.abspath('.')) + '/2014-0408_alldata_fmt.csv'
+
+    dataid = 999
+    with open(gname, 'w') as g:
+        g.write('DataID,Date,Well,Target,Content,Sample,Cq\n')
+        for fname in FNAMES:
+            date = fname.split('_')[0][:7] + '-' + fname.split('_')[0][7:]
+            with open(fname, 'r') as f:
+                    for l in f:
+                        dataid = dataid + 1
+                        blank, well, fluor, target, content, sample, biolset, cq, cqmean, cqstd = l.split(',')[:10]
+                        if well == 'Well':
+                            continue
+                        newlist = [str(dataid), date, well, target, content, sample, cq]
+                        newline = ','.join(newlist) + '\n'
+                        g.write(newline)

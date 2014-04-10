@@ -1,31 +1,23 @@
-from libs.qrtpcrlib import *
+import os
 import glob
 
+FNAMES = sorted(glob.glob('*.csv'))
+#FNAMES = ['2013-1029_1_mut_sarah.csv', '2014-0226_1_mut_andrea.csv']
+gname = os.path.dirname(os.path.abspath('.')) + '/2014-0408_alldata_fmt.csv'
+print gname
 
 
-DATAFILES = sorted(glob.glob('*.csv'))
-#DATAFILES = ['2013-0919_2_sc_sarah.csv']
-#DATAFILES = ['2013-1001_1_sc_sarah.csv']
-GROUPBYS = ['plate', 'pool']
-USEAVGS = ['points', 'avg']
-
-#print primertogene()
-
-
-d = {}
-for fname in DATAFILES:
-    print fname
-    loadscdata(d, fname)
-    #print d
-    
-for groupby in GROUPBYS:
-    for useavg in USEAVGS:
-        getsc(d, useavg, groupby)
-                
-#d = {}
-#fnames = ['2013-0919_1_sc_sarah.csv', '2013-0919_2_sc_sarah.csv']
-#for fname in fnames:
-#    loadscdata(d, fname)
-#print 'original dictionary', d['GAPDH_2013-0919_1'], d['GAPDH_2013-0919_2']
-##print 'pooled dictionary', platetopool(d)['GAPDH']
-
+dataid = 999
+with open(gname, 'w') as g:
+    g.write('DataID,Date,Well,Target,Content,Sample,Cq\n')
+    for fname in FNAMES:
+        date = fname.split('_')[0][:7] + '-' + fname.split('_')[0][7:]
+        with open(fname, 'r') as f:
+                for l in f:
+                    dataid = dataid + 1
+                    blank, well, fluor, target, content, sample, biolset, cq, cqmean, cqstd = l.split(',')[:10]
+                    if well == 'Well':
+                        continue
+                    newlist = [str(dataid), date, well, target, content, sample, cq]
+                    newline = ','.join(newlist) + '\n'
+                    g.write(newline)

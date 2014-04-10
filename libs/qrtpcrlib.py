@@ -1,3 +1,4 @@
+import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
@@ -285,3 +286,27 @@ def getsc(d, useavg, groupby):
         plotstdcurve(params, k, resdir, useavg, groupby, meansterr)
         write_efile(efile, params, k, useavg, groupby)
 
+### FUNCTIONS FOR TESTING MUTANT VS CONTROL GENE EXPRESSION ###
+
+def combinedata(gname, datadir='.'):
+    '''Combines csv files in the datadir directory into one csv file with the following columns:
+    DataID,Date,Well,Target,Content,Sample,Cq'''
+
+    os.chdir(datadir)
+    fnames = sorted(glob.glob('*.csv'))
+    #gname = os.path.dirname(os.path.abspath('.')) + '/2014-0408_alldata_fmt.csv'
+
+    dataid = 999
+    with open(gname, 'w') as g:
+        g.write('DataID,Date,Well,Target,Content,Sample,Cq\n')
+        for fname in fnames:
+            date = fname.split('_')[0][:7] + '-' + fname.split('_')[0][7:]
+            with open(fname, 'r') as f:
+                    for l in f:
+                        dataid = dataid + 1
+                        blank, well, fluor, target, content, sample, biolset, cq, cqmean, cqstd = l.split(',')[:10]
+                        if well == 'Well':
+                            continue
+                        newlist = [str(dataid), date, well, target, content, sample, cq]
+                        newline = ','.join(newlist) + '\n'
+                        g.write(newline)
