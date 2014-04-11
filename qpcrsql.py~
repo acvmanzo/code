@@ -20,6 +20,11 @@ def get_good_primers():
     primerlist = [p[0] for p in cur.fetchall()]
     return primerlist
 
+def get_good_exptd():
+    # Get list of good experiment dates
+    cur.execute("select exptd from qpcr_experiments where usedata is True;")
+    exptlist = [e[0].isoformat() for e in cur.fetchall()] 
+    return set(exptlist)
 
 def get_targets(exptid):
     # For one experiment, get a list of targets (i.e., primers).
@@ -30,36 +35,39 @@ def get_targets(exptid):
 
 
 def getcqdict(gensqlstring, targetlist):
+    goodexpts = ', '.join(["'{0}'".format(x) for x in get_good_exptd()])
+    #print 'goodexpts', goodexpts
     d = {}
     for t in targetlist:
+        print t
         gene = primertogene()[t]
-        cur.execute(gensqlstring(exptid, t, gene))
+        cur.execute(gensqlstring(exptid, t, gene, goodexpts))
         d[t] = [cq[0] for cq in cur.fetchall()]
     return d
 
 
-def sqlsearch_t_ref_CS(exptid, t, gene):
+def sqlsearch_t_ref_CS(exptid, t, gene, goodexpts):
     # Getting CQs of target and reference gene expression in CS flies.
 
-    sqlsearch = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* 'CS';".format(exptid, t)
-    return sqlsearch
-
-    
-def sqlsearch_t_mut(exptid, t, gene):
-    # Getting CQs of target gene expression in mutant flies.
-
-    sqlsearch = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* '{2}';".format(exptid, t, gene)
+    sqlsearch = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* 'CS' AND exptd in ({2});".format(exptid, t, goodexpts)
     return sqlsearch
 
 
-def sqlsearch_ref_mut(exptid, t, gene):
+def sqlsearch_t_mut(exptid, t, gene, goodexpts):
+     # Getting CQs of target gene expression in mutant flies.
+
+    sqlsearch = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* '{2}' AND exptd in ({3});".format(exptid, t, gene, goodexpts)
+    return sqlsearch
+
+
+def sqlsearch_ref_mut(exptid, t, gene, goodexpts):
  #Getting CQs of reference gene expression in mutant flies.
-    sqlsearch = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* '{2}';".format(exptid, REFERENCE, gene)
+    sqlsearch = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* '{2}' AND exptd in ({3});".format(exptid, REFERENCE, gene, goodexpts)
     return sqlsearch
     
 #def getcqdict_t_ref_CS():
     #getcqdict(
-#ss_cs_cq = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* 'CS';".format(exptid, t)
+#ss_cs_cq = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* 'CS' AND usedata = True;".format(exptid, t)
 #d_cs_cq = getcqdict(ss_cs_cq, uniquet)
 #print d_cs_cq
 
@@ -94,11 +102,11 @@ def write_t_ref_CS(d_t_ref_CS):
             continue
         gname = RESDIR + '{0}_{1}_{2}_cs.txt'.format(t, REFERENCE, exptid)
         with open(gname, 'w') as g:
-            g.write('Ref_cq,Target_cq\n')
+            g.write('{0}_Ref_cq\t{1}_T_cq\n'.format(REFERENCE, t))
             mut_CS = d_t_ref_CS[t]
             ref_mut_CS = zip(ref_CS, mut_CS)
             for rcq, mcq in ref_mut_CS:
-                g.write('{0},{1}\n'.format(rcq, mcq))
+                g.write('{0}\t{1}\n'.format(rcq, mcq))
 
 def write_t_ref_mut(d_t_mut, d_ref_mut):
     
@@ -108,13 +116,13 @@ def write_t_ref_mut(d_t_mut, d_ref_mut):
             continue
         gname = RESDIR + '{0}_{1}_{2}_mut.txt'.format(t, REFERENCE, exptid)
         with open(gname, 'w') as g:
-            g.write('Ref_cq,Target_cq\n')
+            g.write('{0}_Ref_cq\t{1}_T_cq\n'.format(REFERENCE, t))
             gene = primertogene()[t]
             ref_mut = d_ref_mut[t]
             mut_mut = d_t_mut[t]
             ref_mut_mut = zip(ref_mut, mut_mut)
             for rcq, mcq in ref_mut_mut:                
-                g.write('{0},{1}\n'.format(mcq, rcq))
+                g.write('{0}\t{1}\n'.format(rcq, mcq))
 
 fnames = glob.glob('*.csv')
 for fname in fnames:
@@ -125,5 +133,4 @@ for fname in fnames:
     d_ref_mut = getcqdict(sqlsearch_ref_mut, targets)
     d_t_mut = getcqdict(sqlsearch_t_mut, targets)
     write_t_ref_mut(d_t_mut, d_ref_mut)
-
 
