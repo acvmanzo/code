@@ -449,7 +449,7 @@ def write_t_ref_mut(d_t_mut, d_ref_mut, exptid):
                 g.write('{0}\t{1}\n'.format(rcq, mcq))
 
 
-def batch_write_cqs(csvdir):
+def batch_write_cqs(csvdir, combinedfile):
     '''Function for writing files with the CQs of target and reference genes for both mutant and control samples
     (separate files)
     '''
@@ -464,7 +464,7 @@ def batch_write_cqs(csvdir):
         d_t_mut = getcqdict(sqlsearch_t_mut, targets, exptid)
         write_t_ref_mut(d_t_mut, d_ref_mut, exptid)
 
-batch_write_cqs('.')
+#batch_write_cqs('.')
 #def getcqdict_t_ref_CS():
     #getcqdict(
 #ss_cs_cq = "SELECT cq FROM qpcr_mut WHERE exptid = '{0}' AND target = '{1}' AND sample ~* 'CS' AND usedata = True;".format(exptid, t)
