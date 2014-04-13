@@ -12,13 +12,12 @@ for pdf in pdfs:
     pdfname, ext = os.path.splitext(pdf)
     newname = pdfname.replace(' ', '_')
     os.rename(pdf, newname+ext)
-#print pdfs
+print pdfs
 
 samples = []
 pdfs = glob.glob('2100*.pdf')
 
 for pdf in pdfs:
-    print pdf
     pdfname, ext = os.path.splitext(pdf)
     # Converts pdf to a text file.
     cmd = 'pdf2txt -o {0}.txt {0}.pdf'.format(pdfname)

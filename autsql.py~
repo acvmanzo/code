@@ -8,7 +8,7 @@ def update_seq_date(infofile, outfile):
             f.next()
             for l in f:
                 berkid, sample, indexnum, indexseq, datesent, readtype, length, numlanes, qpcr = l.split(',')
-                g.write("UPDATE autin SET toseq=True, seqd='{0}' WHERE sample = '{1}' AND berkid = '{2}';\n".format(dateseq, sample, berkid))
+                g.write("UPDATE autin SET toseq=True, seqd='{0}' WHERE sample = '{1}';\n".format(dateseq, sample))
 
 def add_samplenum(tabledata, outfile):
     n = 999
