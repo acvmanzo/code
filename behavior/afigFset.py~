@@ -19,7 +19,7 @@ KINDLIST = ['anyag', 'escd', 'escm'] # Behaviors to be analyzed.
 # Figure parameters.
 SUBPLOTNS = [131, 132, 133] # Subplots of the figure for frequency.
 SUBPLOTLS = ['A', 'B', 'C'] # Labels for the subplots.
-YLIMS = [110, 40, 40]
+YLIMS = [110, 30, 30]
 STARPOS = [0.75, 0.75, 0.75] # Coordinate to position significance stars; % of 
 #ylim
 BINCONF = 0.95 # Confidence of binomial confidence intervals.

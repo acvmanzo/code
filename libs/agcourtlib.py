@@ -31,20 +31,28 @@ def agline2(line):
     """
     
     vals = {}
-    y = line.strip('\n').split(',')
-    y.extend(y[0].strip('.MTS').split('_'))
+    y = line.strip('\n').split(',')[:14]
+    #print 'y0', y[0]
+    movieparse = y[0].strip('.MTS').split('_')
+    #print movieparse
+    if len(movieparse) == 5: 
+        movieparse.insert(3, 'PF24')
+    #print movieparse
+    y.extend(movieparse)
     
     #print(y)
     
     x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
-    'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 
-    'esccomm', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
+    'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
     
+    #print 'lenx', len(x), 'leny', len(y)
     z = zip(x, y)
 
     for item in z:
         vals[item[0]] = item[1]
 
+    #print 'genotype', vals['gen'] 
+    #print vals['movie'], vals['well'], vals['agmin']
     return(vals)
 
 
@@ -320,7 +328,7 @@ def dictcprop(kind, fname):
 #TESTS####
 
 
-def dictbin(dict, conf, methods='wilson', label='data'):
+def dictbin(idict, conf, methods='wilson', label='data'):
     """Generates a new dictionary with binomical confidence intervals from 
     frequency data.
     Input:
@@ -342,8 +350,9 @@ def dictbin(dict, conf, methods='wilson', label='data'):
     """
 
     mean_dict = {}
+    print 'idict', idict
 
-    for condition, value in dict.iteritems():
+    for condition, value in idict.iteritems():
 
         meanval = np.mean(value)
         stdev = np.std(value)
@@ -975,6 +984,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
     
     if metric == 'agprop':
         d = dictagfreq2(kind, fname)
+        print d.keys()
         db = dictbin(d, binconf, label=kind)
         fd = dictfishtest(d, ctrlkey=ctrlkey)
         adjppd = mcpval(fd, 'fdr', 'True', keyfile)

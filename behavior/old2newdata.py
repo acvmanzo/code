@@ -1,3 +1,4 @@
+import os
 import sys
 
 #Old Format: 
@@ -19,10 +20,16 @@ D_COMBINE = {
 'cs-Apr': 'CS',
 'cs-June': 'CS',
 'cs-JW': 'CS-JW',
+'cs': 'CS',
 'cg30116-JW': 'CG30116-JW',
 'cg30116': 'CG30116',
 'bintnu': 'Betaintnu',
-'pten ': 'pten'
+'pten ': 'pten',
+'nhe3': 'Nhe3',
+'nrxi': 'NrxI',
+'nrxiv': 'NrxIV',
+'en3db': 'en',
+'cg34127': 'CG34127'
 }
 
 
@@ -32,10 +39,16 @@ D = {
 'cs-Apr': 'CS-Apr',
 'cs-June': 'CS-June',
 'cs-JW': 'CS-JW',
+'cs': 'CS',
 'cg30116-JW': 'CG30116-JW',
 'cg30116': 'CG30116',
 'bintnu': 'Betaintnu',
-'pten ': 'pten'
+'pten ': 'pten',
+'nhe3': 'Nhe3',
+'nrxi': 'NrxI',
+'nrxiv': 'NrxIV',
+'en3db': 'en',
+'cg34127': 'CG34127'
 }
 
 def c_old2new(oldfile, newfile, d_genchange):
@@ -89,10 +102,13 @@ def agbdict():
     return(d)
 
 
-def ag_old2new(oldfile, newfile):
+def ag_old2new(oldfile, newfile, d_genchange):
     '''Converts old file format to new file format for use with new code.'''
 
     dbeh = agbdict()
+
+    if os.path.exists(newfile):
+        os.remove(newfile)
 
     with open(newfile, 'w') as g:
         # Writes the headers.
@@ -110,6 +126,16 @@ def ag_old2new(oldfile, newfile):
                 # Define variables.
                 date, movie, offset, well, genotype, flarem, flares, chm, chs, cht, otherm, others, othert, escd_m, escd_s, escd_d, escd_b, escm_m, escm_s, escm_d, escm_b = l.strip('\n').split(',')[:21]
                 comm = l.split(',')[-1].strip('\n')
+                
+                gen = movie.strip('.MTS').split('_')[0]
+                if gen in d_genchange:
+                    gen = d_genchange[gen]
+                movie = gen + '_' + '_'.join(movie.strip('.MTS').split('_')[1:])
+
+                
+ 
+                if date == '' or well == '' or movie == '':
+                    print 'blank date or well', l 
                
                 for k in dbeh.keys():
                     if k in othert:
@@ -181,9 +207,10 @@ def ag_old2new(oldfile, newfile):
 
 
                 # Put together new lines and write to new file.
-                newline1 = '{0},,{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},\n'.format(movie, offset, well, chm,
-                        chs, chd, cht, comm, escd_m, escd_s, escd_d, escd_t, escd_b)
-                g.write(newline1)
+                if chm != '' or escd_m != '':
+                    newline1 = '{0},,{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},\n'.format(movie, offset, well, chm,
+                            chs, chd, cht, comm, escd_m, escd_s, escd_d, escd_t, escd_b)
+                    g.write(newline1)
                
                 if otherm != '' or escm_m != '':
                     newline2 = '{0},,{1},{2},{3},{4},,{5},{6},{7},{8},{9},{10},{11}\n'.format(movie, offset, well, otherm,
@@ -229,4 +256,4 @@ def ag_old2new(oldfile, newfile):
     
 
 if __name__ == "__main__":
-    ag_old2new(OLDFILE, NEWFILE)
+    ag_old2new(OLDFILE, NEWFILE, D)
