@@ -1110,7 +1110,7 @@ stitlesz=10, lw=1, starpos=0.75):
     
     # Plots and formats xlabels.
     #plt.xticks(x_list, conds, rotation=45, fontproperties=fonti)
-    plt.xticks(x_list, conds, rotation=90, fontproperties=fonti)
+    plt.xticks(x_list, conds, fontproperties=fonti)
 
     # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
     plt.ylabel(ylabel, labelpad=4, fontproperties=fontv, multialignment='center')

@@ -24,9 +24,9 @@ fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
 edgecolor='k')
 
 # Creates latency bar subplots.
-ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1, YLIMS1, STARPOS1, YMINS1)
+ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1, YLIMS1, STARPOS1)
 for k in ks1:
-    acl.multiplot('clatmed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=k[5], ylim=k[3], 
+    acl.multiplot('clatmed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMINL, ylim=k[3], 
     ylabel=YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2],
     binconf=BINCONF, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
     lw=LW, starpos=k[4])
