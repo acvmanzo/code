@@ -19,18 +19,19 @@ KINDLIST = ['anyag', 'escd', 'escm'] # Behaviors to be analyzed.
 # Figure parameters.
 SUBPLOTNS = [131, 132, 133] # Subplots of the figure for frequency.
 SUBPLOTLS = ['A', 'B', 'C'] # Labels for the subplots.
-YLIMS = [110, 40, 40]
-STARPOS = [0.75, 0.75, 0.75] # Coordinate to position significance stars; % of 
+YLIMS = [110, 60, 20]
+#STARPOS = [0.85, 0.85, 0.85] # Coordinate to position significance stars; % of 
+STARPOS = [0.8, 0.8, 0.8] # Coordinate to position significance stars; % of 
 #ylim
 BINCONF = 0.95 # Confidence of binomial confidence intervals.
 
 FIGDPI=1200 # Figure DPI.
-FIGW=12 # Figure width.
-FIGH=4 # Figure height.
+FIGW=8 # Figure width.
+FIGH=2.75 #Figure height.
 
-FONTSZ=11 # Size of font.
+FONTSZ=11# Size of font.
 LW = 1 # Width of lines in the figure.
-STITLESZ=12 # Title font size.
+STITLESZ=11 # Title font size.
 
 BARWIDTH=1
 YMIN=0

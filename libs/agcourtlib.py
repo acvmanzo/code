@@ -124,7 +124,9 @@ def dictagfreq2(kind, fname):
     
     with open(fname) as f:
         for l in f:
+            #print(l)
             adict = agline2(l)
+            #print adict
             #print(l)
             
             if adict['well'] != y:
@@ -353,7 +355,7 @@ def dictbin(idict, conf, methods='wilson', label='data'):
     """
 
     mean_dict = {}
-    print 'idict', idict
+    #print 'idict', idict
 
     for condition, value in idict.iteritems():
 
@@ -1133,7 +1135,7 @@ def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
 
 def multiplot(metric, kind, fname, ctrlkey, barwidth, ymin, ylim, ylabel, 
 yaxisticks, subplotn, subplotl, binconf, keyfile='keylist', fontsz=9, 
-stitlesz=10, lw=1, starpos=0.75):
+stitlesz=10, lw=1, starpos=0.8):
     
 
     # ======== LOAD DATA =============
@@ -1157,7 +1159,8 @@ stitlesz=10, lw=1, starpos=0.75):
     barnum = len(vals)
     lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
     x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
-    x_list = x_gen1 
+    x_list = x_gen1
+    print 'x_list'
 
     # Set width of bars.
     truebarw = 0.35*barwidth
@@ -1179,6 +1182,9 @@ stitlesz=10, lw=1, starpos=0.75):
     
     # Plots and formats xlabels.
     #plt.xticks(x_list, conds, rotation=45, fontproperties=fonti)
+    
+    x_list = [x + 0.5*truebarw for x in x_gen1]
+    print x_list
     plt.xticks(x_list, conds, rotation=90, fontproperties=fonti)
 
     # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
