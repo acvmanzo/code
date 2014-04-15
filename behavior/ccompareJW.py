@@ -73,13 +73,13 @@ def loadpropdata(hname):
 def plotdata(dlat, dprop):
 
 
-    FIGW = 16
-    FIGH = 8
+    FIGW = 14 
+    FIGH = 7 
     FIGDPI = 1000
     BARW = 1
 
     SUBPLOTNS1 = [[231, 232, 233], [234, 235, 236]]
-    YLIMS1 = [[100, 600, 600], [120, 120, 120]]
+    YLIMS1 = [[100, 400, 400], [150, 150, 150]]
     TITLES1 = [['Latency to\nwing extension', 'Latency to\nfirst copulation attempt', 'Latency to\ncopulation'], ['% flies displaying\nwing extension', '% flies\nattempting copulation', '% flies copulating']]
     YLABEL = ['Latency (s)', '%']
     #FIGNAME = 'courtship_comparison_JW_AM_latency.png'

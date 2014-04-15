@@ -57,7 +57,7 @@ def loadpropdata(hname):
         dbeh = {}
         for l in h:
             #print l
-            genotype, beh, mean, n, stdev, = l.strip('\n').split('\t')
+            genotype, beh, mean, n, stdev, sterr = l.strip('\n').split('\t')
             
             if beh not in dbeh:
                 dbeh[beh] = {} 
@@ -73,13 +73,13 @@ def loadpropdata(hname):
 def plotdata(dlat, dprop):
 
 
-    FIGW = 16
-    FIGH = 8
+    FIGW = 14 
+    FIGH = 7 
     FIGDPI = 1000
     BARW = 1
 
     SUBPLOTNS1 = [[231, 232, 233], [234, 235, 236]]
-    YLIMS1 = [[100, 600, 600], [120, 120, 120]]
+    YLIMS1 = [[100, 400, 400], [120, 120, 120]]
     TITLES1 = [['Latency to\nwing extension', 'Latency to\nfirst copulation attempt', 'Latency to\ncopulation'], ['% flies displaying\nwing extension', '% flies\nattempting copulation', '% flies copulating']]
     YLABEL = ['Latency (s)', '%']
     #FIGNAME = 'courtship_comparison_JW_AM_latency.png'

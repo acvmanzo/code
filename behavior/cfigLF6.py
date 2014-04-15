@@ -79,6 +79,6 @@ for kind in KINDLIST:
     acl.writestatfile(LATMWFILE, ldadjpd, kind)
     acl.writestatfile(FISHTFILE, fdadjpd, kind)
     acl.writeinfolat(LATFILEMED, ld, kind, CTRLKEY, 'median', 'True', KEYFILE)
-    acl.writeinfolat(LATFILEMEAN, ld, kind, CTRLKEY, 'mean', 'True', KEYFILE)
+    #acl.writeinfolat(LATFILEMEAN, ld, kind, CTRLKEY, 'mean', 'True', KEYFILE)
     acl.writeinfoprop(PROPFILE, pd, BINCONF, kind, 'True', KEYFILE)
-    acl.writeinfopropmean(PROPMEANFILE, pd, kind, 'True', KEYFILE)
+    #acl.writeinfopropmean(PROPMEANFILE, pd, kind, 'True', KEYFILE)

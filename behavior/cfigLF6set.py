@@ -40,8 +40,8 @@ YMIN=0 # YMIN for bar plots
 
 # Figure parameters for latency+frequency plot.
 KINDLIST = ['we', 'copatt1', 'copsuc'] # Behaviors to be analyzed.
-FIGW=12 # Figure width.
-FIGH=7 # Figure height.
+FIGW=8 # Figure width.
+FIGH=5.5 # Figure height.
 FIGDPI=1000 # Figure DPI.
 FONTSZ=11 # Size of font.
 LW = 1 # Width of lines in the figure.
@@ -50,6 +50,7 @@ STITLESZ=12 # Title font size.
 # Parameters for latency subplots.
 SUBPLOTNS1 = [231, 232, 233] # Subplots of the figure for latency.
 SUBPLOTLS1 = ['A', 'B', 'C'] # Labels for the subplots.
+SUBPLOTLS1 = ['', '', ''] # Labels for the subplots.
 YLIMS1 = [120, 700, 700]
 YMINS1 = [-0.05 * y for y in YLIMS1]
 STARPOS1 = [0.75, 0.75, 0.75]
@@ -60,6 +61,7 @@ YAXISTICKS1 = 5 # Number of y-axis ticks.
 # Parameters for proportion subplots.
 SUBPLOTNS2 = [234, 235, 236] # Subplots of the figure for frequency.
 SUBPLOTLS2 = ['D', 'E', 'F'] # Labels for the subplots.
+SUBPLOTLS2 = ['', '', ''] # Labels for the subplots.
 YLIMS2 = [120, 120, 120]
 STARPOS2 = [0.75, 0.75, 0.75]
 BINCONF = 0.95 # Confidence of binomial confidence intervals.

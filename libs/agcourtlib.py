@@ -488,7 +488,7 @@ def dictmw(d, ctrlkey='cs', test='exact'):
     mwdict = {}
 
     for i,v in d.iteritems():
-        print 'i', i 
+       #print 'i', i 
         if not v:
             #mwdict[i] = []
             continue
@@ -550,7 +550,7 @@ def dictttest(d, ctrlkey='cs'):
         mwdict[i]['stdev'] = np.std(v).tolist()
         mwdict[i]['sterr'] = np.std(v).tolist()/np.sqrt(len(v))
 
-        print 'i', i 
+        #print 'i', i 
         mw = rsl.ttest(v, ctrl)
         mwdict[i]['pval'] = mw.rx('p.value')[0][0]
     return(mwdict)    
@@ -1087,9 +1087,9 @@ def plottitle(metric, kind):
         if kind == 'anyag':
             t = '% pairs fighting'
         if kind == 'escd':
-            t = '% pairs with\ndominant escalation'
+            t = '% pairs with\ndominant esc'
         if kind == 'escm':
-            t = '% pairs with\nmutual escalation'
+            t = '% pairs with\nmutual esc'
         if kind == 'we':
             t = '% flies displaying\nwing extension'
         if kind == 'copsuc':
@@ -1285,10 +1285,10 @@ stitlesz=10, lw=1, starpos=0.8):
     x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
     x_list = x_gen1
     
-    print 'metric', metric
-    print 'vals', vals
-    print 'barnum', barnum
-    print 'x_list'
+    #print 'metric', metric
+    #print 'vals', vals
+    #print 'barnum', barnum
+    #print 'x_list'
 
     # Set width of bars.
     truebarw = 0.35*barwidth
@@ -1304,7 +1304,7 @@ stitlesz=10, lw=1, starpos=0.8):
     
     # ======== ADDS TICKS, LABELS and TITLES==========
     # Sets the x- and y-axis limits.
-    print x_list
+    #print x_list
     xlim = x_list[-1]+1.5*barwidth
     plt.axis( [0, xlim, ymin, ylim])
     
@@ -1312,7 +1312,7 @@ stitlesz=10, lw=1, starpos=0.8):
     #plt.xticks(x_list, conds, rotation=45, fontproperties=fonti)
     
     x_list = [x + 0.5*truebarw for x in x_gen1]
-    print x_list
+    #print x_list
     plt.xticks(x_list, conds, rotation=90, fontproperties=fonti)
 
     # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
