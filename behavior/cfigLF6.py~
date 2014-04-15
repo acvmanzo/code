@@ -16,6 +16,7 @@ acl.createshapfile(SHAPFILE)
 acl.createinfolat(LATFILEMED)
 acl.createinfolat(LATFILEMEAN)
 acl.createinfoprop(PROPFILE)
+acl.createinfopropmean(PROPMEANFILE)
 acl.createstatfile(LATMWFILE, 'Mann-Whitney Test')
 acl.createstatfile(FISHTFILE, 'Fisher\'s Exact Test')
 
@@ -24,9 +25,9 @@ fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
 edgecolor='k')
 
 # Creates latency bar subplots.
-ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1, YLIMS1, STARPOS1)
+ks1 = zip(KINDLIST, SUBPLOTNS1, SUBPLOTLS1, YLIMS1, STARPOS1, YMINS1)
 for k in ks1:
-    acl.multiplot('clatmed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMINL, ylim=k[3], 
+    acl.multiplot('clatmed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=k[5], ylim=k[3], 
     ylabel=YLABEL1, yaxisticks=YAXISTICKS1, subplotn=k[1], subplotl=k[2],
     binconf=BINCONF, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
     lw=LW, starpos=k[4])
@@ -80,3 +81,4 @@ for kind in KINDLIST:
     acl.writeinfolat(LATFILEMED, ld, kind, CTRLKEY, 'median', 'True', KEYFILE)
     acl.writeinfolat(LATFILEMEAN, ld, kind, CTRLKEY, 'mean', 'True', KEYFILE)
     acl.writeinfoprop(PROPFILE, pd, BINCONF, kind, 'True', KEYFILE)
+    acl.writeinfopropmean(PROPMEANFILE, pd, kind, 'True', KEYFILE)

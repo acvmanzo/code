@@ -48,8 +48,8 @@ STITLESZ=12 # Title font size.
 # Parameters for latency subplots.
 SUBPLOTNS1 = [231, 232, 233] # Subplots of the figure for latency.
 SUBPLOTLS1 = ['A', 'B', 'C'] # Labels for the subplots.
-YLIMS1 = [120, 500, 700]
-YMINS1 = [-0.1 * y for y in YLIMS1]
+YLIMS1 = [120, 700, 700]
+YMINS1 = [-0.05 * y for y in YLIMS1]
 STARPOS1 = [0.75, 0.75, 0.75]
 
 YLABEL1='Latency (s)'

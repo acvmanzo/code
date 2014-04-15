@@ -245,6 +245,9 @@ def dictagdur2(kind, fname):
     return(d)
 
 
+
+
+
 ### COURTSHIP ###
 
 def cline2(line):
@@ -350,7 +353,7 @@ def dictbin(idict, conf, methods='wilson', label='data'):
     """
 
     mean_dict = {}
-    print idict
+    print 'idict', idict
 
     for condition, value in idict.iteritems():
 
@@ -438,10 +441,13 @@ def dictttest(d, ctrlkey='cs'):
             
         v, ctrl = map(unlist, [v, d[ctrlkey]])
 
-        mw = rsl.ttest(v, ctrl)
+        try:
+            mw = rsl.ttest(v, ctrl)
+            mwdict[i]['pval'] = mw.rx('p.value')[0][0]
+        except:
+            mw = []
 
         mwdict[i] = {}
-        mwdict[i]['pval'] = mw.rx('p.value')[0][0]
         mwdict[i]['sigtest'] = 'Welchs t-test'
         mwdict[i]['n'] = len(v)
         mwdict[i]['mean'] = np.mean(v).tolist()
@@ -640,6 +646,12 @@ def createinfolat(ofile):
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tMedian latency (s)\tn\n')
 
+def createinfolatmean(ofile):
+    '''Creates a file with information on the latency graphs plotted in 
+    multiplot_1bar.'''
+    with open(ofile, 'w') as f:
+        f.write('Genotype\tBehavior\tMean\tStdev\tSterr\tn\n')
+
 
 def writeinfolat(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
 keyfile='keylist'):
@@ -728,6 +740,13 @@ def createinfoprop(ofile):
         '# pairs exhibiting behavior', '# pairs tested', \
         '% exhibiting behavior', 'ci_lower', 'ci_upper' ))
 
+def createinfopropmean(ofile):
+    '''Creates a file with information on the frequency graphs plotted with
+    'multiplot_1barf'.
+    '''
+    with open(ofile, 'w') as f:
+        f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format('Genotype', 'Behavior', \
+        'Mean', '# pairs tested', 'stdev', 'sterr' ))
 
 def writeinfoprop(ofile, d, binconf, kind, iskeyfile='True', keyfile='keylist'):
     '''Writes into a file with information on the 
@@ -770,6 +789,46 @@ def writeinfoprop(ofile, d, binconf, kind, iskeyfile='True', keyfile='keylist'):
         #f.write('Max n = {0}\n'.format(np.max(mx)))
         #f.write('Min n = {0}\n'.format(np.min(mi)))
 
+
+def writeinfopropmean(ofile, d, kind, iskeyfile='True', keyfile='keylist'):
+    '''Writes into a file with information on the 
+    frequency graphs plotted in multiplot_1bar.
+    d = dictionary with proportion data
+    '''
+    md = dictttest(d)
+    
+    if iskeyfile == 'True':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = md.iterkeys()
+
+    mx = []
+    mi = []
+    for k in keylist:
+        if kind == 'flare':
+            nk = 'flare or >'
+        if kind == 'charge':
+            nk = 'any aggression'
+        if kind == 'escd':
+            nk = 'dominant escalation'
+        if kind == 'escm':
+            nk = 'mutual escalation'
+        if kind == 'we':
+            nk = 'wing extension'
+        if kind == 'copsuc':
+            nk = 'successful copulation'
+        if kind == 'copatt1':
+            nk = 'first attempted copulation'
+     
+    
+        with open(ofile, 'a') as f:
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(k, kind, 
+            md[k]['mean'], md[k]['n'], md[k]['stdev'], md[k]['sterr']))
+            #mx.append(np.max(v['n']))
+            #mi.append(np.min(v['n']))
+    #with open(ofile, 'a') as f:
+        #f.write('Max n = {0}\n'.format(np.max(mx)))
+        #f.write('Min n = {0}\n'.format(np.min(mi)))
 
 
 #### FUNCTIONS FOR PLOTTING FIGURES ###$
@@ -1114,7 +1173,7 @@ stitlesz=10, lw=1, starpos=0.75):
     
     # ======== ADDS TICKS, LABELS and TITLES==========
     # Sets the x- and y-axis limits.
-    
+    print x_list
     xlim = x_list[-1]+1.5*barwidth
     plt.axis( [0, xlim, ymin, ylim])
     

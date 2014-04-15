@@ -22,6 +22,8 @@ SHAPFILE = '{0}clatshap_{1}.txt'.format(DIR, CDIR) # Name of file with
 #results of Shapiro test for normality.
 PROPFILE = '{0}cpropinfo_{1}.txt'.format(DIR, CDIR) # Name of file with 
 #frequency info.
+PROPMEANFILE = '{0}cpropmeaninfo_{1}.txt'.format(DIR, CDIR) # Name of file with 
+#frequency info.
 LATFILEMED = '{0}clatinfomed_{1}.txt'.format(DIR, CDIR) # Name of file with 
 #latency info.
 LATFILEMEAN = '{0}clatinfomean_{1}.txt'.format(DIR, CDIR) # Name of file with 
@@ -48,7 +50,7 @@ STITLESZ=12 # Title font size.
 # Parameters for latency subplots.
 SUBPLOTNS1 = [231, 232, 233] # Subplots of the figure for latency.
 SUBPLOTLS1 = ['A', 'B', 'C'] # Labels for the subplots.
-YLIMS1 = [120, 500, 700]
+YLIMS1 = [120, 700, 700]
 YMINS1 = [-0.05 * y for y in YLIMS1]
 STARPOS1 = [0.75, 0.75, 0.75]
 

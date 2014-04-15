@@ -14,8 +14,9 @@ from cfigLF6set import *
 cmn.makenewdir(DIR)
 acl.createshapfile(SHAPFILE)
 acl.createinfolat(LATFILEMED)
-acl.createinfolat(LATFILEMEAN)
+acl.createinfolatmean(LATFILEMEAN)
 acl.createinfoprop(PROPFILE)
+acl.createinfopropmean(PROPMEANFILE)
 acl.createstatfile(LATMWFILE, 'Mann-Whitney Test')
 acl.createstatfile(FISHTFILE, 'Fisher\'s Exact Test')
 
@@ -80,3 +81,4 @@ for kind in KINDLIST:
     acl.writeinfolat(LATFILEMED, ld, kind, CTRLKEY, 'median', 'True', KEYFILE)
     acl.writeinfolat(LATFILEMEAN, ld, kind, CTRLKEY, 'mean', 'True', KEYFILE)
     acl.writeinfoprop(PROPFILE, pd, BINCONF, kind, 'True', KEYFILE)
+    acl.writeinfopropmean(PROPMEANFILE, pd, kind, 'True', KEYFILE)
