@@ -154,6 +154,7 @@ def dictagfreq2(kind, fname):
     return(d)
 
 
+
 def agdurcmd(kind, blist, durlist, genlist):
     
     #print('blistcount', blist.count('wt'))
@@ -193,6 +194,47 @@ def agdurcmd(kind, blist, durlist, genlist):
                 genlist.append(val)        
         if kind =='escm':
             val = np.sum(durlist[blist=='m'])
+            if val > 0:
+                genlist.append(val)   
+
+
+def agnumcmd(kind, blist, genlist):
+    
+    blist = np.array(blist)
+    
+    if len(blist) > 0:    
+        
+        if kind == 'charge':
+            #print 'behavior list', blist
+            #print blist == 'c'
+            ind = (blist=='c')+(blist=='o')
+            #print 'ind', ind
+            val = len(blist[ind])
+            #print 'val', val
+            if val > 0:
+                genlist.append(val)
+
+        if kind =='wingthreat':
+            ind = (blist=='wt')+(blist=='xwt')
+            val = len(blist[ind])
+            #print(val)
+            if val > 0:
+                genlist.append(val)
+        
+        if kind =='anyag':
+            ind = (blist=='c')+(blist=='o')+(blist=='p')+(blist=='l')+\
+            (blist=='g')+(blist=='h')+(blist=='g')+(blist=='wr')+(blist=='b')
+            val = len(blist[ind])
+            #print(val)
+            if val > 0:
+                genlist.append(val)
+
+        if kind =='escd':
+            val = len(blist[blist=='d'])
+            if val > 0:
+                genlist.append(val)        
+        if kind =='escm':
+            val = len(blist[blist=='m'])
             if val > 0:
                 genlist.append(val)   
                          
@@ -246,6 +288,53 @@ def dictagdur2(kind, fname):
 
     return(d)
 
+
+def dictagnum(kind, fname):
+    """Generates a dictionary where the keywords are genotypes and the values 
+    indicate the number of times each fly exhibits the behavior.
+
+    kind = 'charge' (wing threat + charge, orientation, or lunge),
+    'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    fname = file with raw data
+    """
+
+    #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
+    #'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 
+    #'esccomm', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
+
+
+    d = {}
+    y = '1'
+    b = []
+    
+    with open(fname) as f:
+        for l in f:
+            #print(l)
+            adict = agline2(l)
+            
+            if adict['well'] != y:
+                if len(b) > 0:
+                    agnumcmd(kind, b, d[gen])
+                b = []
+            
+            if adict['agtype'] != '-' and adict['agtype'] != 'x':
+                b.append(adict['agtype'])
+            
+            if adict['esctype'] != '' and adict['escdur'] != '':
+                b.append(adict['esctype'])
+
+            gen = adict['gen']
+            #print(gen)
+            if gen not in d:
+                d[gen] = []
+                
+            y = adict['well']
+    
+    agnumcmd(kind, b, d[gen])
+    print d
+
+    return(d)
 
 
 
@@ -399,6 +488,7 @@ def dictmw(d, ctrlkey='cs', test='exact'):
     mwdict = {}
 
     for i,v in d.iteritems():
+        print 'i', i 
         if not v:
             #mwdict[i] = []
             continue
@@ -423,6 +513,7 @@ def dictmw(d, ctrlkey='cs', test='exact'):
 
 def dictttest(d, ctrlkey='cs'):
 
+
     """Returns a dictionary in which the keys are the genotypes and the values 
     are the results of the Welch Two Sample t-test as implemented in R.
 
@@ -440,6 +531,8 @@ def dictttest(d, ctrlkey='cs'):
         #print(v)
         if len(v) < 2:
             continue
+        if i == ctrlkey:
+            continue
             
         v, ctrl = map(unlist, [v, d[ctrlkey]])
 
@@ -456,7 +549,10 @@ def dictttest(d, ctrlkey='cs'):
         mwdict[i]['control'] = ctrlkey
         mwdict[i]['stdev'] = np.std(v).tolist()
         mwdict[i]['sterr'] = np.std(v).tolist()/np.sqrt(len(v))
-    
+
+        print 'i', i 
+        mw = rsl.ttest(v, ctrl)
+        mwdict[i]['pval'] = mw.rx('p.value')[0][0]
     return(mwdict)    
 
 
@@ -625,6 +721,7 @@ def createstatfile(fname, test):
 
 def writestatfile(fname, pvaldict, kind):
 
+
     """Writes a file (specified in 'fname') listing the results of the 
     selected significance test as implemented in R.
 
@@ -635,6 +732,7 @@ def writestatfile(fname, pvaldict, kind):
     """
 
     for k, v in pvaldict.iteritems():
+        print v
         #print(k)
         with open(fname, 'a') as f:
             f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, \
@@ -999,6 +1097,12 @@ def plottitle(metric, kind):
             t = '% flies copulating'
         if kind == 'copatt1':
             t = '% flies attempting\ncopulation'
+
+    if metric == 'agnummean' or metric=='agnummed':
+        if kind == 'charge':
+            t = 'Number of charges'
+        if kind == 'escd':
+            t = 'Number of bouts\nof dominant escalation'
             
     return(t)
 
@@ -1043,6 +1147,25 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         md = dictttest(d, ctrlkey)
         adjpd = mcpval(md, 'fdr', 'True', keyfile)
     
+    if metric == 'agnummean':
+        fulld = dictagnum(kind, fname)
+        d = {}
+        for k in keylist:
+            d[k] = fulld[k]    
+        print d
+        md = dictttest(d, ctrlkey)
+        print md
+        adjpd = mcpval(md, 'fdr', 'True', keyfile)
+        print 'adjpd', adjpd
+    
+    if metric == 'agnummed':
+        d = dictagnum(kind, fname)
+        print d
+        md = dictmw(d, ctrlkey)
+        print md
+        adjpd = mcpval(md, 'fdr', 'True', keyfile)
+        print 'adjpd', adjpd
+
     if metric == 'agprop':
         d = dictagfreq2(kind, fname)
         print d.keys()
@@ -1069,7 +1192,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         
     # Generate coordinate and pvalue lists.
     
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed':
         for k in keylist:
             if not d[k]:
                 continue
@@ -1081,7 +1204,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
             except KeyError:
                 continue
     
-    if metric == 'agdurmean' or metric == 'clatmean':
+    if metric == 'agdurmean' or metric == 'clatmean' or metric == 'agnummean':
         for k in keylist:
             if not d[k]:
                 continue
@@ -1114,14 +1237,14 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
 
 def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
 
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed':
     #Plots the box and whisker plot.
         bp = plt.boxplot(vals, positions=x_list, sym='')
         pylab.setp(bp['boxes'], color='black')
         pylab.setp(bp['whiskers'], color='black', ls='-')
         pylab.setp(bp['medians'], color='black')
     
-    if metric == 'agdurmean' or metric == 'clatmean':
+    if metric == 'agdurmean' or metric == 'clatmean' or metric == 'agnummean':
     # Plots a bar plot displaying means.
         bp = plt.bar(x_list, vals, yerr=sterr, width=truebarw, color='#d3d3d3', \
         bottom=0, ecolor='k', capsize=0.5, linewidth=lw)    
@@ -1135,13 +1258,15 @@ def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
 
 def multiplot(metric, kind, fname, ctrlkey, barwidth, ymin, ylim, ylabel, 
 yaxisticks, subplotn, subplotl, binconf, keyfile='keylist', fontsz=9, 
-stitlesz=10, lw=1, starpos=0.75):
+stitlesz=10, lw=1, starpos=0.8):
     
 
     # ======== LOAD DATA =============
 
     vals, conds, pvals, n, stdev, sterr, lowerci, upperci, nsuc = \
     loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile)
+
+
 
     # ======== SET INITIAL FIGURE PROPERTIES =============
     mpl.rc('axes', linewidth=lw)
@@ -1160,6 +1285,10 @@ stitlesz=10, lw=1, starpos=0.75):
     lastbar = (1.5*barnum*barwidth)-barwidth # X-coordinate of last bar
     x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
     x_list = x_gen1
+    
+    print 'metric', metric
+    print 'vals', vals
+    print 'barnum', barnum
     print 'x_list'
 
     # Set width of bars.
@@ -1193,6 +1322,7 @@ stitlesz=10, lw=1, starpos=0.75):
 
     # Add title
     t = plottitle(metric, kind)
+
     plt.title(t, fontsize=stitlesz)
     
     # Labels the subplot

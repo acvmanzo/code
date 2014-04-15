@@ -12,6 +12,8 @@ PROPFILE = '{0}agpropinfo_{1}.txt'.format(DIR, CDIR) # Name of file with
 #function 'prop.test'
 FISHTFILE = '{0}agfishtest_{1}.txt'.format(DIR, CDIR) # Name of file with results 
 #of Fisher's test.
+NUMTFILE = '{0}agnumttest_{1}.txt'.format(DIR, CDIR) # Name of file with results.
+SHAPNUMFILE = '{0}agnumshap_{1}.txt'.format(DIR, CDIR)
 
 # Info about figure content.
 KINDLIST = ['anyag', 'escd', 'escm'] # Behaviors to be analyzed.
