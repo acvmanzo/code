@@ -42,7 +42,7 @@ FIGW=11.5 # Figure width.
 FIGH=3 # Figure height.
 
 BARWIDTH=1
-YMIN=0
+YMIN=-10
 YAXISTICKS = 5
 
 # Info about figure content - bar plots.

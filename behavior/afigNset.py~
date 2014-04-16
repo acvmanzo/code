@@ -14,19 +14,29 @@ NUMMWFILE = '{0}agnummwtest_{1}.txt'.format(DIR, CDIR)
 SHAPNUMFILE = '{0}agnumshap_{1}.txt'.format(DIR, CDIR)
 
 # Info about figure content.
-KINDLIST = ['charge'] # Behaviors to be analyzed.
+#KINDLIST = ['wingthreat', 'charge', 'chase', 'escd', 'escm'] # Behaviors to be analyzed.
+KINDLIST = ['charge', 'escd', 'escm'] # Behaviors to be analyzed.
 
 # Figure parameters.
-SUBPLOTNS = [111, 132, 133] # Subplots of the figure for frequency.
-SUBPLOTLS = ['', 'B', 'C'] # Labels for the subplots.
-YLIMS = [20, 10, 10]
-#STARPOS = [0.85, 0.85, 0.85] # Coordinate to position significance stars; % of 
-STARPOS = [0.8, 0.8, 0.8] # Coordinate to position significance stars; % of 
-#ylim
+#SUBPLOTNS = [151, 152, 153, 154, 155] # Subplots of the figure for frequency.
+#SUBPLOTLS = ['', '', '', '', ''] # Labels for the subplots.
+#YLIMS = [30, 25, 10, 10, 10]
+##STARPOS = [0.85, 0.85, 0.85] # Coordinate to position significance stars; % of 
+#STARPOS = [0.8, 0.8, 0.8, 0.8, 0.8] # Coordinate to position significance stars; % of 
+##ylim
 
-FIGDPI=1200 # Figure DPI.
-FIGW=3 # Figure width.
-FIGH=2.75 #Figure height.
+SUBPLOTNS = [131, 132, 133] # Subplots of the figure for frequency.
+SUBPLOTLS = ['', '', ''] # Labels for the subplots.
+YLIMS = [30, 10, 10]
+#STARPOS = [0.85, 0.85, 0.85] # Coordinate to position significance stars; % of 
+STARPOS = [0.8, 0.8] # Coordinate to position significance stars; % of 
+
+FIGDPI=1500 # Figure DPI.
+#FIGW=11.5 # Figure width.
+#FIGH=3 #Figure height.
+
+FIGW=10 # Figure width.
+FIGH=3 #Figure height.
 
 FONTSZ=11# Size of font.
 LW = 1 # Width of lines in the figure.

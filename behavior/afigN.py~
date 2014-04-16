@@ -57,6 +57,7 @@ for kind in KINDLIST:
     md = acl.dictttest(d, ctrlkey=CTRLKEY)
     mwd = acl.dictmw(d, ctrlkey=CTRLKEY)
     mtd = acl.mcpval(md)
+    print mtd
     mcmwd = acl.mcpval(mwd)
     acl.writestatfile(NUMTFILE, mtd, kind)
     acl.writeshapfile(SHAPNUMFILE, d, kind)

@@ -59,7 +59,7 @@ for kind in KINDLIST:
     mtd = acl.mcpval(md)
     print mtd
     mcmwd = acl.mcpval(mwd)
-    acl.writestatfile(NUMTFILE, mtd, kind)
+    #acl.writestatfile(NUMTFILE, mtd, kind)
     acl.writeshapfile(SHAPNUMFILE, d, kind)
     acl.writestatfile(NUMMWFILE, mcmwd, kind)
 

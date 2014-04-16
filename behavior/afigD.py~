@@ -70,6 +70,6 @@ for kind in KINDLIST:
     
     acl.writeshapfile(SHAPFILE, d, kind)
     acl.writestatfile(MWFILE, pmwd, kind)
-    #acl.writestatfile(TFILE, pmd, kind)
+    acl.writestatfile(TFILE, pmd, kind)
     acl.writeinfodur(DURFILE, d, kind, 'median')
     acl.writeinfodur(DURFILE2, d, kind, 'mean')

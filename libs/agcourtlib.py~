@@ -188,6 +188,12 @@ def agdurcmd(kind, blist, durlist, genlist):
             if val > 0:
                 genlist.append(val)
 
+        if kind == 'chase':
+            ind = (blist=='ch')
+            val = np.sum(durlist[ind])
+            if val > 0:
+                genlist.append(val)
+
         if kind =='escd':
             val = np.sum(durlist[blist=='d'])
             if val > 0:
@@ -226,6 +232,12 @@ def agnumcmd(kind, blist, genlist):
             (blist=='g')+(blist=='h')+(blist=='g')+(blist=='wr')+(blist=='b')
             val = len(blist[ind])
             #print(val)
+            if val > 0:
+                genlist.append(val)
+
+        if kind == 'chase':
+            ind = (blist=='ch')
+            val = len(blist[ind])
             if val > 0:
                 genlist.append(val)
 
@@ -944,6 +956,7 @@ def plotlatbw(kind, d, iskeyfile = 'true', type='bw'):
 
     ylabel = 'Latency (s)'
     ftitle = plottitlelat(kind)
+
     
     fig1 = gpl.plotdata(d, md, keylist, type, ylabel=ylabel, ftitle=ftitle, 
     titlesize='large')
@@ -1067,7 +1080,7 @@ def plottitle(metric, kind):
         if kind == 'copatt1':
             t = 'Latency to\nfirst copulation attempt'
     
-    if metric == 'aglatmed' or metric == 'agdurmean':
+    if metric == 'aglatmed' or metric == 'agdurmean' or metric == 'agdurmed':
         if kind == 'wingthreat':
             t = 'Wing threat duration'
         if kind == 'charge':
@@ -1078,6 +1091,8 @@ def plottitle(metric, kind):
             t = 'Duration of\ndominant escalation'
         if kind == 'escm':
             t = 'Duration of\nmutual escalation'
+        if kind == 'chase':
+            t = 'Duration of\nchasing'
             
     if metric == 'agprop' or metric == 'cprop':
         if kind == 'wingthreat':
@@ -1087,9 +1102,9 @@ def plottitle(metric, kind):
         if kind == 'anyag':
             t = '% pairs fighting'
         if kind == 'escd':
-            t = '% pairs with\ndominant\nesc'
+            t = '% pairs with\ndominant esc'
         if kind == 'escm':
-            t = '% pairs with\nmutual\nesc'
+            t = '% pairs with\nmutual esc'
         if kind == 'we':
             t = '% flies displaying\nwing extension'
         if kind == 'copsuc':
@@ -1098,16 +1113,23 @@ def plottitle(metric, kind):
             t = '% flies attempting\ncopulation'
 
     if metric == 'agnummean' or metric=='agnummed':
+        if kind == 'wingthreat':
+            t = 'Number of\nwing threats'
         if kind == 'charge':
-            t = 'Number of charges'
+            t = 'Number of\ncharges'
         if kind == 'escd':
             t = 'Number of bouts\nof dominant escalation'
+        if kind == 'escm':
+            t = 'Number of bouts\nof mutual escalation'
+        if kind == 'chase':
+            t = 'Number of bouts\nof chasing'
             
     return(t)
 
 
 
 def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
+
     # Load data for use in fancy multiplots.
     
     # For all plots.
@@ -1138,6 +1160,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
     
     if metric == 'aglatmed':
         d = dictagdur2(kind, fname)
+        #print d
         mwd = dictmw(d, ctrlkey)
         adjpd = mcpval(mwd, 'fdr', 'True', keyfile)
     
@@ -1146,6 +1169,11 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         md = dictttest(d, ctrlkey)
         adjpd = mcpval(md, 'fdr', 'True', keyfile)
     
+    if metric == 'agdurmed':
+        d = dictagdur2(kind, fname)
+        md = dictmw(d, ctrlkey)
+        adjpd = mcpval(md, 'fdr', 'True', keyfile)
+
     if metric == 'agnummean':
         fulld = dictagnum(kind, fname)
         d = {}
@@ -1191,7 +1219,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         
     # Generate coordinate and pvalue lists.
     
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed' or metric == 'agdurmed':
         for k in keylist:
             if not d[k]:
                 continue
@@ -1236,7 +1264,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
 
 def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
 
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed' or metric == 'agdurmed':
     #Plots the box and whisker plot.
         bp = plt.boxplot(vals, positions=x_list, sym='')
         pylab.setp(bp['boxes'], color='black')
@@ -1265,7 +1293,7 @@ stitlesz=10, lw=1, starpos=0.8):
     vals, conds, pvals, n, stdev, sterr, lowerci, upperci, nsuc = \
     loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile)
 
-
+    print 'vals', vals
 
     # ======== SET INITIAL FIGURE PROPERTIES =============
     mpl.rc('axes', linewidth=lw)
