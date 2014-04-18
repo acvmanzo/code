@@ -20,6 +20,7 @@ CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be
 acl.createstatfile(NUMTFILE, 'T-test')
 acl.createstatfile(NUMMWFILE, 'Mann-Whitney Test')
 acl.createshapfile(SHAPNUMFILE)
+acl.createinfonum(NUMFILE, 'median')
 
 
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
@@ -59,9 +60,10 @@ for kind in KINDLIST:
     mtd = acl.mcpval(md)
     print mtd
     mcmwd = acl.mcpval(mwd)
-    acl.writestatfile(NUMTFILE, mtd, kind)
+    #acl.writestatfile(NUMTFILE, mtd, kind)
     acl.writeshapfile(SHAPNUMFILE, d, kind)
     acl.writestatfile(NUMMWFILE, mcmwd, kind)
+    acl.writeinfonum(NUMFILE, d, kind, 'median')
 
     
 #for kind in KINDLIST:

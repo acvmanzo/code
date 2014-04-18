@@ -20,6 +20,7 @@ CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be
 acl.createstatfile(NUMTFILE, 'T-test')
 acl.createstatfile(NUMMWFILE, 'Mann-Whitney Test')
 acl.createshapfile(SHAPNUMFILE)
+acl.createinfonum(NUMFILE, 'median')
 
 
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
@@ -36,18 +37,18 @@ plt.tight_layout()
 # Saves figure
 plt.savefig(OUTPUTFIG1)
 
-fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
-for k in ks2:
-    print('behavior', k)
-    acl.multiplot('agnummean', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
-    ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
-    binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
-    lw=LW, starpos=k[4])
+#fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
+#for k in ks2:
+    #print('behavior', k)
+    #acl.multiplot('agnummean', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
+    #ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
+    #binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
+    #lw=LW, starpos=k[4])
 
-# Adjusts figure areas.
-plt.tight_layout()
-# Saves figure
-plt.savefig(OUTPUTFIG2)
+## Adjusts figure areas.
+#plt.tight_layout()
+## Saves figure
+#plt.savefig(OUTPUTFIG2)
 
 
 for kind in KINDLIST:
@@ -62,6 +63,7 @@ for kind in KINDLIST:
     #acl.writestatfile(NUMTFILE, mtd, kind)
     acl.writeshapfile(SHAPNUMFILE, d, kind)
     acl.writestatfile(NUMMWFILE, mcmwd, kind)
+    acl.writeinfonum(NUMFILE, d, kind, 'median')
 
     
 #for kind in KINDLIST:

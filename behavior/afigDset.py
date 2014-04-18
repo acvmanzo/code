@@ -34,7 +34,7 @@ KINDLIST = ['wingthreat', 'charge', 'chase', 'escd', 'escm'] # Behaviors to be a
 SUBPLOTNS = [151, 152, 153, 154, 155] # Subplots of the figure for frequency.
 #SUBPLOTLS = ['A', 'B', 'C', 'D', 'E'] # Labels for the subplots.
 SUBPLOTLS = ['', '', '', '', ''] # Labels for the subplots.
-YLIMS = [300, 30, 150, 150, 20]
+YLIMS = [300, 30, 150, 150, 50]
 STARPOS = [0.75, 0.75, 0.75, 0.75, 0.75]
 
 FIGDPI=1200 # Figure DPI.

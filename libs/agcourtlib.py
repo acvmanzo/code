@@ -799,6 +799,19 @@ keyfile='keylist'):
                 md[k]['mean'], md[k]['stdev'], md[k]['sterr'], md[k]['n']))
 
 
+
+def createinfonum(fname, measure):
+    
+    if measure == 'mean':
+        with open(fname, 'w') as g:
+            g.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
+            'Mean Duration (s)', 'Std Error (s)', '# pairs exhibiting behavior'))
+
+    if measure == 'median':
+        with open(fname, 'w') as g:
+            g.write('{0}\t{1}\t{2}\t{3}\n'.format('Genotype', 'Behavior', \
+            'Median Number (s)', '# pairs exhibiting behavior'))
+
 def createinfodur(fname, measure):
     
     if measure == 'mean':
@@ -811,6 +824,35 @@ def createinfodur(fname, measure):
             g.write('{0}\t{1}\t{2}\t{3}\n'.format('Genotype', 'Behavior', \
             'Median Duration (s)', '# pairs exhibiting behavior'))
 
+
+def writeinfonum(ofile, d, kind, measure, iskeyfile='True', 
+keyfile='keylist'):
+    '''measure = mean or median'''
+    
+    if iskeyfile == 'True':
+        keylist = cmn.load_keys(keyfile)
+    else:
+        keylist = d.iterkeys()
+    
+    if measure == 'mean':
+        md = dictttest(d)
+        for k in keylist:
+            try:
+                with open(ofile, 'a') as f:
+                    f.write('{0}\t{1}\t{2:.2f}\t{3:.2f}\t{4}\n'.format(k, kind, 
+                    md[k]['mean'], md[k]['sterr'], md[k]['n']))
+            except KeyError:
+                continue
+                
+    if measure == 'median':
+        md = dictmw(d)
+        for k in keylist:
+            try:
+                with open(ofile, 'a') as f:
+                    f.write('{0}\t{1}\t{2:.2f}\t{3}\n'.format(k, kind, 
+                    md[k]['median'], md[k]['n']))  
+            except KeyError:
+                continue
 
 def writeinfodur(ofile, d, kind, measure, iskeyfile='True', 
 keyfile='keylist'):
