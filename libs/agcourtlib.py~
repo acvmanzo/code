@@ -1,6 +1,62 @@
-
 # Contains functions useful for analyzing aggression and courtship
 # data from a csv file generated during manual scoring.
+
+#General information:
+
+#Behavior code as listed in data:
+#'boxing': 'b',
+#'charge': 'c',
+#'chase': 'ch',
+#'chasing': 'ch',
+#'fencing': 'f',
+#'grab': 'g',
+#'lunge': 'l', 
+#'lunging': 'l',
+#'hold': 'h',
+#'push': 'p',
+#'singing': 'other',
+#'tumble': 't',
+#'wt': 'wt',
+#'wing threat': 'wt',
+#'wrestling': 'w'
+
+Kinds of behaviors analyzed (use as value of variable 'kind'):
+
+wingthreat: 'wt' + 'xwt'
+
+if kind == 'charge':
+    if blist.count('c') > 0 or blist.count('o') > 0:
+        genlist.append(100)
+    else:
+        genlist.append(0)
+
+if kind == 'anyag':
+    if blist.count('c') > 0 or \
+    blist.count('o') > 0 or \
+    blist.count('p') > 0 or \
+    blist.count('l') > 0 or \
+    blist.count('ch') > 0 or \
+    blist.count('g') > 0 or \
+    blist.count('h') > 0 or \
+    blist.count('d') > 0 or \
+    blist.count('m') > 0 or \
+    blist.count('wr') > 0:
+        genlist.append(100)
+    else:
+        genlist.append(0)
+    
+
+if kind == 'escd':
+    if blist.count('d') > 0:
+        genlist.append(100)
+    else:
+        genlist.append(0)
+
+if kind == 'escm':
+    if blist.count('m') > 0:
+        genlist.append(100)
+    else:
+        genlist.append(0)
 
 
 import os
@@ -50,7 +106,13 @@ def agline2(line):
 
 
 def agfreqcmd(kind, blist, genlist):
-    
+    '''Helper function used in dictagfreq2() that appends values to a list depending on whether a specific behavior has occurred.
+
+    Input:
+    kind = kind of behavior
+    blist = list of behaviors
+    genlist = list of occurrences of each behavior; if a behavior has occurred, genlist is extended
+    '''
     
     if kind == 'wingthreat':
         if blist.count('wt') > 0 or blist.count('xwt') > 0:
@@ -710,13 +772,13 @@ def writestatfile(fname, pvaldict, kind):
 
 def createinfolat(ofile):
     '''Creates a file with information on the latency graphs plotted in 
-    multiplot_1bar.'''
+    multiplot.'''
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tMedian latency (s)\tn\n')
 
 def createinfolatmean(ofile):
     '''Creates a file with information on the latency graphs plotted in 
-    multiplot_1bar.'''
+    multiplot.'''
     with open(ofile, 'w') as f:
         f.write('Genotype\tBehavior\tMean\tStdev\tSterr\tn\n')
 
@@ -724,7 +786,7 @@ def createinfolatmean(ofile):
 def writeinfolat(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
 keyfile='keylist'):
     """Writes into a file with information on the latency graphs plotted in 
-    multiplot_1bar.
+    multiplot.
     
     ifile = file with data to be analyzed
     ofile = file to write to
@@ -758,7 +820,9 @@ keyfile='keylist'):
 
 
 def createinfonum(fname, measure):
-    
+    '''Creates a file with information on the behavior number graph plotted in 
+    multiplot.'''
+
     if measure == 'mean':
         with open(fname, 'w') as g:
             g.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
@@ -770,7 +834,9 @@ def createinfonum(fname, measure):
             'Median Number (s)', '# pairs exhibiting behavior'))
 
 def createinfodur(fname, measure):
-    
+    '''Creates a file with information on the behavior duration graph plotted in 
+    multiplot.'''
+
     if measure == 'mean':
         with open(fname, 'w') as g:
             g.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format('Genotype', 'Behavior', \
@@ -784,7 +850,17 @@ def createinfodur(fname, measure):
 
 def writeinfonum(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
 keyfile='keylist'):
-    '''measure = mean or median'''
+    '''Writes into a file with information on the frequency graphs plotted in multiplot.
+
+    Input:
+    ofile = name of output file
+    d = dictionary with behavior data
+    kind = type of behavior
+    ctrlkey = name of control group that other groups will be compared to (e.g., 'CS')
+    measure = mean or median: writes down information pertaining to the mean or the median of the data
+    iskeyfile = 'True' or 'False': whether or not a file with a keylist exists
+    keyfile = name of keylist file
+    '''
     
     if iskeyfile == 'True':
         keylist = cmn.load_keys(keyfile)
@@ -843,25 +919,31 @@ keyfile='keylist'):
 
 def createinfoprop(ofile):
     '''Creates a file with information on the frequency graphs plotted with
-    'multiplot_1barf'.
+    'multiplot'.
     '''
     with open(ofile, 'w') as f:
         f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format('Genotype', 'Behavior', \
         '# pairs exhibiting behavior', '# pairs tested', \
         '% exhibiting behavior', 'ci_lower', 'ci_upper' ))
 
+
 def createinfopropmean(ofile):
     '''Creates a file with information on the frequency graphs plotted with
-    'multiplot_1barf'.
+    'multiplot'.
     '''
     with open(ofile, 'w') as f:
         f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format('Genotype', 'Behavior', \
         'Mean', '# pairs tested', 'stdev', 'sterr' ))
 
+
 def writeinfoprop(ofile, d, binconf, kind, iskeyfile='True', keyfile='keylist'):
     '''Writes into a file with information on the 
-    frequency graphs plotted in multiplot_1bar.
+    frequency graphs plotted in multiplot.
     d = dictionary with proportion data
+    binconf = confidence of binomial confidence interval
+    kind = type of behavior
+    iskeyfile = 'True' or 'False': whether or not a file with a keylist exists
+    keyfile = name of keylist file
     '''
 
     bd = dictbin(d, binconf)
@@ -902,7 +984,7 @@ def writeinfoprop(ofile, d, binconf, kind, iskeyfile='True', keyfile='keylist'):
 
 def writeinfopropmean(ofile, d, kind, iskeyfile='True', keyfile='keylist'):
     '''Writes into a file with information on the 
-    frequency graphs plotted in multiplot_1bar.
+    frequency graphs plotted in multiplot.
     d = dictionary with proportion data
     '''
     md = dictttest(d)
@@ -1131,6 +1213,7 @@ def plottitle(metric, kind):
 
 def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
 
+
     # Load data for use in fancy multiplots.
     
     # For all plots.
@@ -1277,6 +1360,7 @@ def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
 
 
 def multiplot(metric, kind, fname, ctrlkey, barwidth, ymin, ylim, ylabel, 
+
 yaxisticks, subplotn, subplotl, binconf, keyfile='keylist', fontsz=9, 
 stitlesz=10, lw=1, starpos=0.8):
     
