@@ -32,33 +32,25 @@ def agline2(line):
     
     vals = {}
     y = line.strip('\n').split(',')[:14]
-    #print 'y0', y[0]
     movieparse = y[0].strip('.MTS').split('_')
-    #print movieparse
     if len(movieparse) == 5: 
         movieparse.insert(3, 'PF24')
-    #print movieparse
     y.extend(movieparse)
     
-    #print(y)
     
     x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
     'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
     
-    #print 'lenx', len(x), 'leny', len(y)
     z = zip(x, y)
 
     for item in z:
         vals[item[0]] = item[1]
 
-    #print 'genotype', vals['gen'] 
-    #print vals['movie'], vals['well'], vals['agmin']
     return(vals)
 
 
 def agfreqcmd(kind, blist, genlist):
     
-    #print('blistcount', blist.count('wt'))
     
     if kind == 'wingthreat':
         if blist.count('wt') > 0 or blist.count('xwt') > 0:
@@ -124,10 +116,7 @@ def dictagfreq2(kind, fname):
     
     with open(fname) as f:
         for l in f:
-            #print(l)
             adict = agline2(l)
-            #print adict
-            #print(l)
             
             if adict['well'] != y:
                 agfreqcmd(kind, b, d[gen])
@@ -143,9 +132,6 @@ def dictagfreq2(kind, fname):
             if gen not in d:
                 d[gen] = [] 
                 
-            #print('b', b)
-            #print('well', adict['well'])
-            #print('gen', gen, 'd', d)
                      
             y = adict['well']
     
@@ -157,16 +143,11 @@ def dictagfreq2(kind, fname):
 
 def agdurcmd(kind, blist, durlist, genlist):
     
-    #print('blistcount', blist.count('wt'))
     blist, durlist = map(np.array, [blist, durlist])
-    #print('new')
-    #print('durlist', durlist)
-    #print('blist', blist)
     durlist = durlist.astype(int)
     
     if len(durlist) > 0:
     
-        #print('durlist', len(durlist), durlist)
         
         if kind == 'charge':
             val = np.sum(durlist[blist=='c'])
@@ -176,7 +157,6 @@ def agdurcmd(kind, blist, durlist, genlist):
         if kind =='wingthreat':
             ind = (blist=='wt')+(blist=='xwt')
             val = np.sum(durlist[ind])
-            #print(val)
             if val > 0:
                 genlist.append(val)
         
@@ -184,7 +164,6 @@ def agdurcmd(kind, blist, durlist, genlist):
             ind = (blist=='c')+(blist=='o')+(blist=='p')+(blist=='l')+\
             (blist=='g')+(blist=='h')+(blist=='g')+(blist=='wr')+(blist=='b')
             val = np.sum(durlist[ind])
-            #print(val)
             if val > 0:
                 genlist.append(val)
 
@@ -211,19 +190,20 @@ def agnumcmd(kind, blist, genlist):
     if len(blist) > 0:    
         
         if kind == 'charge':
-            #print 'behavior list', blist
-            #print blist == 'c'
             ind = (blist=='c')+(blist=='o')
-            #print 'ind', ind
             val = len(blist[ind])
-            #print 'val', val
+            if val > 0:
+                genlist.append(val)
+        
+        if kind == 'chargeonly':
+            ind = (blist=='c')
+            val = len(blist[ind])
             if val > 0:
                 genlist.append(val)
 
         if kind =='wingthreat':
             ind = (blist=='wt')+(blist=='xwt')
             val = len(blist[ind])
-            #print(val)
             if val > 0:
                 genlist.append(val)
         
@@ -231,7 +211,6 @@ def agnumcmd(kind, blist, genlist):
             ind = (blist=='c')+(blist=='o')+(blist=='p')+(blist=='l')+\
             (blist=='g')+(blist=='h')+(blist=='g')+(blist=='wr')+(blist=='b')
             val = len(blist[ind])
-            #print(val)
             if val > 0:
                 genlist.append(val)
 
@@ -271,7 +250,6 @@ def dictagdur2(kind, fname):
     
     with open(fname) as f:
         for l in f:
-            #print(l)
             adict = agline2(l)
             
             if adict['well'] != y:
@@ -290,7 +268,6 @@ def dictagdur2(kind, fname):
                 dur.append(adict['escdur'])
 
             gen = adict['gen']
-            #print(gen)
             if gen not in d:
                 d[gen] = []
                 
@@ -322,7 +299,6 @@ def dictagnum(kind, fname):
     
     with open(fname) as f:
         for l in f:
-            #print(l)
             adict = agline2(l)
             
             if adict['well'] != y:
@@ -337,7 +313,6 @@ def dictagnum(kind, fname):
                 b.append(adict['esctype'])
 
             gen = adict['gen']
-            #print(gen)
             if gen not in d:
                 d[gen] = []
                 
@@ -345,7 +320,6 @@ def dictagnum(kind, fname):
     
     agnumcmd(kind, b, d[gen])
     print d
-
     return(d)
 
 
@@ -389,10 +363,8 @@ def dictclat(kind, fname):
         f.next()
         f.next()
         for l in f:
-            #print(l)
             cd = cline2(l)
             gen = cd['gen']
-            #print(gen)
             if gen not in d:
                 d[gen] = []
                 
@@ -416,10 +388,8 @@ def dictcprop(kind, fname):
         f.next()
         f.next()
         for l in f:
-            #print(l)
             cd = cline2(l)
             gen = cd['gen']
-            #print(gen)
             if gen not in d:
                 d[gen] = []
                 
@@ -456,7 +426,6 @@ def dictbin(idict, conf, methods='wilson', label='data'):
     """
 
     mean_dict = {}
-    #print 'idict', idict
 
     for condition, value in idict.iteritems():
 
@@ -477,14 +446,13 @@ def dictbin(idict, conf, methods='wilson', label='data'):
         mean_dict[condition]['label'] = label
         mean_dict[condition]['prop'] = z.rx('mean')[0][0]*100
         mean_dict[condition]['lowerci'] = z.rx('lower')[0][0]*100
-        #print(condition, 'dictbinlowerci', z.rx('lower')[0][0]*100)
         mean_dict[condition]['upperci'] = z.rx('upper')[0][0]*100
         mean_dict[condition]['conf'] = conf
     return(mean_dict)
 
 
 
-def dictmw(d, ctrlkey='cs', test='exact'):
+def dictmw(d, ctrlkey, test='exact'):
 
     """Returns a dictionary in which the keys are the genotypes and the values 
     are the results of the Mann-Whitney test as implemented in R.
@@ -500,8 +468,8 @@ def dictmw(d, ctrlkey='cs', test='exact'):
     mwdict = {}
 
     for i,v in d.iteritems():
-       #print 'i', i 
         if not v:
+            print 'No values for condition', i
             #mwdict[i] = []
             continue
             
@@ -523,7 +491,7 @@ def dictmw(d, ctrlkey='cs', test='exact'):
     return(mwdict)
 
 
-def dictttest(d, ctrlkey='cs'):
+def dictttest(d, ctrlkey):
 
 
     """Returns a dictionary in which the keys are the genotypes and the values 
@@ -540,7 +508,6 @@ def dictttest(d, ctrlkey='cs'):
     mwdict = {}
 
     for i,v in d.iteritems():
-        #print(v)
         if len(v) < 2:
             continue
         if i == ctrlkey:
@@ -562,13 +529,12 @@ def dictttest(d, ctrlkey='cs'):
         mwdict[i]['stdev'] = np.std(v).tolist()
         mwdict[i]['sterr'] = np.std(v).tolist()/np.sqrt(len(v))
 
-        #print 'i', i 
         mw = rsl.ttest(v, ctrl)
         mwdict[i]['pval'] = mw.rx('p.value')[0][0]
     return(mwdict)    
 
 
-def dictfishtest(d, ctrlkey='cs'):
+def dictfishtest(d, ctrlkey):
     """Returns a dictionary with p-values of resulting from a proportion test
     to determine whether each experimental condition differs from the control
     condition. The proportion test used is Fisher's Exact Test implemented as
@@ -587,9 +553,7 @@ def dictfishtest(d, ctrlkey='cs'):
     for i,v in d.iteritems():
 
         nsuc = [np.sum(x)/100 for x in [v, d[ctrlkey]]]
-        #print('nsuc', nsuc)
         nfail = [len(x) - np.sum(x)/100 for x in [v, d[ctrlkey]]]
-        #print('nfail', nfail)
         nsuc = unlist(nsuc)
         nfail = unlist(nfail)
         
@@ -641,21 +605,17 @@ def mcpval(pvaldict, method='fdr', iskeyfile = 'True', keyfile='keylist'):
             ctrl.append(pvaldict[k]['control'])
             newdict[k] = pvaldict[k]
         except KeyError:
+            print 'KeyError!', k
             continue
      
     #for k in keylist:
         #assert pvals[gens.index(k)] == pvaldict[k]['pval']
-    #print('pvals', pvals)
-    #print('gens', gens)
-    #print('ctrl', ctrl)
     if len(pvals) >= 2:
         try:
             pvals.pop(gens.index(ctrl[0]))
-            #print('pvals-noctrl', pvals)
             gens.remove(ctrl[0])
 
             adjpvals = list(rsl.padjust(pvals, method))
-            #print('adjpvals', adjpvals)
             newptuple = zip(gens, adjpvals)
 
             for t in newptuple:
@@ -707,8 +667,6 @@ def writeshapfile(fname, datadict, kind):
     unlist = r['unlist']
 
     for n, v in datadict.iteritems():
-        #print('n', n)
-        #print('v', v)
         if len(v) < 3:
             continue
         if v == np.tile(v[0], len(v)).tolist():
@@ -744,7 +702,6 @@ def writestatfile(fname, pvaldict, kind):
     """
 
     for k, v in pvaldict.iteritems():
-        #print(k)
         with open(fname, 'a') as f:
             f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, \
             v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], \
@@ -800,7 +757,7 @@ keyfile='keylist'):
 
 
 
-def createinfodur(fname, measure):
+def createinfonum(fname, measure):
     
     if measure == 'mean':
         with open(fname, 'w') as g:
@@ -825,7 +782,7 @@ def createinfodur(fname, measure):
             'Median Duration (s)', '# pairs exhibiting behavior'))
 
 
-def writeinfonum(ofile, d, kind, measure, iskeyfile='True', 
+def writeinfonum(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
 keyfile='keylist'):
     '''measure = mean or median'''
     
@@ -835,7 +792,7 @@ keyfile='keylist'):
         keylist = d.iterkeys()
     
     if measure == 'mean':
-        md = dictttest(d)
+        md = dictttest(d, ctrlkey)
         for k in keylist:
             try:
                 with open(ofile, 'a') as f:
@@ -845,7 +802,7 @@ keyfile='keylist'):
                 continue
                 
     if measure == 'median':
-        md = dictmw(d)
+        md = dictmw(d, ctrlkey)
         for k in keylist:
             try:
                 with open(ofile, 'a') as f:
@@ -854,7 +811,7 @@ keyfile='keylist'):
             except KeyError:
                 continue
 
-def writeinfodur(ofile, d, kind, measure, iskeyfile='True', 
+def writeinfodur(ofile, d, kind, ctrlkey, measure, iskeyfile='True', 
 keyfile='keylist'):
     '''measure = mean or median'''
     
@@ -874,7 +831,7 @@ keyfile='keylist'):
                 continue
                 
     if measure == 'median':
-        md = dictmw(d)
+        md = dictmw(d, ctrlkey)
         for k in keylist:
             try:
                 with open(ofile, 'a') as f:
@@ -1159,6 +1116,8 @@ def plottitle(metric, kind):
             t = 'Number of\nwing threats'
         if kind == 'charge':
             t = 'Number of\ncharges'
+        if kind == 'chargeonly':
+            t = 'Number of\ncharges,\nno orientation'
         if kind == 'escd':
             t = 'Number of bouts\nof dominant escalation'
         if kind == 'escm':
@@ -1202,7 +1161,6 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
     
     if metric == 'aglatmed':
         d = dictagdur2(kind, fname)
-        #print d
         mwd = dictmw(d, ctrlkey)
         adjpd = mcpval(mwd, 'fdr', 'True', keyfile)
     
@@ -1221,23 +1179,16 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         d = {}
         for k in keylist:
             d[k] = fulld[k]    
-        print d
         md = dictttest(d, ctrlkey)
-        print md
         adjpd = mcpval(md, 'fdr', 'True', keyfile)
-        print 'adjpd', adjpd
     
     if metric == 'agnummed':
         d = dictagnum(kind, fname)
-        print d
         md = dictmw(d, ctrlkey)
-        print md
         adjpd = mcpval(md, 'fdr', 'True', keyfile)
-        print 'adjpd', adjpd
 
     if metric == 'agprop':
         d = dictagfreq2(kind, fname)
-        print d.keys()
         db = dictbin(d, binconf, label=kind)
         fd = dictfishtest(d, ctrlkey=ctrlkey)
         adjppd = mcpval(fd, 'fdr', 'True', keyfile)
@@ -1335,7 +1286,6 @@ stitlesz=10, lw=1, starpos=0.8):
     vals, conds, pvals, n, stdev, sterr, lowerci, upperci, nsuc = \
     loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile)
 
-    #print 'vals', vals
 
     # ======== SET INITIAL FIGURE PROPERTIES =============
     mpl.rc('axes', linewidth=lw)
@@ -1355,10 +1305,6 @@ stitlesz=10, lw=1, starpos=0.8):
     x_gen1 = np.linspace(0.5+0.5*barwidth, lastbar, barnum).tolist()
     x_list = x_gen1
     
-    #print 'metric', metric
-    #print 'vals', vals
-    #print 'barnum', barnum
-    #print 'x_list'
 
     # Set width of bars.
     truebarw = 0.35*barwidth
@@ -1374,7 +1320,6 @@ stitlesz=10, lw=1, starpos=0.8):
     
     # ======== ADDS TICKS, LABELS and TITLES==========
     # Sets the x- and y-axis limits.
-    #print x_list
     xlim = x_list[-1]+1.5*barwidth
     plt.axis( [0, xlim, ymin, ylim])
     
@@ -1382,7 +1327,6 @@ stitlesz=10, lw=1, starpos=0.8):
     #plt.xticks(x_list, conds, rotation=45, fontproperties=fonti)
     
     x_list = [x + 0.5*truebarw for x in x_gen1]
-    #print x_list
     plt.xticks(x_list, conds, rotation=90, fontproperties=fonti)
 
     # Labels the yaxis; labelpad is the space between the ticklabels and y-axis label.
@@ -1429,23 +1373,19 @@ stitlesz=10, lw=1, starpos=0.8):
 
     # ========ADDS SIGNIFICANCE STARS============
 
-    #print('pvals',pvals)
 
     p05i = [i for i, pval in enumerate(pvals) if pval <0.05 and pval >= 0.01]
     
-    #print(p05i)
     for i in p05i:
         plt.text(x_list[i], starpos*ylim, '*', horizontalalignment='center', 
         fontsize=fontsz)
 
     p01i = [i for i, pval in enumerate(pvals) if pval <0.01 and pval >= 0.001]
-    #print(p01i)
     for i in p01i:
         plt.text(x_list[i], starpos*ylim, '**', horizontalalignment='center', 
         fontsize=fontsz)
 
     p001i = [i for i, pval in enumerate(pvals) if pval <0.001]
-    #print(p001i)
     for i in p001i:
         plt.text(x_list[i], starpos*ylim, '***', horizontalalignment='center', 
         fontsize=fontsz)
