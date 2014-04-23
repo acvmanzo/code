@@ -16,7 +16,7 @@ NUMTFILE = '{0}agnumttest_{1}.txt'.format(DIR, CDIR) # Name of file with results
 SHAPNUMFILE = '{0}agnumshap_{1}.txt'.format(DIR, CDIR)
 
 # Info about figure content.
-KINDLIST = ['anyag', 'escd', 'escm'] # Behaviors to be analyzed.
+KINDLIST = ['chargeonly', 'escd', 'escm'] # Behaviors to be analyzed.
 
 # Figure parameters.
 SUBPLOTNS = [131, 132, 133] # Subplots of the figure for frequency.

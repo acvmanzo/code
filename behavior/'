@@ -26,7 +26,7 @@ acl.createinfonum(NUMFILE, 'median')
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
 for k in ks2:
-    print('BEHAVIOR', k)
+    print('behavior', k)
     acl.multiplot('agnummed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
     ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
     binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
@@ -52,7 +52,7 @@ plt.savefig(OUTPUTFIG1)
 
 
 for kind in KINDLIST:
-    print 'kiNd', kind
+    print 'kind', kind
     d = acl.dictagnum(kind, FNAME)
     print 'keys', d.keys()
     md = acl.dictttest(d, ctrlkey=CTRLKEY)
@@ -63,7 +63,7 @@ for kind in KINDLIST:
     #acl.writestatfile(NUMTFILE, mtd, kind)
     acl.writeshapfile(SHAPNUMFILE, d, kind)
     acl.writestatfile(NUMMWFILE, mcmwd, kind)
-    acl.writeinfonum(NUMFILE, d, kind, CTRLKEY, 'median')
+    acl.writeinfonum(NUMFILE, d, kind, 'median')
 
     
 #for kind in KINDLIST:

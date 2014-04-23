@@ -44,4 +44,4 @@ for k in KINDLIST:
     fd = acl.dictfishtest(pd, ctrlkey=CTRLKEY)
     adjfd = acl.mcpval(fd, 'fdr')
     acl.writestatfile(FISHTFILE, adjfd, k)
-    acl.writeinfoprop(PROPFILE, pd, 0.95, k[0], 'True', KEYFILE)
+    acl.writeinfoprop(PROPFILE, pd, 0.95, k, 'True', KEYFILE)

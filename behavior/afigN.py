@@ -16,8 +16,8 @@ FNAME = sys.argv[1] # File with data to be analyzed.
 CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be 
 #compared to.
 
-
-acl.createstatfile(NUMTFILE, 'T-test')
+cmn.makenewdir(DIR)
+#acl.createstatfile(NUMTFILE, 'T-test')
 acl.createstatfile(NUMMWFILE, 'Mann-Whitney Test')
 acl.createshapfile(SHAPNUMFILE)
 acl.createinfonum(NUMFILE, 'median')
@@ -26,7 +26,7 @@ acl.createinfonum(NUMFILE, 'median')
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
 for k in ks2:
-    print('behavior', k)
+    print('BEHAVIOR', k)
     acl.multiplot('agnummed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
     ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
     binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
@@ -52,18 +52,15 @@ plt.savefig(OUTPUTFIG1)
 
 
 for kind in KINDLIST:
-    print 'kind', kind
     d = acl.dictagnum(kind, FNAME)
-    print 'keys', d.keys()
     md = acl.dictttest(d, ctrlkey=CTRLKEY)
     mwd = acl.dictmw(d, ctrlkey=CTRLKEY)
     mtd = acl.mcpval(md)
-    print mtd
     mcmwd = acl.mcpval(mwd)
     #acl.writestatfile(NUMTFILE, mtd, kind)
     acl.writeshapfile(SHAPNUMFILE, d, kind)
     acl.writestatfile(NUMMWFILE, mcmwd, kind)
-    acl.writeinfonum(NUMFILE, d, kind, 'median')
+    acl.writeinfonum(NUMFILE, d, kind, CTRLKEY, 'median')
 
     
 #for kind in KINDLIST:
