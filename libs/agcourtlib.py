@@ -67,7 +67,40 @@ def agline2(line):
     return(vals)
 
 
+def defbehaviors():
+    d = {}
+    d['wingthreat'] = ['wt', 'xwt']
+    d['charge'] = ['c', 'o']
+    d['anyag'] = ['c', 'o', 'p', 'l', 'ch', 'g', 'h', 'd', 'm', 'wr']
+    d['escd'] = ['d']
+    d['escm'] = ['m']
+    return d
+
+
 def agfreqcmd(kind, blist, genlist):
+    '''Helper function used in dictagfreq2() that appends values to a list depending on whether a specific behavior has occurred.
+
+    Input:
+    kind = kind of behavior
+    blist = list of behaviors
+    genlist = list of occurrences of each behavior; if a behavior has occurred, genlist is extended
+    '''
+    
+    d = defbehaviors()
+
+    beh_seen = 0
+
+    for beh in d[kind]:
+        if blist.count(beh) > 0:
+            genlist.append(100)
+            beh_seen = 1
+            break
+
+    if beh_seen == 0:
+        genlist.append(0)
+
+
+def agfreqcmd_old(kind, blist, genlist):
     '''Helper function used in dictagfreq2() that appends values to a list depending on whether a specific behavior has occurred.
 
     Input:
@@ -141,7 +174,7 @@ def dictagfreq2(kind, fname):
     with open(fname) as f:
         for l in f:
             adict = agline2(l)
-            
+            print y
             if adict['well'] != y:
                 agfreqcmd(kind, b, d[gen])
                 b = []
@@ -172,6 +205,62 @@ def agdurcmd(kind, blist, durlist, genlist):
     
     if len(durlist) > 0:
     
+        
+        if kind == 'charge':
+            val = np.sum(durlist[blist=='c'])
+            if val > 0:
+                genlist.append(val)
+
+        if kind =='wingthreat':
+            ind = (blist=='wt')+(blist=='xwt')
+            val = np.sum(durlist[ind])
+            if val > 0:
+                genlist.append(val)
+        
+        if kind =='anyag':
+            ind = (blist=='c')+(blist=='o')+(blist=='p')+(blist=='l')+\
+            (blist=='g')+(blist=='h')+(blist=='g')+(blist=='wr')+(blist=='b')
+            val = np.sum(durlist[ind])
+            if val > 0:
+                genlist.append(val)
+
+        if kind == 'chase':
+            ind = (blist=='ch')
+            val = np.sum(durlist[ind])
+            if val > 0:
+                genlist.append(val)
+
+        if kind =='escd':
+            val = np.sum(durlist[blist=='d'])
+            if val > 0:
+                genlist.append(val)        
+        if kind =='escm':
+            val = np.sum(durlist[blist=='m'])
+            if val > 0:
+                genlist.append(val)   
+
+
+def agdurcmd_new(kind, blist, durlist, genlist):
+    
+    blist, durlist = map(np.array, [blist, durlist])
+    durlist = durlist.astype(int)
+    
+    d = defbehaviors()
+
+    beh_seen = 0
+
+    for beh in d[kind]:
+        if blist.count(beh) > 0:
+            genlist.append(100)
+            beh_seen = 1
+            break
+
+    if beh_seen == 0:
+        genlist.append(0)
+
+    
+    if len(durlist) > 0:
+        
         
         if kind == 'charge':
             val = np.sum(durlist[blist=='c'])
@@ -493,7 +582,7 @@ def dictmw(d, ctrlkey, test='exact'):
 
     for i,v in d.iteritems():
         if not v:
-            print 'No values for condition', i
+            #print 'No values for condition', i
             #mwdict[i] = []
             continue
             

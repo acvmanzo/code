@@ -28,14 +28,14 @@ STITLESZ=12 # Title font size.
 
 
 # Info about figure content - box and whisker plots.
-KINDLIST = ['wingthreat', 'charge', 'chase', 'escd', 'escm'] # Behaviors to be analyzed.
+KINDLIST = ['charge', 'escd', 'escm'] # Behaviors to be analyzed.
 
 # Figure parameters - box and whisker plots.
-SUBPLOTNS = [151, 152, 153, 154, 155] # Subplots of the figure for frequency.
+SUBPLOTNS = [131, 132, 133] # Subplots of the figure for frequency.
 #SUBPLOTLS = ['A', 'B', 'C', 'D', 'E'] # Labels for the subplots.
-SUBPLOTLS = ['', '', '', '', ''] # Labels for the subplots.
-YLIMS = [300, 30, 150, 150, 20]
-STARPOS = [0.75, 0.75, 0.75, 0.75, 0.75]
+SUBPLOTLS = ['', '', ''] # Labels for the subplots.
+YLIMS = [30, 120, 16]
+STARPOS = [0.75, 0.75, 0.75]
 
 FIGDPI=1200 # Figure DPI.
 FIGW=11.5 # Figure width.

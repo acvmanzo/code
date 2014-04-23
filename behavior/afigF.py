@@ -4,6 +4,7 @@
 
 import os
 import sys
+import shutil
 import matplotlib.pyplot as plt
 import libs.agcourtlib as acl
 import cmn.cmn as cmn
@@ -45,3 +46,6 @@ for k in KINDLIST:
     adjfd = acl.mcpval(fd, 'fdr')
     acl.writestatfile(FISHTFILE, adjfd, k)
     acl.writeinfoprop(PROPFILE, pd, 0.95, k, 'True', KEYFILE)
+
+# Copies the figure settings into the results directory.
+shutil.copy('/home/andrea/Documents/lab/code/behavior/afigFset.py', FIGSETFILE)
