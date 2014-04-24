@@ -34,7 +34,7 @@ KINDLIST = ['charge', 'escd', 'escm'] # Behaviors to be analyzed.
 SUBPLOTNS = [131, 132, 133] # Subplots of the figure for frequency.
 #SUBPLOTLS = ['A', 'B', 'C', 'D', 'E'] # Labels for the subplots.
 SUBPLOTLS = ['', '', ''] # Labels for the subplots.
-YLIMS = [30, 120, 16]
+YLIMS = [30, 150, 16]
 STARPOS = [0.75, 0.75, 0.75]
 
 FIGDPI=1200 # Figure DPI.

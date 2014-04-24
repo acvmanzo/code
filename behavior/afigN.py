@@ -1,6 +1,7 @@
 
 import os
 import sys
+import shutil
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -53,14 +54,17 @@ plt.savefig(OUTPUTFIG1)
 
 for kind in KINDLIST:
     d = acl.dictagnum(kind, FNAME)
-    md = acl.dictttest(d, ctrlkey=CTRLKEY)
+    #md = acl.dictttest(d, ctrlkey=CTRLKEY)
     mwd = acl.dictmw(d, ctrlkey=CTRLKEY)
-    mtd = acl.mcpval(md)
+    #mtd = acl.mcpval(md)
     mcmwd = acl.mcpval(mwd)
     #acl.writestatfile(NUMTFILE, mtd, kind)
     acl.writeshapfile(SHAPNUMFILE, d, kind)
     acl.writestatfile(NUMMWFILE, mcmwd, kind)
     acl.writeinfonum(NUMFILE, d, kind, CTRLKEY, 'median')
+
+# Copies the figure settings into the results directory.
+shutil.copy('/home/andrea/Documents/lab/code/behavior/afigDset.py', FIGSETFILE)
 
     
 #for kind in KINDLIST:

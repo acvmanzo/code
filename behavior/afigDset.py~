@@ -18,7 +18,7 @@ SHAPFILE = '{0}agdurshap_{1}.txt'.format(DIR, CDIR) # Name of file with
 MWFILE = '{0}agdurmwtest_{1}.txt'.format(DIR, CDIR) # Name of file with results 
 #of Mann-Whitney test.
 TFILE = '{0}agdurttest_{1}.txt'.format(DIR, CDIR)
-
+FIGSETFILE = '{0}agdurfigset_{1}.txt'.format(DIR, CDIR)
 
 # Parameters for both plots.
 YLABEL = 'sec'

@@ -18,7 +18,7 @@ FIGSETFILE = '{0}figset_{1}.txt'.format(DIR, CDIR)
 
 # Info about figure content.
 #KINDLIST = ['charge'] # Behaviors to be analyzed.
-KINDLIST = ['charge', 'escd', 'escm'] # Behaviors to be analyzed.
+KINDLIST = ['minag', 'escd', 'escm'] # Behaviors to be analyzed.
 
 # Figure parameters.
 SUBPLOTNS = [131, 132, 133] # Subplots of the figure for frequency.
