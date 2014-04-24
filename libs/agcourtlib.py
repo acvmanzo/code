@@ -165,7 +165,43 @@ def agdurcmd(kind, blist, durlist, genlist):
             genlist.append(val)
         
 
-def agnumcmd(kind, blist, genlist):
+def agnumcmd(kind, blist, genlist, allorex):
+    '''Helper function used in dictagnum() that appends values to a list depending on whether a specific behavior has occurred.
+
+    Input:
+    kind = kind of behavior
+    blist = list of behaviors
+    genlist = list of occurrences of each behavior; if a behavior has occurred, genlist is extended
+
+
+    Note: In this version, flies that do NOT exhibit a behavior are given a value of 0.
+    '''
+    blist = np.array(blist)
+    
+    d = defbehaviors()
+
+    indlist = []
+    for beh in d[kind]:
+        indlist.append(blist==beh)
+    bsum = np.sum(indlist, 0)
+    
+    if type(bsum) is np.int64:
+        genlist.append(0)
+    else:
+        val = sum(np.sum(indlist, 0))
+        genlist.append(val)
+
+
+def agnumcmd_exclude(kind, blist, genlist):
+    '''Helper function used in dictagnum() that appends values to a list depending on whether a specific behavior has occurred.
+
+    Input:
+    kind = kind of behavior
+    blist = list of behaviors
+    genlist = list of occurrences of each behavior; if a behavior has occurred, genlist is extended
+
+    Note: In this version, flies that do NOT exhibit a behavior are EXCLUDED FROM THE LIST.
+    '''
     blist = np.array(blist)
     
     d = defbehaviors()
@@ -229,7 +265,7 @@ def dictagdur2(kind, fname):
     return(d)
 
 
-def dictagnum(kind, fname):
+def dictagnum_all(kind, fname):
     """Generates a dictionary where the keywords are genotypes and the values 
     indicate the number of times each fly exhibits the behavior.
 
@@ -237,6 +273,52 @@ def dictagnum(kind, fname):
     'escd' (dominant escalation), 
     'escm' (mutual escalation)
     fname = file with raw data
+    
+    Note: In this version, flies that do NOT exhibit a behavior are GIVEN A VALUE OF 0.
+    """
+
+    #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
+    #'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 
+    #'esccomm', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
+
+
+    d = {}
+    y = '1'
+    b = []
+    
+    with open(fname) as f:
+        for l in f:
+            adict = agline2(l)
+            
+            if adict['well'] != y:
+                agnumcmd(kind, b, d[gen])
+                b = []
+            
+            if adict['agtype'] != '-':
+                b.append(adict['agtype'])
+            
+            if adict['esctype'] != '':
+                b.append(adict['esctype'])
+
+            gen = adict['gen']
+            if gen not in d:
+                d[gen] = []
+                
+            y = adict['well']
+    
+    agnumcmd(kind, b, d[gen])
+    return(d)
+
+def dictagnum_exclude(kind, fname):
+    """Generates a dictionary where the keywords are genotypes and the values 
+    indicate the number of times each fly exhibits the behavior.
+
+    kind = 'charge' (wing threat + charge, orientation, or lunge),
+    'escd' (dominant escalation), 
+    'escm' (mutual escalation)
+    fname = file with raw data
+
+    Note: In this version, flies that do NOT exhibit a behavior are EXCLUDED FROM THE LIST.
     """
 
     #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
@@ -254,7 +336,7 @@ def dictagnum(kind, fname):
             
             if adict['well'] != y:
                 if len(b) > 0:
-                    agnumcmd(kind, b, d[gen])
+                    agnumcmd_exclude(kind, b, d[gen])
                 b = []
             
             if adict['agtype'] != '-' and adict['agtype'] != 'x':

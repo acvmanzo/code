@@ -18,7 +18,6 @@ CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be
 #compared to.
 
 cmn.makenewdir(DIR)
-#acl.createstatfile(NUMTFILE, 'T-test')
 acl.createstatfile(NUMMWFILE, 'Mann-Whitney Test')
 acl.createshapfile(SHAPNUMFILE)
 acl.createinfonum(NUMFILE, 'median')
@@ -54,6 +53,7 @@ plt.savefig(OUTPUTFIG1)
 print 'Writing output files'
 for kind in KINDLIST:
     d = acl.dictagnum(kind, FNAME)
+    print d
     #md = acl.dictttest(d, ctrlkey=CTRLKEY)
     mwd = acl.dictmw(d, ctrlkey=CTRLKEY)
     #mtd = acl.mcpval(md)

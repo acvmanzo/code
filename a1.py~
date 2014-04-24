@@ -32,7 +32,6 @@ KEYFILE = 'keylist'
 for kind in KINDLIST:
     print(kind)
     d = dictagnum(kind, FNAME)
-    print d
     #md = cl.dictttest(d, ctrlkey=CTRLKEY)
     md = cl.dictmw(d, ctrlkey=CTRLKEY)
     mtd = cl.mcpval(md)
