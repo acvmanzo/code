@@ -654,12 +654,9 @@ def writestatfile(fname, pvaldict, kind):
 
     for k, v in pvaldict.iteritems():
         with open(fname, 'a') as f:
-            try:
-                f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, \
-                v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], \
-                v['adjpval']))
-            except KeyError:
-                pass
+            f.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(k, kind, \
+            v['control'], v['sigtest'][:15], v['adjpvaltest'], v['pval'], \
+            v['adjpval']))
 
 
 def createinfolat(ofile):

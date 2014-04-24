@@ -179,8 +179,22 @@ def plot_rest(d, figname, figw=6, figh=4, ylim=20):
     plt.savefig('../'+figname)
 
 
+def write_rest_info(d, outfile):
+    '''Write the results of the REST analysis into one file
+    Input:
+    d = dictionary returned by get_rest_dict()
+    outfile = name of output file
+    '''
+    with open(outfile, 'w') as f:
+        f.write('Genotype,ExprRatio,pval,ci95lower,ci95upper,sterrlower,sterrupper\n')
+    with open(outfile, 'a') as f:
+        for gene, v in d.iteritems():
+            f.write('{},{},{},{},{},{},{}\n'.format(gene, v['exp'], v['pval'], v['ci95'][0], v['ci95'][1], v['sterr'][0], v['sterr'][1]))
+
+
 
 c = get_rest_dict()
+print c
 #d = {}
 #e = {}
 #for k, v in c.iteritems():
@@ -191,3 +205,4 @@ c = get_rest_dict()
 #plot_rest(e, 'qpcr_rest_data_high.png', figw=3, figh=4, ylim=11)
 #plot_rest(d, 'qpcr_rest_data_low.png', ylim=3)
 plot_rest(c, 'qpcr_rest_data_all.png', ylim=20)
+write_rest_info(c, 'qpcr_rest_data_all.txt')

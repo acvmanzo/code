@@ -23,7 +23,7 @@ acl.createstatfile(NUMMWFILE, 'Mann-Whitney Test')
 acl.createshapfile(SHAPNUMFILE)
 acl.createinfonum(NUMFILE, 'median')
 
-
+print 'Plotting figure' 
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
 for k in ks2:
@@ -51,7 +51,7 @@ plt.savefig(OUTPUTFIG1)
 ## Saves figure
 #plt.savefig(OUTPUTFIG2)
 
-
+print 'Writing output files'
 for kind in KINDLIST:
     d = acl.dictagnum(kind, FNAME)
     #md = acl.dictttest(d, ctrlkey=CTRLKEY)
