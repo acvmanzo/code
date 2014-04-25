@@ -25,7 +25,8 @@ KINDLIST = ['minag', 'charge', 'escd', 'escm'] # Behaviors to be analyzed.
 # Figure parameters.
 SUBPLOTNS = [141, 142, 143, 144] # Subplots of the figure for frequency.
 SUBPLOTLS = ['', '', '', ''] # Labels for the subplots.
-YLIMS = [15, 15, 6, 6]
+YLIMS = [30, 30, 10, 10]
+YLIMS2 = [15, 15, 1, 1]
 STARPOS = [0.8, 0.8, 0.8, 0.8] # Coordinate to position significance stars; % of ylim
 
 

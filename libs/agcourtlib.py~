@@ -165,7 +165,7 @@ def agdurcmd(kind, blist, durlist, genlist):
             genlist.append(val)
         
 
-def agnumcmd(kind, blist, genlist):
+def agnumcmd(kind, blist, genlist, allorex):
     '''Helper function used in dictagnum() that appends values to a list depending on whether a specific behavior has occurred.
 
     Input:
@@ -173,21 +173,27 @@ def agnumcmd(kind, blist, genlist):
     blist = list of behaviors
     genlist = list of occurrences of each behavior; if a behavior has occurred, genlist is extended
 
+
     Note: In this version, flies that do NOT exhibit a behavior are given a value of 0.
     '''
+
     blist = np.array(blist)
-    
     d = defbehaviors()
 
     indlist = []
     for beh in d[kind]:
         indlist.append(blist==beh)
     bsum = np.sum(indlist, 0)
-    
-    if type(bsum) is np.int64:
+    val = np.sum(bsum)
+    #print 'blist', blist
+    #print 'indlist', indlist
+    #print 'bsum', bsum
+   
+    if val == 0 and allorex == 'all':
         genlist.append(0)
-    else:
-        val = sum(np.sum(indlist, 0))
+    elif val == 0 and allorex == 'ex':
+        pass
+    elif val > 0:
         genlist.append(val)
 
 
@@ -264,16 +270,15 @@ def dictagdur2(kind, fname):
     return(d)
 
 
-def dictagnum_all(kind, fname):
+
+def dictagnum(kind, fname, allorex):
     """Generates a dictionary where the keywords are genotypes and the values 
     indicate the number of times each fly exhibits the behavior.
 
-    kind = 'charge' (wing threat + charge, orientation, or lunge),
-    'escd' (dominant escalation), 
-    'escm' (mutual escalation)
+    Input:
+    kind = behavioral category
     fname = file with raw data
-    
-    Note: In this version, flies that do NOT exhibit a behavior are GIVEN A VALUE OF 0.
+    allorex = 'all' or 'ex'. If 'all', then flies that do not exhibit a behavior are given a value of 0. If 'ex', then flies that do not exhibit a behavior are excluded from the analysis.
     """
 
     #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
@@ -290,7 +295,9 @@ def dictagnum_all(kind, fname):
             adict = agline2(l)
             
             if adict['well'] != y:
-                agnumcmd(kind, b, d[gen])
+                #print l
+                agnumcmd(kind, b, d[gen], allorex)
+
                 b = []
             
             if adict['agtype'] != '-':
@@ -305,11 +312,11 @@ def dictagnum_all(kind, fname):
                 
             y = adict['well']
     
-    agnumcmd(kind, b, d[gen])
+    agnumcmd(kind, b, d[gen], allorex)
     return(d)
 
 def dictagnum_exclude(kind, fname):
-    """Generates a dictionary where the keywords are genotypes and the values 
+    """generates a dictionary where the keywords are genotypes and the values 
     indicate the number of times each fly exhibits the behavior.
 
     kind = 'charge' (wing threat + charge, orientation, or lunge),
@@ -317,7 +324,7 @@ def dictagnum_exclude(kind, fname):
     'escm' (mutual escalation)
     fname = file with raw data
 
-    Note: In this version, flies that do NOT exhibit a behavior are EXCLUDED FROM THE LIST.
+    note: in this version, flies that do not exhibit a behavior are excluded from the list.
     """
 
     #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
@@ -1168,7 +1175,7 @@ def plottitle(metric, kind):
         if kind == 'copatt1':
             t = '% flies attempting\ncopulation'
 
-    if metric == 'agnummean' or metric=='agnummed':
+    if metric == 'agnummean' or metric=='agnummedall' or metric == 'agnummedex':
         if kind == 'wingthreat':
             t = 'Number of\nwing threats'
         if kind == 'minag':
@@ -1240,8 +1247,13 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         md = dictttest(d, ctrlkey)
         adjpd = mcpval(md, 'fdr', 'True', keyfile)
     
-    if metric == 'agnummed':
-        d = dictagnum(kind, fname)
+    if metric == 'agnummedall':
+        d = dictagnum(kind, fname, 'all')
+        md = dictmw(d, ctrlkey)
+        adjpd = mcpval(md, 'fdr', 'True', keyfile)
+
+    if metric == 'agnummedex':
+        d = dictagnum(kind, fname, 'ex')
         md = dictmw(d, ctrlkey)
         adjpd = mcpval(md, 'fdr', 'True', keyfile)
 
@@ -1270,7 +1282,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         
     # Generate coordinate and pvalue lists.
     
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed' or metric == 'agdurmed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummedall' or metric == 'agnummedex' or metric == 'agdurmed':
         for k in keylist:
             if not d[k]:
                 continue
@@ -1315,7 +1327,7 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
 
 def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
 
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummed' or metric == 'agdurmed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummedall' or metric == 'agnummedex' or metric == 'agdurmed':
     #Plots the box and whisker plot.
         bp = plt.boxplot(vals, positions=x_list, sym='')
         pylab.setp(bp['boxes'], color='black')

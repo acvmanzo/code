@@ -18,16 +18,19 @@ CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be
 #compared to.
 
 cmn.makenewdir(DIR)
-acl.createstatfile(NUMMWFILE, 'Mann-Whitney Test')
-acl.createshapfile(SHAPNUMFILE)
-acl.createinfonum(NUMFILE, 'median')
+acl.createstatfile(NUMMWFILE_ALL, 'Mann-Whitney Test')
+acl.createstatfile(NUMMWFILE_EX, 'Mann-Whitney Test')
+acl.createshapfile(SHAPNUMFILE_ALL)
+acl.createshapfile(SHAPNUMFILE_EX)
+acl.createinfonum(NUMFILE_ALL, 'median')
+acl.createinfonum(NUMFILE_EX, 'median')
 
-print 'Plotting figure' 
+print 'Plotting figure - all flies'
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
-ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
+ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSALL, STARPOS)
 for k in ks2:
     print('BEHAVIOR', k)
-    acl.multiplot('agnummed', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
+    acl.multiplot('agnummedall', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
     ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
     binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
     lw=LW, starpos=k[4])
@@ -35,47 +38,42 @@ for k in ks2:
 # Adjusts figure areas.
 plt.tight_layout()
 # Saves figure
-plt.savefig(OUTPUTFIG1)
+plt.savefig(OUTPUTFIG_ALL)
 
-#fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
-#for k in ks2:
-    #print('behavior', k)
-    #acl.multiplot('agnummean', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
-    #ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
-    #binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
-    #lw=LW, starpos=k[4])
+print 'Plotting figure - with excluding flies'
+fig2 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
+ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSEX, STARPOS)
+for k in ks2:
+    print('BEHAVIOR', k)
+    acl.multiplot('agnummedex', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
+    ylabel=YLABEL2, yaxisticks=YAXISTICKS2, subplotn=k[1], subplotl=k[2],
+    binconf=0.95, keyfile=KEYFILE, fontsz=FONTSZ, stitlesz=STITLESZ,
+    lw=LW, starpos=k[4])
 
-## Adjusts figure areas.
-#plt.tight_layout()
-## Saves figure
-#plt.savefig(OUTPUTFIG2)
+# Adjusts figure areas.
+plt.tight_layout()
+# Saves figure
+plt.savefig(OUTPUTFIG_EX)
 
-print 'Writing output files'
+print 'Writing output files - all flies'
 for kind in KINDLIST:
-    d = acl.dictagnum(kind, FNAME)
-    print d
-    #md = acl.dictttest(d, ctrlkey=CTRLKEY)
+    d = acl.dictagnum(kind, FNAME, 'all')
     mwd = acl.dictmw(d, ctrlkey=CTRLKEY)
-    #mtd = acl.mcpval(md)
     mcmwd = acl.mcpval(mwd)
-    #acl.writestatfile(NUMTFILE, mtd, kind)
-    acl.writeshapfile(SHAPNUMFILE, d, kind)
-    acl.writestatfile(NUMMWFILE, mcmwd, kind)
-    acl.writeinfonum(NUMFILE, d, kind, CTRLKEY, 'median')
+    acl.writeshapfile(SHAPNUMFILE_ALL, d, kind)
+    acl.writestatfile(NUMMWFILE_ALL, mcmwd, kind)
+    acl.writeinfonum(NUMFILE_ALL, d, kind, CTRLKEY, 'median')
+
+print 'Writing output files - with excluding flies'
+for kind in KINDLIST:
+    d = acl.dictagnum(kind, FNAME, 'ex')
+    mwd = acl.dictmw(d, ctrlkey=CTRLKEY)
+    mcmwd = acl.mcpval(mwd)
+    acl.writeshapfile(SHAPNUMFILE_EX, d, kind)
+    acl.writestatfile(NUMMWFILE_EX, mcmwd, kind)
+    acl.writeinfonum(NUMFILE_EX, d, kind, CTRLKEY, 'median')
 
 # Copies the figure settings into the results directory.
 shutil.copy('/home/andrea/Documents/lab/code/behavior/afigDset.py', FIGSETFILE)
 
     
-#for kind in KINDLIST:
-    #print(kind)
-    #d = acl.dictagdur(kind, FNAME)
-    #print(d)
-    #md = cl.dictmw(d, ctrlkey='CS')
-    #mtd = cl.mcpval(md)
-    #print('mtd', mtd)
-    #cl.createmwfile(kind+'_dur_mw_results.txt')
-    #cl.writemwfile(kind+'_dur_mw_results.txt', mtd, kind)
-    #fig1 = plt.figure(figsize=(8, 6), dpi=1200, facecolor='w', edgecolor='k')
-    #plotagdur(kind, d)
-    #plt.savefig('{0}_dur.png'.format(kind))
