@@ -8,6 +8,7 @@ import matplotlib as mpl
 import cmn.cmn as cmn
 import libs.agcourtlib as acl
 import libs.rstatslib as rl
+sys.path.append(os.path.abspath('.'))
 from afigDset import *
 
 
@@ -75,6 +76,4 @@ for kind in KINDLIST:
     acl.writeinfodur(DURFILE, d, kind, CTRLKEY, 'median')
     #acl.writeinfodur(DURFILE2, d, kind, 'mean')
 
-# Copies the figure settings into the results directory.
-shutil.copy('/home/andrea/Documents/lab/code/behavior/afigDset.py', FIGSETFILE)
 

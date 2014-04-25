@@ -9,13 +9,14 @@ import cmn.cmn as cmn
 import libs.agcourtlib as acl
 import libs.courtshiplib as cl
 import libs.rstatslib as rl
+sys.path.append(os.path.abspath('.'))
 from afigNset import *
-
 
 print('data filename, ctrlkey')
 FNAME = sys.argv[1] # File with data to be analyzed.
 CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be 
 #compared to.
+
 
 cmn.makenewdir(DIR)
 acl.createstatfile(NUMMWFILE_ALL, 'Mann-Whitney Test')
@@ -73,7 +74,5 @@ for kind in KINDLIST:
     acl.writestatfile(NUMMWFILE_EX, mcmwd, kind)
     acl.writeinfonum(NUMFILE_EX, d, kind, CTRLKEY, 'median')
 
-# Copies the figure settings into the results directory.
-shutil.copy('/home/andrea/Documents/lab/code/behavior/afigDset.py', FIGSETFILE)
 
     

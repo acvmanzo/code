@@ -9,13 +9,14 @@ import cmn.cmn as cmn
 import libs.agcourtlib as acl
 import libs.courtshiplib as cl
 import libs.rstatslib as rl
+sys.path.append(os.path.abspath('.'))
 from afigNset import *
-
 
 print('data filename, ctrlkey')
 FNAME = sys.argv[1] # File with data to be analyzed.
 CTRLKEY = sys.argv[2] # Name of the control strain that all other lines will be 
 #compared to.
+
 
 cmn.makenewdir(DIR)
 acl.createstatfile(NUMMWFILE_ALL, 'Mann-Whitney Test')
@@ -27,7 +28,7 @@ acl.createinfonum(NUMFILE_EX, 'median')
 
 print 'Plotting figure - all flies'
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
-ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
+ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSALL, STARPOS)
 for k in ks2:
     print('BEHAVIOR', k)
     acl.multiplot('agnummedall', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
@@ -42,7 +43,7 @@ plt.savefig(OUTPUTFIG_ALL)
 
 print 'Plotting figure - with excluding flies'
 fig2 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
-ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMS, STARPOS)
+ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSEX, STARPOS)
 for k in ks2:
     print('BEHAVIOR', k)
     acl.multiplot('agnummedex', k[0], FNAME, CTRLKEY, BARWIDTH, ymin=YMIN, ylim=k[3], 
