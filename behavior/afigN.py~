@@ -26,7 +26,7 @@ acl.createshapfile(SHAPNUMFILE_EX)
 acl.createinfonum(NUMFILE_ALL, 'median')
 acl.createinfonum(NUMFILE_EX, 'median')
 
-print 'Plotting figure - all flies'
+print('Plotting figure - all flies')
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSALL, STARPOS)
 for k in ks2:
@@ -41,7 +41,7 @@ plt.tight_layout()
 # Saves figure
 plt.savefig(OUTPUTFIG_ALL)
 
-print 'Plotting figure - with excluding flies'
+print('Plotting figure - with excluding flies')
 fig2 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSEX, STARPOS)
 for k in ks2:
@@ -60,6 +60,8 @@ print 'Writing output files - all flies'
 for kind in KINDLIST:
     d = acl.dictagnum(kind, FNAME, 'all')
     mwd = acl.dictmw(d, ctrlkey=CTRLKEY)
+    if kind == 'escd':
+        print 'd', d, 'mwd', mwd
     mcmwd = acl.mcpval(mwd)
     acl.writeshapfile(SHAPNUMFILE_ALL, d, kind)
     acl.writestatfile(NUMMWFILE_ALL, mcmwd, kind)
@@ -74,7 +76,5 @@ for kind in KINDLIST:
     acl.writestatfile(NUMMWFILE_EX, mcmwd, kind)
     acl.writeinfonum(NUMFILE_EX, d, kind, CTRLKEY, 'median')
 
-# Copies the figure settings into the results directory.
-shutil.copy('/home/andrea/Documents/lab/code/behavior/afigDset.py', FIGSETFILE)
 
     

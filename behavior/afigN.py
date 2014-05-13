@@ -26,7 +26,7 @@ acl.createshapfile(SHAPNUMFILE_EX)
 acl.createinfonum(NUMFILE_ALL, 'median')
 acl.createinfonum(NUMFILE_EX, 'median')
 
-print 'Plotting figure - all flies'
+print('Plotting figure - all flies')
 fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSALL, STARPOS)
 for k in ks2:
@@ -41,7 +41,7 @@ plt.tight_layout()
 # Saves figure
 plt.savefig(OUTPUTFIG_ALL)
 
-print 'Plotting figure - with excluding flies'
+print('Plotting figure - with excluding flies')
 fig2 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 ks2 = zip(KINDLIST, SUBPLOTNS, SUBPLOTLS, YLIMSEX, STARPOS)
 for k in ks2:

@@ -1,13 +1,17 @@
 import os
 
 def update_seq_date(infofile, outfile):
+    '''Make sure the infofile is named so that the format is 'YYYY-MM-DD_foo.bar. Also make sure that the first five columns are the berkid, sample, indexnum, indexseq, datesent in that order.
+    '''
     dateseq = os.path.splitext(infofile)[0].split('_')[0]
     print dateseq
     with open(outfile, 'w') as g:
         with open(infofile, 'r') as f:
             f.next()
             for l in f:
-                berkid, sample, indexnum, indexseq, datesent, readtype, length, numlanes, qpcr = l.split(',')
+                berkid, sample, indexnum, indexseq, datesent = l.split(',')[:5]
+                if sample == '':
+                    continue 
                 g.write("UPDATE autin SET toseq=True, seqd='{0}' WHERE sample = '{1}' AND berkid = '{2}';\n".format(dateseq, sample, berkid))
 
 def add_samplenum(tabledata, outfile):
@@ -18,5 +22,5 @@ def add_samplenum(tabledata, outfile):
                 g.write(l.strip('\n') + ',{0}\n'.format(n))
                 n = n+1
                 
-update_seq_date('2014-04-12_samples_for_sequencing.csv', '2014-0412_sql_code.sql')
+update_seq_date('2014-04-25_samples_for_sequencing.csv', '2014-0425_sql_code.sql')
 #add_samplenum('2014-0403_autindb_copy_nosn.csv', '2014-0403_autindb_copy_newsn.csv')

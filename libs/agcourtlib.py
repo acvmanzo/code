@@ -190,6 +190,8 @@ def agnumcmd(kind, blist, genlist, allorex):
     #print 'indlist', indlist
     #print 'bsum', bsum
    
+    #if kind == 'escd': 
+        #print val, blist 
     if val == 0 and allorex == 'all':
         genlist.append(0)
     elif val == 0 and allorex == 'ex':
@@ -281,6 +283,7 @@ def dictagnum(kind, fname, allorex):
             
             if adict['esctype'] != '':
                 b.append(adict['esctype'])
+                
 
             gen = adict['gen']
             if gen not in d:
@@ -289,6 +292,7 @@ def dictagnum(kind, fname, allorex):
             y = adict['well']
     
     agnumcmd(kind, b, d[gen], allorex)
+
     return(d)
 
 
