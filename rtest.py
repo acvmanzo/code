@@ -1,4 +1,4 @@
-from rnaseq.correlation import *
+#from rnaseq.correlation import *
 import cProfile
 import pstats
 
@@ -11,10 +11,11 @@ def testconn():
 
     cur.execute(joincmd)
     cur.fetchall()
-testconn()
-#cProfile.run('testconn()', 'conntest')
+#testconn()
+
 #cProfile.run('testconn()', 'conntest_fetch')
 #p=pstats.Stats('conntest_fetch')
 #p=pstats.Stats('conntest_fetch')
-#p.strip_dirs().sort_stats(-1).print_stats()
-#p.sort_stats('cumulative').print_stats(10)
+p=pstats.Stats('correlationprofile')
+p.strip_dirs().sort_stats(-1).print_stats()
+p.sort_stats('cumulative').print_stats(10)
