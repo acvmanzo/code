@@ -4,6 +4,7 @@ import os
 import psycopg2
 from scipy import stats
 import itertools
+import cProfile
 
 CUFF_TABLE_PREFIX = 'cuff_genes_fpkm'
 
@@ -14,7 +15,7 @@ def get_cuff_info(cuffpath):
     newcufffile = os.path.join(cuffpath, 'genes_sample.fpkm_tracking')
     return(sample, cufffile, newcufffile)
 
-def add_id(cuffpath):
+def add_berkid(cuffpath):
     sample, cufffile, newcufffile = get_cuff_info(cuffpath)
     with open(newcufffile, 'w') as g:
         with open(cufffile, 'r') as f:
@@ -23,15 +24,10 @@ def add_id(cuffpath):
                 newline = l.strip('\n') + '\t{0}\n'.format(sample)
                 g.write(newline) 
 
-                #trackid = l.split('\t')[0]
-                #fpkm = l.split('\t')[9]
-                #status = l.split('\t')[-1]
-
 #for cuffpath in cuffpaths:
     #add_id(cuffpath) 
 
-
-def make_db_table(cuffpath, cur_r):
+def make_db_table(cuffpath, cur):
     os.chdir(cuffpath)
     sample, cufffile, newcufffile = get_cuff_info(cuffpath)
     table_name = '{0}_{1}'.format(CUFF_TABLE_PREFIX, sample) 
@@ -40,23 +36,42 @@ def make_db_table(cuffpath, cur_r):
     cur.copy_from(open(newcufffile), table_name)
     conn.commit()
 
+def join_colnames():
+    selectlist = ['t0.tracking_id', 't0.berkid', 'a0.sample', 't0.fpkm', \
+    't0.fpkm_status', 't1.berkid', 'a1.sample', 't1.fpkm', 't1.fpkm_status']
+    selectstring = ", ".join(selectlist)
+    return(selectstring, selectlist)
 
-def join_db_table(samples, comp_index, cur):
+def join_db_table(table0, table1, cur, maxfpkm=False):
+    selectstring = join_colnames()[0]
+    if maxfpkm:
+        mfstring = ' AND t1.fpkm < {0} AND t2.fpkm < {0}'.format(maxfpkm)
+    else:
+        mfstring = ''
 
+    createviewcmd = 
+    joincmd = "SELECT {2} FROM {0} as t0 INNER JOIN autin as a0 using (berkid) FULL OUTER JOIN {1} as t1 INNER JOIN autin as a1 using (berkid) USING (tracking_id) WHERE t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK'{3} ORDER BY tracking_id;".format(table0, table1, selectstring, mfstring)
+    print(joincmd)
+    #joincmd = "SELECT t1.tracking_id, t1.fpkm, t1.fpkm_status, t2.fpkm, t2.fpkm_status, t1.berkid, t2.berkid FROM {0} t1 FULL OUTER JOIN {1} t2 USING (tracking_id) WHERE t1.tracking_id != '' AND t1.fpkm_status = 'OK' AND t2.fpkm_status = 'OK' ORDER BY tracking_id".format(table1, table2)
+    cur.execute(joincmd)
+    jointable = np.array(cur.fetchall())
+    #print(len(jointable))
+    return(jointable)
+
+
+def mjoin_db_table(berkidlist, conn):
+    '''Input:
+    samples = list of berkids to compare 
+    '''
+    comp_index = itertools.combinations(range(len(berkidlist)), 2) # List of indices for all pairwise comparisons of each sample.
     comparisons = []
     for i in comp_index:
-        table1_name, table2_name = ['{0}_{1}'.format(CUFF_TABLE_PREFIX, samples[x]) for x in i]
-        joincmd = "SELECT t1.tracking_id, t1.fpkm, t1.fpkm_status, t2.fpkm, t2.fpkm_status, t1.berkid, t2.berkid FROM {0} t1 INNER JOIN {1} t2 USING (tracking_id) WHERE t1.tracking_id != '' AND t1.fpkm_status = 'OK' AND t2.fpkm_status = 'OK' ORDER BY tracking_id".format(table1_name, table2_name)
-        #viewcmd_create = 'CREATE OR REPLACE VIEW {0} AS SELECT t1.tracking_id, t1.fpkm as t1fpkm, t1.fpkm_status as t1fpkmstatus, t2.fpkm as t2fpkm, t2.fpkm_status as t2fpkmstatus from {1} t1 inner join {2} t2 using (tracking_id);'.format(joinname, table1_name, table2_name)
-        #copycmd = "COPY (SELECT t1.tracking_id, t1.fpkm as t1fpkm, t1.fpkm_status as t1fpkmstatus, t2.fpkm as t2fpkm, t2.fpkm_status as t2fpkmstatus FROM {1} t1 INNER JOIN {2} t2 ON t1.tracking_id = t2.tracking.id ORDER BY tracking_id) TO '{0}' header csv;".format(joinpath, table1_name, table2_name)
-        #cur.execute('{0}'.format(viewcmd_create))
-        #copycmd = "COPY ({0}) TO '{1}' header csv;".format(joincmd, joinpath)
-        #cur.execute(copycmd)
-        
-        cur.execute(joincmd)
-        comparisons.append(np.array(cur.fetchall()))
+        cur = conn.cursor()
+        table1, table2 = ['{0}_{1}'.format(CUFF_TABLE_PREFIX, berkidlist[x]) for x in i]
+        jointable = join_db_table(table1, table2, cur)
+        comparisons.append(jointable)
+        cur.close()
     return(comparisons)   
-
 
 def get_correlation(joinedarray):
     '''
@@ -64,42 +79,47 @@ def get_correlation(joinedarray):
     joinedarray = an array containing the FPKM for genes in two samples; returned by join_db_table()
     '''
     array = np.transpose(joinedarray)
-    sample1, sample2 = [array[x][:].astype(np.float) for x in [1,3]]
-    samplenames = [array[x][0] for x in [5, 6]]
-    #sample2 = np.transpose(array)[3][:].astype(np.float)
-    slope, intercept, r, p, std_err = stats.linregress(sample1, sample2)
-    return(samplenames, r)
+    colnames = join_colnames()[1] 
+    fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),colnames.index('t1.fpkm')]]
+    berkid1, berkid2, sample1, sample2 = [array[x][0] for x in [colnames.index('t0.berkid'), colnames.index('t1.berkid'), colnames.index('a0.sample'), colnames.index('a1.sample')]] 
+    slope, intercept, r, p, std_err = stats.linregress(fpkm0, fpkm1)
+    return(r, berkids, samples)
 
-cuffpaths = ['/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/tux_results/tophat_run3/cufflinks_out_3', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/tux_results/tophat_run2/cufflinks_out', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGSJ006G_index24/tux_results/tophat_run1/cufflinks_out']
 
 def create_corr_file(correlationfile):
     with open(correlationfile, 'w') as g:
-        g.write('Sample1,Sample2,r,r^2\n')
-#def save_correlation(samplenames, r, correlationfile):
-    #with open(correlationfile, 'a') as g:
-        #g.write(samplenames
+        g.write('Berkid1\tSample1\tBerkid\tSample2\tr\tr^2\n')
 
-conn = psycopg2.connect("dbname=rnaseq user=andrea")
-cur = conn.cursor()
+def save_corr_file(r, berkids, samples, correlationfile):
+    with open(correlationfile, 'a') as g:
+        g.write('{},{},{},{},{}'.format(berkids[0], samples[0], berkids[1], samples[1], r))
 
-connandrea = psycopg2.connect("dbname=andrea user=andrea")
-cur_a = connandrea.cursor()
 
-for cuffpath in cuffpaths:
-    make_db_table(cuffpath, cur)
+if __name__ == '__main__':
 
-samples = ('rgam009b', 'rgam010f', 'rgsj006g')
-comp_index = itertools.combinations(range(len(samples)), 2)
-data = join_db_table(samples, comp_index, cur)
+    cuffpaths = ['/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/tux_results/tophat_run3/cufflinks_out_3', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/tux_results/tophat_run2/cufflinks_out', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGSJ006G_index24/tux_results/tophat_run1/cufflinks_out']
+    corrfile = 'correlations.txt'
 
-for array in data:
-    samples, r =  get_correlation(array)
-    print(samples, r, np.square(r))
-    #print(type(array))
-    #print('r', r)
-    #print('r^2', np.square(r))
-    #print(np.shape(sample1))
-    #print(sample1[:4])
+    print('opening connection')
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
+    cur = conn.cursor()
+    print('making tables')
+    for cuffpath in cuffpaths:
+        make_db_table(cuffpath, cur)
+    cur.close()
+    conn.close()
 
-cur.close()
-conn.close()
+    create_corr_file(corrfile)
+    samples = ('rgam009b', 'rgam010f', 'rgsj006g')
+    
+    conn=psycopg2.connect("dbname=rnaseq user=andrea")
+    print('joining and querying tables')
+    data = mjoin_db_table(samples, conn)
+
+    #print('finding correlations')
+    #for array in data:
+        #r, berkids, samples =  get_correlation(array)
+        #print(samples, r, np.square(r))
+        #save_corr_file(r, berkids, samples, corrfile)
+
+    conn.close()

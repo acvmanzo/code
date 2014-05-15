@@ -34,8 +34,8 @@
 -- select count (*) from (select autin.berkid from cuff_genes_fpkm_rgam009b inner join autin on (autin.berkid = cuff_genes_fpkm_rgam009b.sample)) as foo;
 
 -- To join tables for correlation tests.
-SELECT t1.tracking_id, t1.fpkm, t1.fpkm_status, t2.fpkm, t2.fpkm_status,
-t1.berkid, t2.berkid, a1.sample, a2.sample
+SELECT t1.tracking_id, t1.berkid, a1.sample, t1.fpkm, t1.fpkm_status, t2.berkid,
+a2.sample, t2.fpkm, t2.fpkm_status
 FROM 
     cuff_genes_fpkm_rgam009b as t1 INNER JOIN autin as a1 using (berkid)
     INNER JOIN 
@@ -44,13 +44,19 @@ FROM
 WHERE t1.tracking_id != '' AND t1.fpkm_status = 'OK' AND t2.fpkm_status = 'OK' 
 ORDER BY tracking_id;
 
+-- To check the # of rows in the joined table.
 select count (*) from (
 SELECT t1.tracking_id, t1.fpkm, t1.fpkm_status, t2.fpkm, t2.fpkm_status,
 t1.berkid, t2.berkid, a1.sample, a2.sample
 FROM 
     cuff_genes_fpkm_rgam009b as t1 INNER JOIN autin as a1 using (berkid)
-    INNER JOIN 
+    FULL OUTER JOIN 
     cuff_genes_fpkm_rgam010f as t2 INNER JOIN autin as a2 using (berkid)
     USING (tracking_id) 
 WHERE t1.tracking_id != '' AND t1.fpkm_status = 'OK' AND t2.fpkm_status = 'OK' 
 ORDER BY tracking_id) as foo;
+
+-- # of rows in the joined tables are different from the single tables because
+-- not all the fpkms are 'OK'. Because I ran the function without looking for
+-- novel transcripts and with reference to the genome, the number of rows in the
+-- single tables are the same.
