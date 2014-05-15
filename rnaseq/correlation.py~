@@ -8,6 +8,8 @@ import cProfile
 import pstats
 
 CUFF_TABLE_PREFIX = 'cuff_genes_fpkm'
+SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+MAXFPKM = False
 
 def get_cuff_info(cuffpath):
     cuffpath = os.path.abspath(cuffpath)
@@ -37,36 +39,26 @@ def make_db_table(cuffpath, cur):
     cur.execute("{0}".format(tablecmd_create))
     cur.copy_from(open(newcufffile), table_name)
 
-def join_colnames():
+def gen_joincmd(selectlist, table0, table1, maxfpkm):
     #selectlist = ['t0.tracking_id', 't0.berkid', 'a0.sample', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 'a1.sample', 't1.fpkm', 't1.fpkm_status']
 
-    selectlist = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
     selectstring = ", ".join(selectlist)
-    return(selectstring, selectlist)
-
-def join_db_table(table0, table1, cur, maxfpkm=False):
-    selectstring = join_colnames()[0]
-    tempselect0 = selectstring[:5]
-    tempselect1 = selectstring[5:]
-
     if maxfpkm:
         mfstring = ' AND t1.fpkm < {0} AND t2.fpkm < {0}'.format(maxfpkm)
     else:
         mfstring = ''
-
-    #createview0cmd = "CREATE VIEW {0} AS SELECT {1} FROM {2} as t0 INNER JOIN autin as a0 using (berkid)".format('tempview0', tempselect0, table0)
-    #createview1cmd = "CREATE VIEW {0} AS SELECT {1} FROM {2} as t1 INNER JOIN autin as a1 using (berkid)".format('tempview1', tempselect0, table0)
-    #joincmd = "SELECT {0} FROM tempview0 as t0 FULL OUTER JOIN tempview1 as t1 USING
-    #(tracking_id) WHERE t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND
-    #t1.fpkm_status = 'OK'{3} ORDER BY tracking_id;".format(table0, table1, selectstring, mfstring)
-
     joincmd = "SELECT {2} FROM {0} as t0 FULL OUTER JOIN {1} as t1 USING (tracking_id) WHERE t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK'{3} ORDER BY tracking_id;".format(table0, table1, selectstring, mfstring)
-    #joincmd = "SELECT {2} FROM {0} as t0 INNER JOIN autin as a0 using (berkid) FULL OUTER JOIN {1} as t1 INNER JOIN autin as a1 using (berkid) USING (tracking_id) WHERE t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK'{3} ORDER BY tracking_id;".format(table0, table1, selectstring, mfstring)
     print(joincmd)
-    #joincmd_old = "SELECT t1.tracking_id, t1.fpkm, t1.fpkm_status, t2.fpkm, t2.fpkm_status, t1.berkid, t2.berkid FROM {0} t1 FULL OUTER JOIN {1} t2 USING (tracking_id) WHERE t1.tracking_id != '' AND t1.fpkm_status = 'OK' AND t2.fpkm_status = 'OK' ORDER BY tracking_id".format(table0, table1)
+    #joincmd.withautin = "SELECT {2} FROM {0} as t0 INNER JOIN autin as a0 using (berkid) FULL OUTER JOIN {1} as t1 INNER JOIN autin as a1 using (berkid) USING (tracking_id) WHERE t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK'{3} ORDER BY tracking_id;".format(table0, table1, selectstring, mfstring)
+    return(joincmd)
+
+
+def join_db_table(joincmd, cur):
+
+    print(joincmd)
     cur.execute(joincmd)
     jointable = np.array(cur.fetchall())
-    #print(len(jointable))
+    print('table length = ', len(jointable))
     return(jointable)
 
 
@@ -78,10 +70,19 @@ def mjoin_db_table(berkidlist, cur):
     comparisons = []
     for i in comp_index:
         #cur = conn.cursor()
-        table1, table2 = ['{0}_{1}'.format(CUFF_TABLE_PREFIX, berkidlist[x]) for x in i]
-        jointable = join_db_table(table1, table2, cur)
+        table0, table1 = ['{0}_{1}'.format(CUFF_TABLE_PREFIX, berkidlist[x]) for x in i]
+        joincmd = gen_joincmd(SELECTLIST, table0, table1, MAXFPKM)
+        jointable = join_db_table(joincmd, cur)
         comparisons.append(jointable)
     return(comparisons)   
+
+
+def get_samplename(berkid, cur):
+    samplecmd = "SELECT sample FROM autin WHERE berkid = '{}'".format(berkid)
+    cur.execute(samplecmd)
+    sample = cur.fetchone()
+    return(sample)
+
 
 def get_correlation(joinedarray):
     '''
@@ -89,9 +90,8 @@ def get_correlation(joinedarray):
     joinedarray = an array containing the FPKM for genes in two samples; returned by join_db_table()
     '''
     array = np.transpose(joinedarray)
-    colnames = join_colnames()[1] 
+    colnames = SELECTLIST
     fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),colnames.index('t1.fpkm')]]
-    #berkid0, berkid1, sample0, sample1 = [array[x][0] for x in [colnames.index('t0.berkid'), colnames.index('t1.berkid'), colnames.index('a0.sample'), colnames.index('a1.sample')]] 
     berkid0, berkid1, = [array[x][0] for x in [colnames.index('t0.berkid'), colnames.index('t1.berkid')]]
     slope, intercept, r, p, std_err = stats.linregress(fpkm0, fpkm1)
     return(r, berkid0, berkid1)
@@ -101,9 +101,9 @@ def create_corr_file(correlationfile):
     with open(correlationfile, 'w') as g:
         g.write('berkid0\tsample0\tberkid1\tsample1\tr\tr^2\n')
 
-def save_corr_file(r, berkid0, berkid1, correlationfile):
+def save_corr_file(r, berkid0, sample0, berkid1, sample1, correlationfile):
     with open(correlationfile, 'a') as g:
-        g.write('{}\t{}\t{}\t{}\n'.format(berkid0, berkid1, r, np.square(r)))
+        g.write('{}\t{}\t{}\t{}\n'.format(berkid0, sample0, berkid1, sample1, r, np.square(r)))
 
 
 def testmain():
@@ -122,23 +122,24 @@ def testmain():
     conn1.close()
 
     create_corr_file(corrfile)
-    samples = ('rgam009b', 'rgam010f', 'rgsj006g')
+    berkidlist = ('RGAM009B', 'RGAM010F', 'RGSJ006G')
     
     conn2=psycopg2.connect("dbname=rnaseq user=andrea")
     cur2 = conn2.cursor()
     print('joining and querying tables')
-    data = mjoin_db_table(samples, cur2)
+    data = mjoin_db_table(berkidlist, cur2)
 
     print('finding correlations')
     for array in data:
         r, berkid0, berkid1 =  get_correlation(array)
-        print(samples, r, np.square(r))
-        save_corr_file(r, berkid0, berkid1, corrfile)
+        sample0, sample1 = [get_samplename(x, cur2) for x in [berkid0, berkid1]]
+        save_corr_file(r, berkid0, sample0, berkid1, sample1, corrfile)
     cur2.close()
     conn2.close()
 
-#cProfile.run('testmain()', 'corrprofile')
+#testmain()
 cProfile.run('testmain()')
+#cProfile.run('testmain()')
 #p=pstats.Stats('conntest')
 #p.strip_dirs().sort_stats(-1).print_stats()
 #p.sort_stats('cumulative').print_stats(10)
