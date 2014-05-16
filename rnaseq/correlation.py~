@@ -91,13 +91,13 @@ def get_samplename(berkid, cur):
     return(sample)
 
 
-def get_fpkm(joinedarray):
+def get_fpkm(joinedarray, selectlist):
     ''' 
     Input:
     joinedarray = an array containing the FPKM for genes in two samples; returned by join_db_table()
     '''
     array = np.transpose(joinedarray)
-    colnames = SELECTLIST
+    colnames = selectlist
     fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),colnames.index('t1.fpkm')]]
     berkid0, berkid1, = [array[x][0] for x in [colnames.index('t0.berkid'), colnames.index('t1.berkid')]]
 
@@ -202,7 +202,7 @@ def testmain():
 
     print('finding correlations')
     for array in data:
-        fpkms, berkids = get_fpkm(array)
+        fpkms, berkids = get_fpkm(array, SELECTLIST)
         r = get_correlation(fpkms)
         samples = [get_samplename(x, cur1) for x in berkids]
         print(samples)
@@ -220,7 +220,7 @@ def testmain():
         fig1 = plt.figure(figsize=(10, 10))
         plot_hist(fpkms, berkids, samples, fpkmlim, 311)
         plot_hist(fpkms, berkids, samples, MAXFPKMHIST, 312)
-        plot_hist(fpkms, berkids, samples, 0.01*MAXFPKMHIST, 313)
+        plot_hist(fpkms, berkids, samples, 0.008*MAXFPKMHIST, 313)
         plt.savefig(os.path.join(savefigdir, make_figname(berkids, samples, 'hist')))
         plt.tight_layout()
         plt.close()
@@ -228,7 +228,8 @@ def testmain():
     cur1.close()
     conn.close()
 
-testmain()
+if __name__ == '__main__':
+    testmain()
 #cProfile.run('testmain()')
 #cProfile.run('testmain()')
 #p=pstats.Stats('conntest')

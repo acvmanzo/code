@@ -37,7 +37,7 @@ def batchfiles(fn_name, params, ftype, fdir='.'):
     names = [os.path.abspath(name) for name in names]
     names = sorted(names)
     for name in names:
-        print(os.path.basename(name))
+        print os.path.basename(name)
         fn_name(name, params)
 
 def batchdirs(fn_name, ftype, fdir='.'):
@@ -45,7 +45,7 @@ def batchdirs(fn_name, ftype, fdir='.'):
     """
     dirs = listsortfs(fdir)
     for d in dirs:
-        print(os.path.basename(d))
+        print os.path.basename(d)
         fn_name(d)
 
 def batch_s(fdir):
