@@ -1,5 +1,8 @@
 import numpy as np
+import math
 import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 import os
 import psycopg2
 from scipy import stats
@@ -7,9 +10,13 @@ import itertools
 import cProfile
 import pstats
 
+
 CUFF_TABLE_PREFIX = 'cuff_genes_fpkm'
 SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
 MAXFPKM = False
+MAXFPKMPLOT = 2000
+MAXFPKMHIST= 2000
+
 
 def get_cuff_info(cuffpath):
     cuffpath = os.path.abspath(cuffpath)
@@ -62,7 +69,7 @@ def join_db_table(joincmd, cur):
     return(jointable)
 
 
-def mjoin_db_table(berkidlist, cur):
+def mjoin_db_table(berkidlist, cur, selectlist, maxfpkm, cuff_table_prefix):
     '''Input:
     samples = list of berkids to compare 
     '''
@@ -70,8 +77,8 @@ def mjoin_db_table(berkidlist, cur):
     comparisons = []
     for i in comp_index:
         #cur = conn.cursor()
-        table0, table1 = ['{0}_{1}'.format(CUFF_TABLE_PREFIX, berkidlist[x]) for x in i]
-        joincmd = gen_joincmd(SELECTLIST, table0, table1, MAXFPKM)
+        table0, table1 = ['{0}_{1}'.format(cuff_table_prefix, berkidlist[x]) for x in i]
+        joincmd = gen_joincmd(selectlist, table0, table1, maxfpkm)
         jointable = join_db_table(joincmd, cur)
         comparisons.append(jointable)
     return(comparisons)   
@@ -80,12 +87,12 @@ def mjoin_db_table(berkidlist, cur):
 def get_samplename(berkid, cur):
     samplecmd = "SELECT sample FROM autin WHERE berkid = '{}'".format(berkid)
     cur.execute(samplecmd)
-    sample = cur.fetchone()
+    sample = cur.fetchone()[0]
     return(sample)
 
 
-def get_correlation(joinedarray):
-    '''
+def get_fpkm(joinedarray):
+    ''' 
     Input:
     joinedarray = an array containing the FPKM for genes in two samples; returned by join_db_table()
     '''
@@ -93,8 +100,15 @@ def get_correlation(joinedarray):
     colnames = SELECTLIST
     fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),colnames.index('t1.fpkm')]]
     berkid0, berkid1, = [array[x][0] for x in [colnames.index('t0.berkid'), colnames.index('t1.berkid')]]
-    slope, intercept, r, p, std_err = stats.linregress(fpkm0, fpkm1)
-    return(r, berkid0, berkid1)
+
+    return([fpkm0, fpkm1], [berkid0, berkid1])
+
+def get_correlation(fpkms):
+    '''
+    Input:
+    '''
+    slope, intercept, r, p, std_err = stats.linregress(fpkms[0], fpkms[1])
+    return(r)
 
 
 def create_corr_file(correlationfile):
@@ -103,42 +117,119 @@ def create_corr_file(correlationfile):
 
 def save_corr_file(r, berkid0, sample0, berkid1, sample1, correlationfile):
     with open(correlationfile, 'a') as g:
-        g.write('{}\t{}\t{}\t{}\n'.format(berkid0, sample0, berkid1, sample1, r, np.square(r)))
+        g.write('{}\t{}\t{}\t{}\t{}\t{}\n'.format(berkid0, sample0, berkid1, sample1, r, np.square(r)))
 
+def mmake_db_table(cuffpaths, cur, conn):
+
+    print('making tables')
+    for cuffpath in cuffpaths:
+        make_db_table(cuffpath, cur)
+    conn.commit()
+
+def axislim(num):
+    lim = int(math.ceil(max(num))*1.1)
+    return(lim)
+
+def format_plot(berkids, samples, lim):
+
+    xlabel = '{} {}'.format(berkids[0], samples[0])
+    ylabel = '{} {}'.format(berkids[1], samples[1])
+    title = 'FPKM of {} vs. {}'.format(samples[0],samples[1])
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.xlim(0, lim)    
+    plt.ylim(0, lim)
+  
+
+
+def plot_scatter(fpkms, berkids, samples, r, subplotnum, lim): 
+    
+    plt.subplot(subplotnum)
+    plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=12)
+    plt.plot(range(lim), range(lim), c='k', ls = '--')
+    textstr = 'r = {:.3f}'.format(r) 
+    format_plot(berkids, samples, lim)
+
+    ax = plt.gca()
+    if subplotnum == 121:
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
+            verticalalignment='top')
+    ax.ticklabel_format(style='sci', scilimits=(-1,2))
+
+def make_figname(berkids, samples, figtype):
+
+    figname_base = '{}-{}_vs_{}-{}_{}.png'.format(samples[0], berkids[0], samples[1], berkids[1], figtype)
+    return(figname_base)
+
+
+def plot_hist(fpkms, berkids, samples, lim, subplotnum):
+
+    plt.subplot(subplotnum)
+    plt.hist(fpkms[0][fpkms[0]<lim], bins=50, color='r', alpha=0.5, label='{}'.format(samples[0]))
+    plt.hist(fpkms[1][fpkms[1]<lim], bins=50, color='b', alpha=0.5, label='{}'.format(samples[1]))
+    plt.legend()
+    if subplotnum == 311:
+        plt.ylim(0, 25)
+    elif subplotnum == 312:
+        plt.ylim(0, 200)
+    elif subplotnum == 313:
+        ax = plt.gca()
+        ax.ticklabel_format(style='sci', scilimits=(-1,2))
+
+    plt.ylabel('Gene number')
+    plt.xlabel('FPKM')
 
 def testmain():
 
     cuffpaths = ['/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/tux_results/tophat_run3/cufflinks_out_3', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/tux_results/tophat_run2/cufflinks_out', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGSJ006G_index24/tux_results/tophat_run1/cufflinks_out']
-    corrfile = 'correlations.txt'
+    corrfile = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations/correlations.txt'
+    savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations'
+    berkidlist = ('RGAM009B', 'RGAM010F', 'RGSJ006G')
 
     print('opening connection')
-    conn1 = psycopg2.connect("dbname=rnaseq user=andrea")
-    cur1 = conn1.cursor()
-    print('making tables')
-    for cuffpath in cuffpaths:
-        make_db_table(cuffpath, cur1)
-    conn1.commit()
-    cur1.close()
-    conn1.close()
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
 
-    create_corr_file(corrfile)
-    berkidlist = ('RGAM009B', 'RGAM010F', 'RGSJ006G')
+#    cur = conn.cursor()
+    #mmake_db_table(cuffpaths, cur, conn)
+    #cur.close()
     
-    conn2=psycopg2.connect("dbname=rnaseq user=andrea")
-    cur2 = conn2.cursor()
+    #create_corr_file(corrfile)
+    
     print('joining and querying tables')
-    data = mjoin_db_table(berkidlist, cur2)
+    cur1 = conn.cursor()
+    data = mjoin_db_table(berkidlist, cur1, SELECTLIST, MAXFPKM, CUFF_TABLE_PREFIX)
 
     print('finding correlations')
     for array in data:
-        r, berkid0, berkid1 =  get_correlation(array)
-        sample0, sample1 = [get_samplename(x, cur2) for x in [berkid0, berkid1]]
-        save_corr_file(r, berkid0, sample0, berkid1, sample1, corrfile)
-    cur2.close()
-    conn2.close()
+        fpkms, berkids = get_fpkm(array)
+        r = get_correlation(fpkms)
+        samples = [get_samplename(x, cur1) for x in berkids]
+        print(samples)
+        save_corr_file(r, berkids[0], samples[0], berkids[1], samples[1], corrfile)
 
-#testmain()
-cProfile.run('testmain()')
+        print('plotting scatter plots')
+        fpkmlim = max([axislim(x) for x in fpkms])
+        fig1 = plt.figure(figsize=(10, 5))
+        plot_scatter(fpkms, berkids, samples, r, 121, fpkmlim)
+        plot_scatter(fpkms, berkids, samples, r, 122, MAXFPKMPLOT)
+        plt.tight_layout()
+        plt.savefig(os.path.join(savefigdir, make_figname(berkids, samples, 'correlation')))
+        plt.close()
+        print('plotting histograms')
+        fig1 = plt.figure(figsize=(10, 10))
+        plot_hist(fpkms, berkids, samples, fpkmlim, 311)
+        plot_hist(fpkms, berkids, samples, MAXFPKMHIST, 312)
+        plot_hist(fpkms, berkids, samples, 0.008*MAXFPKMHIST, 313)
+        plt.savefig(os.path.join(savefigdir, make_figname(berkids, samples, 'hist')))
+        plt.tight_layout()
+        plt.close()
+   
+    cur1.close()
+    conn.close()
+
+testmain()
+#cProfile.run('testmain()')
 #cProfile.run('testmain()')
 #p=pstats.Stats('conntest')
 #p.strip_dirs().sort_stats(-1).print_stats()

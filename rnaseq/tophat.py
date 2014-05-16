@@ -7,16 +7,16 @@ import glob
 
 def get_dirs(folder, globstring):
     os.chdir(folder)
-    dirs = [os.path.abspath(x) for x in sorted(glob.glob('{0}').format(globstring))]
+    dirs = [os.path.abspath(x) for x in sorted(glob.glob('{0}'.format(globstring)))]
     return(dirs)
 
 def get_exptdirs(seqbase):
-    os.chdir(seqbase)
-    exptdirs = [
+    exptdirs = get_dirs(seqbase, '2014-*')
+    return(exptdirs)
 
 def get_sampledirs(exptdir):
-    os.chdir(exptdir)
-    sampledirs = 
+    seqdir = os.path.join(exptdir, 'sequences')
+    sampledirs = get_dirs(seqdir, 'Sample*') 
     return(sampledirs)
 
 def gen_combined_gzfile(sampledir):
@@ -43,4 +43,9 @@ def mgen_combined_gzfile(sampledirs):
 
 
 seqbase = '/home/andrea/rnaseqanalyze/sequences/'
-exptdir = 
+exptdirs = get_exptdirs(seqbase)
+for ed in exptdirs:
+    sampledirs = get_sampledirs(ed)
+    print(sampledirs)
+
+    mgen_combined_gzfile(sampledirs)
