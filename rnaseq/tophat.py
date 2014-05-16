@@ -48,6 +48,7 @@ def gen_combined_gzfile(sampledir, results_base_dir):
 def unzip_gzfile(gzfile):
     os.system('gunzip {}'.format(gzfile))
 
+
 def mgen_unzip_combined_gzfile(sampledirs, results_base_dir):
     for sd in sampledirs:
         os.chdir(sd)
@@ -57,7 +58,7 @@ def mgen_unzip_combined_gzfile(sampledirs, results_base_dir):
             unzip_gzfile(combined_gzpath)
 
 def run_tophat(fastafile):
-    tophatcmd = 'tophat -p 5 -G {0} {1} {2}'.format(R57GFF, BTINDEX, fastafile)
+    tophatcmd = 'tophat -p 5 --no-coverage-search -G {0} {1} {2}'.format(R57GFF, BTINDEX, fastafile)
     print(tophatcmd)
     os.system(tophatcmd)
     with open('tophat.info', 'w') as f:
@@ -77,6 +78,7 @@ print(sampledirs)
 for sd in sampledirs:
     os.chdir(sd)
     if os.path.exists('tophat_out'):
+        print('tophat_out directory exists')
         continue
     fastafile = glob.glob('*combined.fastq')[0]
     print(fastafile)

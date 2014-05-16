@@ -8,8 +8,8 @@ def get_ids(sid):
 
 cuffpaths = ['/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/tux_results/tophat_run3/cufflinks_out_3', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/tux_results/tophat_run2/cufflinks_out', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGSJ006G_index24/tux_results/tophat_run1/cufflinks_out']
 corrfile = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th/correlations.txt'
-#savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th'
-savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th_cond1'
+savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th'
+#savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th_cond1'
 
 print('opening connection')
 conn = psycopg2.connect("dbname=rnaseq user=andrea")
@@ -30,8 +30,8 @@ for mainberkid in mainberkids:
 
 
     print('joining and querying tables')
-    #joincmd = "SELECT {2} FROM {0} as clc INNER JOIN {1} as th ON (feature_id=gene_short_name) ORDER BY tracking_id;".format(table0, table1, selectstring)
-    joincmd = "SELECT {2} FROM {0} as clc INNER JOIN {1} as th ON (feature_id=gene_short_name) WHERE NOT (th.fpkm = 0 AND clc.rpkm != 0) ORDER BY tracking_id;".format(table0, table1, selectstring)
+    joincmd = "SELECT {2} FROM {0} as clc INNER JOIN {1} as th ON (feature_id=gene_short_name) ORDER BY tracking_id;".format(table0, table1, selectstring)
+    #joincmd = "SELECT {2} FROM {0} as clc INNER JOIN {1} as th ON (feature_id=gene_short_name) WHERE NOT (th.fpkm = 0 AND clc.rpkm != 0) ORDER BY tracking_id;".format(table0, table1, selectstring)
     
     print(joincmd)
     joinedarray = join_db_table(joincmd, cur)
@@ -39,14 +39,14 @@ for mainberkid in mainberkids:
     array = np.transpose(joinedarray)
     colnames = selectlist
     fpkms = [array[x][:].astype(np.float) for x in [colnames.index('clc.rpkm'),colnames.index('th.fpkm')]]
-    r = get_correlation(fpkms)
+    r, slope, intercept = get_correlation(fpkms)
     save_corr_file(r, berkids[0], samples[0], berkids[1], samples[1], corrfile)
 
     print('plotting scatter plots')
     fpkmlim = max([axislim(x) for x in fpkms])
     fig1 = plt.figure(figsize=(10, 5))
-    plot_scatter(fpkms, berkids, samples, r, 121, fpkmlim)
-    plot_scatter(fpkms, berkids, samples, r, 122, MAXFPKMPLOT)
+    plot_scatter(fpkms, berkids, samples, r, slope, intercept, 121, fpkmlim)
+    plot_scatter(fpkms, berkids, samples, r, slope, intercept, 122, MAXFPKMPLOT)
     plt.tight_layout()
     plt.savefig(os.path.join(savefigdir, make_figname(berkids, samples, 'correlation')))
     plt.close()

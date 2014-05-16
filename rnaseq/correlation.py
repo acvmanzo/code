@@ -108,7 +108,7 @@ def get_correlation(fpkms):
     Input:
     '''
     slope, intercept, r, p, std_err = stats.linregress(fpkms[0], fpkms[1])
-    return(r)
+    return(r, slope, intercept)
 
 
 def create_corr_file(correlationfile):
@@ -143,11 +143,13 @@ def format_plot(berkids, samples, lim):
   
 
 
-def plot_scatter(fpkms, berkids, samples, r, subplotnum, lim): 
+def plot_scatter(fpkms, berkids, samples, r, slope, intercept, subplotnum, lim): 
     
     plt.subplot(subplotnum)
-    plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=12)
-    plt.plot(range(lim), range(lim), c='k', ls = '--')
+    plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=9)
+    xline = range(lim)
+    yline = [slope*x + intercept for x in xline] 
+    plt.plot(xline, yline, c='r', ls = '--')
     textstr = 'r = {:.3f}'.format(r) 
     format_plot(berkids, samples, lim)
 
@@ -203,7 +205,7 @@ def testmain():
     print('finding correlations')
     for array in data:
         fpkms, berkids = get_fpkm(array, SELECTLIST)
-        r = get_correlation(fpkms)
+        r, slope, intercept = get_correlation(fpkms)
         samples = [get_samplename(x, cur1) for x in berkids]
         print(samples)
         save_corr_file(r, berkids[0], samples[0], berkids[1], samples[1], corrfile)
@@ -211,8 +213,8 @@ def testmain():
         print('plotting scatter plots')
         fpkmlim = max([axislim(x) for x in fpkms])
         fig1 = plt.figure(figsize=(10, 5))
-        plot_scatter(fpkms, berkids, samples, r, 121, fpkmlim)
-        plot_scatter(fpkms, berkids, samples, r, 122, MAXFPKMPLOT)
+        plot_scatter(fpkms, berkids, samples, r, slope, intercept, 121, fpkmlim)
+        plot_scatter(fpkms, berkids, samples, r, slope, intercept, 122, MAXFPKMPLOT)
         plt.tight_layout()
         plt.savefig(os.path.join(savefigdir, make_figname(berkids, samples, 'correlation')))
         plt.close()
