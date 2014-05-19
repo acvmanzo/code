@@ -11,7 +11,8 @@ import cProfile
 import pstats
 
 
-CUFF_TABLE_PREFIX = 'cuff_genes_fpkm'
+#CUFF_TABLE_PREFIX = 'cuff_genes_fpkm'
+CUFF_TABLE = 'cufflinks_data'
 SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
 MAXFPKM = False
 MAXFPKMPLOT = 2000
@@ -37,16 +38,21 @@ def add_berkid(cuffpath):
 #for cuffpath in cuffpaths:
     #add_id(cuffpath) 
 
-def make_db_table(cuffpath, cur):
+#def make_db_table(cuffpath, cur):
+    #os.chdir(cuffpath)
+    #sample, cufffile, newcufffile = get_cuff_info(cuffpath)
+    #table_name = '{0}_{1}'.format(CUFF_TABLE_PREFIX, sample) 
+    #tablecmd_create = 'DROP TABLE IF EXISTS {0} CASCADE; CREATE TABLE {0} (tracking_id character varying(20), class_code character varying(2), nearest_ref_id character varying(2), gene_id character varying(20), gene_short_name character varying(100), tss_id character varying(2), locus character varying(100), length character varying(2), coverage character varying(2), FPKM double precision , FPKM_conf_lo double precision, FPKM_conf_hi double precision, FPKM_status character varying(5), berkid character varying(20));'.format(table_name)
+    ##print(tablecmd_create)
+    #cur.execute("{0}".format(tablecmd_create))
+    #cur.copy_from(open(newcufffile), table_name)
+
+def copy_to_dbtable(cuffpath, tablename, cur):
     os.chdir(cuffpath)
     sample, cufffile, newcufffile = get_cuff_info(cuffpath)
-    table_name = '{0}_{1}'.format(CUFF_TABLE_PREFIX, sample) 
-    tablecmd_create = 'DROP TABLE IF EXISTS {0} CASCADE; CREATE TABLE {0} (tracking_id character varying(20), class_code character varying(2), nearest_ref_id character varying(2), gene_id character varying(20), gene_short_name character varying(100), tss_id character varying(2), locus character varying(100), length character varying(2), coverage character varying(2), FPKM double precision , FPKM_conf_lo double precision, FPKM_conf_hi double precision, FPKM_status character varying(5), berkid character varying(20));'.format(table_name)
-    #print(tablecmd_create)
-    cur.execute("{0}".format(tablecmd_create))
-    cur.copy_from(open(newcufffile), table_name)
+    cur.copy_from(open(newcufffile), tablename)
 
-def gen_joincmd(selectlist, table0, table1, maxfpkm):
+def gen_joincmd(selectlist, berkids, datatable, maxfpkm):
     #selectlist = ['t0.tracking_id', 't0.berkid', 'a0.sample', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 'a1.sample', 't1.fpkm', 't1.fpkm_status']
 
     selectstring = ", ".join(selectlist)
@@ -54,9 +60,10 @@ def gen_joincmd(selectlist, table0, table1, maxfpkm):
         mfstring = ' AND t1.fpkm < {0} AND t2.fpkm < {0}'.format(maxfpkm)
     else:
         mfstring = ''
-    joincmd = "SELECT {2} FROM {0} as t0 FULL OUTER JOIN {1} as t1 USING (tracking_id) WHERE t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK'{3} ORDER BY tracking_id;".format(table0, table1, selectstring, mfstring)
-    #print(joincmd)
+    joincmd = "SELECT {0} FROM {1} as t0 FULL OUTER JOIN {1} as t1 USING (tracking_id) WHERE t0.berkid = '{2}' AND t1.berkid = '{3}' AND t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK'{4} ORDER BY tracking_id;".format(selectstring, datatable, berkids[0], berkids[1], mfstring)
+    print(joincmd)
     #joincmd.withautin = "SELECT {2} FROM {0} as t0 INNER JOIN autin as a0 using (berkid) FULL OUTER JOIN {1} as t1 INNER JOIN autin as a1 using (berkid) USING (tracking_id) WHERE t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK'{3} ORDER BY tracking_id;".format(table0, table1, selectstring, mfstring)
+  
     return(joincmd)
 
 
@@ -69,7 +76,7 @@ def join_db_table(joincmd, cur):
     return(jointable)
 
 
-def mjoin_db_table(berkidlist, cur, selectlist, maxfpkm, cuff_table_prefix):
+def mjoin_db_table(berkidlist, selectlist, datatable, maxfpkm, cur):
     '''Input:
     samples = list of berkids to compare 
     '''
@@ -77,8 +84,8 @@ def mjoin_db_table(berkidlist, cur, selectlist, maxfpkm, cuff_table_prefix):
     comparisons = []
     for i in comp_index:
         #cur = conn.cursor()
-        table0, table1 = ['{0}_{1}'.format(cuff_table_prefix, berkidlist[x]) for x in i]
-        joincmd = gen_joincmd(selectlist, table0, table1, maxfpkm)
+        berkids = [berkidlist[x] for x in i]
+        joincmd = gen_joincmd(selectlist, berkids, datatable, maxfpkm)
         jointable = join_db_table(joincmd, cur)
         comparisons.append(jointable)
     return(comparisons)   
@@ -119,11 +126,11 @@ def save_corr_file(r, berkid0, sample0, berkid1, sample1, correlationfile):
     with open(correlationfile, 'a') as g:
         g.write('{}\t{}\t{}\t{}\t{}\t{}\n'.format(berkid0, sample0, berkid1, sample1, r, np.square(r)))
 
-def mmake_db_table(cuffpaths, cur, conn):
+def mcopy_to_dbtable(cuffpaths, tablename, cur, conn):
 
     print('making tables')
     for cuffpath in cuffpaths:
-        make_db_table(cuffpath, cur)
+        copy_to_dbtable(cuffpath, tablename, cur)
     conn.commit()
 
 def axislim(num):
@@ -146,7 +153,7 @@ def format_plot(berkids, samples, lim):
 def plot_scatter(fpkms, berkids, samples, r, slope, intercept, subplotnum, lim): 
     
     plt.subplot(subplotnum)
-    plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=9)
+    plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=3)
     xline = range(lim)
     yline = [slope*x + intercept for x in xline] 
     plt.plot(xline, yline, c='r', ls = '--')
@@ -192,15 +199,15 @@ def testmain():
     print('opening connection')
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
 
-#    cur = conn.cursor()
-    #mmake_db_table(cuffpaths, cur, conn)
-    #cur.close()
+    cur = conn.cursor()
+    mcopy_to_dbtable(cuffpaths, CUFF_TABLE, cur, conn)
+    cur.close()
     
-    #create_corr_file(corrfile)
+    create_corr_file(corrfile)
     
     print('joining and querying tables')
     cur1 = conn.cursor()
-    data = mjoin_db_table(berkidlist, cur1, SELECTLIST, MAXFPKM, CUFF_TABLE_PREFIX)
+    data = mjoin_db_table(berkidlist, SELECTLIST, CUFF_TABLE, MAXFPKM, cur1)
 
     print('finding correlations')
     for array in data:
@@ -227,8 +234,8 @@ def testmain():
         plt.tight_layout()
         plt.close()
    
-    cur1.close()
-    conn.close()
+    #cur1.close()
+    #conn.close()
 
 if __name__ == '__main__':
     testmain()

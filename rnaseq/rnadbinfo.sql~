@@ -63,18 +63,48 @@
 
 
 -- For looking at correlation between CLCBio and Tophat.
-DROP TABLE clcbio_rgam009b;
-CREATE TABLE clcbio_rgam009b (
-    feature_id varchar(200),
-    rpkm double precision
-);
+-- DROP TABLE clcbio_rgam009b;
+-- CREATE TABLE clcbio_rgam009b (
+    -- feature_id varchar(200),
+    -- rpkm double precision
+-- );
 
 -- \copy clcbio_rgam010f from '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/clc_results/RGAM010F_RNA-Seq_rpkm.txt'; 
 
-\copy clcbio_rgam009b from '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/clc_results/CS_MB_RGAM009B_RNA-Seq_rpkm.txt';
+-- \copy clcbio_rgam009b from '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/clc_results/CS_MB_RGAM009B_RNA-Seq_rpkm.txt';
 
 -- Notes:
 -- Correlation between clc and th is off; th seems to assign higher fpkms than
 -- clc. Doing it again excluding the samples where th gives an fpkm of 0 and clc
 -- gives an fpkm of not 0. Saved results in folder 
 -- savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th_cond1'
+
+
+
+-- CREATE TABLE cufflinks_data (
+    -- tracking_id character varying(20),
+    -- class_code character varying(2),
+    -- nearest_ref_id character varying(2),
+    -- gene_id character varying(20),
+    -- gene_short_name character varying(100),
+    -- tss_id character varying(2),
+    -- locus character varying(100),
+    -- length character varying(2),
+    -- coverage character varying(2),
+    -- FPKM double precision ,
+    -- FPKM_conf_lo double precision,
+    -- FPKM_conf_hi double precision,
+    -- FPKM_status character varying(5),
+    -- berkid character varying(20));
+
+-- SELECT COUNT (*) FROM (
+SELECT t0.tracking_id, t0.berkid, t0.fpkm, t0.fpkm_status, t1.berkid, t1.fpkm, t1.fpkm_status 
+    FROM cufflinks_data as t0 
+        FULL OUTER JOIN 
+        cufflinks_data as t1 
+            ON (t0.tracking_id = t1.tracking_id) 
+            WHERE t0.berkid = 'RGAM009B' AND t1.berkid = 'RGAM010F' 
+            AND t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK' 
+            ORDER BY tracking_id
+            -- ) as foo
+            ;
