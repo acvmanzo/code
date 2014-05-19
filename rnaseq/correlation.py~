@@ -153,7 +153,7 @@ def format_plot(berkids, samples, lim):
 def plot_scatter(fpkms, berkids, samples, r, slope, intercept, subplotnum, lim): 
     
     plt.subplot(subplotnum)
-    plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=5)
+    plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=3)
     xline = range(lim)
     yline = [slope*x + intercept for x in xline] 
     plt.plot(xline, yline, c='r', ls = '--')

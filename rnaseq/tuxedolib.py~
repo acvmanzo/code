@@ -2,7 +2,7 @@ import sys
 import os
 import glob
 import cmn.cmn as cmn
-
+import logging
 
 def get_dirs(folder, globstring):
     '''Returns all the directories in a folder that match the string 'globstring'
@@ -28,13 +28,13 @@ def gen_combined_gzfile(sample_seqdir, combined_gzpath):
     '''
     os.chdir(sample_seqdir)
     gzfiles = ' '.join(sorted(glob.glob('*[0-9].fastq.gz')))
-    #print(os.path.exists(combined_gzpath))
+    #logging.info(os.path.exists(combined_gzpath))
     if not os.path.exists(combined_gzpath):
         catcmd = 'cat {} > {}'.format(gzfiles, combined_gzpath)
-        print('Generating {}'.format(os.path.basename(combined_gzpath)))
+        logging.info('Generating %s', os.path.basename(combined_gzpath))
         os.system(catcmd)
     else:
-        print('{} exists'.format(combined_gzpath))
+        logging.info('%s exists', os.path.basename(combined_gzpath))
 
 
 def get_combined_gzpath(sample_resdir, sample, combined_fastq_suffix):
@@ -49,10 +49,10 @@ def get_combined_gzpath(sample_resdir, sample, combined_fastq_suffix):
 def unzip_gzfile(gzfile):
     uzfile = gzfile.strip('.gz')
     if not os.path.exists(uzfile):
-        print('Unzipping {0}'.format(os.path.basename(gzfile)))
+        logging.info('Unzipping %s', os.path.basename(gzfile))
         os.system('gunzip {}'.format(gzfile))
     else:
-        print('Unzipped {0} exists'.format(os.path.basename(gzfile)))
+        logging.info('Unzipped %s exists', os.path.basename(gzfile))
 
 
 def mgen_combined_gzfile(sampledirs, results_base_dir):
@@ -62,7 +62,7 @@ def mgen_combined_gzfile(sampledirs, results_base_dir):
 
 def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
     tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
-    print(tophatcmd)
+    logging.info('%s', tophatcmd)
     #os.system(tophatcmd)
     with open(tophatcmd_file, 'w') as f:
         f.write(tophatcmd)
@@ -70,7 +70,7 @@ def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
 
 def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinkscmd_file):
     cufflinkscmd = 'cufflinks -o cufflinks_out -p 8 -M {} -G {} -u {} >& {}'.format(mitogff_file, gff_file, bam_file, cufflinkslog_file)
-    print(cufflinkscmd)
+    logging.info('%s', cufflinkscmd)
     with open(cufflinkscmd_file, 'w') as f:
         f.write(cufflinkscmd)
     #os.system(cufflinkscmd)
@@ -105,23 +105,24 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_
     # Run tophat.
     os.chdir(sample_resdir)
     fastafile = os.path.basename(combined_gzpath).strip('.gz')
-    print(fastafile)    
+    logging.info('%s', fastafile)    
 
     if os.path.exists(d['tophat_dir']):
-        print('tophat directory exists')
+        logging.warning('%s', 'tophat directory exists')
     else:
         run_tophat(d['tophat_dir'], d['gff_file'], d['btindex'], fastafile, d['tophatcmd_file'])
         os.remove(fastafile)
    
     # Run cufflinks.
     if os.path.exists(d['cufflinks_dir']):
-        print('cufflinks directory exists')
+        logging.warning('cufflinks directory exists')
     else:
         run_cufflinks(d['mitogff_file'], d['gff_file'], d['bam_file'], d['cufflinkslog_file'], d['cufflinkscmd_file']) 
     
 
 def mrun_tophat_cufflinks(dir_info, tophat_cufflinks_info):
-    '''Runs tophat and cufflinks on multiple samples.
+    '''Runs tophat and cufflinks on multiple samples organized in the following manner:
+    main seqdir > sequence batch folder (date) > sequence subdirectory (sequences/) > sample folder
     Inputs:
     dir_info: List containing the following variables:
         seqdir = directory that contains all the sequence files; I have divided the 
@@ -136,23 +137,20 @@ def mrun_tophat_cufflinks(dir_info, tophat_cufflinks_info):
     '''
     d = dir_info
     seqbatchdirs = get_dirs(d['seq_dir'], d['seqbatchglob']) # Finds all the sequence batch folders.
-    print('Sequence batch directories', seqbatchdirs)
+    logging.info('Sequence batch directories %s', seqbatchdirs)
     for sbd in seqbatchdirs:
         try:
             sample_seqdirs = get_dirs(os.path.join(sbd, d['seq_subdir']), d['sampleseqglob'])
-            print('Sample directories')
-            print([os.path.basename(x) for x in sample_seqdirs])
+            logging.info('Sample directories %s', [os.path.basename(x) for x in sample_seqdirs])
         except FileNotFoundError:
-            print('Sequence folder does not exist')
+            logging.warning('Sequence folder does not exist')
             continue
         
         for sample_seqdir in sample_seqdirs:
             sample = os.path.basename(sample_seqdir).split('_')[1]
-            print(sample)
+            logging.info('%s', sample)
             sample_resdir = os.path.join(d['results_dir'], sample) 
             cmn.makenewdir(sample_resdir)
-            print('Running tophat and cufflinks')
+            logging.info('Running tophat and cufflinks')
             run_tophat_cufflinks(sample, sample_seqdir, sample_resdir , tophat_cufflinks_info)
 
-if __name__ == '__main__':
-    mrun_tophat_cufflinks(DIR_INFO, TOPHAT_CUFFLINKS_INFO)
