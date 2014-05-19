@@ -1,0 +1,39 @@
+
+SEQ_DIR = '/home/andrea/Documents/lab/RNAseq/sequences'
+SEQ_SUBDIR = 'sequences'
+RESULTS_DIR = '/home/andrea/Documents/lab/RNAseq/results'
+
+SEQBATCHGLOB = '2014-*/'
+SAMPLESEQGLOB = 'Sample_*'
+
+COMBINED_FASTQ_SUFFIX = '_combined.fastq.gz'
+TOPHAT_DIR = 'tophat_out'
+TOPHATCMD_FILE = 'tophatcmd.txt'
+BAM_FILE = '{}/{}'.format(TOPHAT_DIR, 'accepted_hits.bam')
+CUFFLINKS_DIR = 'cufflinks_out'
+CUFFLINKSLOG_FILE = 'cufflinks.log'
+CUFFLINKSCMD_FILE = 'cufflinkscmd.txt'
+
+R57GFF = '/home/andrea/rnaseqanalyze/references/dmel-all-filtered-r5.57.gff'
+R57MITOGFF = '/home/andrea/rnaseqanalyze/references/dmel-dmel_mitochondrion_genome-r5.57.gff'
+BTINDEX = '/home/andrea/rnaseqanalyze/references/dmel-all-chromosome-r5.57'
+
+TOPHAT_CUFFLINKS_INFO = 
+SEQ_DIR, RESULTS_DIR = '/home/andrea/Documents/lab/RNAseq/results'
+
+SEQBATCH_GLOB = '2014-*/'
+SAMPLE_SEQGLOB = 'Sample_*'
+
+COMBINED_FASTQ_SUFFIX = '_combined.fastq.gz'
+TOPHAT_DIR = 'tophat_out'
+TOPHATCMD_FILE = 'tophatcmd.txt'
+BAM_FILE = '{}/{}'.format(TOPHAT_DIR, 'accepted_hits.bam')
+CUFFLINKS_DIR = 'cufflinks_out'
+CUFFLINKSLOG_FILE = 'cufflinks.log'
+CUFFLINKSCMD_FILE = 'cufflinkscmd.txt'
+
+R57GFF = '/home/andrea/rnaseqanalyze/references/dmel-all-filtered-r5.57.gff'
+R57MITOGFF = '/home/andrea/rnaseqanalyze/references/dmel-dmel_mitochondrion_genome-r5.57.gff'
+BTINDEX = '/home/andrea/rnaseqanalyze/references/dmel-all-chromosome-r5.57'
+
+

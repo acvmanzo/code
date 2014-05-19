@@ -2,7 +2,6 @@ import sys
 import os
 import glob
 import cmn.cmn as cmn
-from tophatset import *
 
 
 def get_dirs(folder, globstring):
@@ -155,5 +154,3 @@ def mrun_tophat_cufflinks(dir_info, tophat_cufflinks_info):
             print('Running tophat and cufflinks')
             run_tophat_cufflinks(sample, sample_seqdir, sample_resdir , tophat_cufflinks_info)
 
-if __name__ == '__main__':
-    mrun_tophat_cufflinks(DIR_INFO, TOPHAT_CUFFLINKS_INFO)
