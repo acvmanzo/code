@@ -19,7 +19,9 @@ def add_berkid(sample, fpkm_path, sample_fpkm_path):
                 g.write(newline) 
 
 def copy_to_dbtable(sample_fpkm_path, tablename, cur):
-    cur.copy_from(open(sample_fpkm_path), tablename)
+    os.chdir(cuffpath)
+    sample, cufffile, newcufffile = get_cuff_info(cuffpath)
+    cur.copy_from(open(newcufffile), tablename)
 
 def gen_joincmd(selectlist, berkids, datatable, maxfpkm):
 

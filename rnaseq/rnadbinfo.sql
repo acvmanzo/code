@@ -33,7 +33,7 @@
 -- -- To count the number of rows in a select query:
 -- select count (*) from (select autin.berkid from cuff_genes_fpkm_rgam009b inner join autin on (autin.berkid = cuff_genes_fpkm_rgam009b.sample)) as foo;
 
--- To join tables for correlation tests.
+-- To join tables for correlation tests (double join method)
 -- SELECT t1.tracking_id, t1.berkid, a1.sample, t1.fpkm, t1.fpkm_status, t2.berkid,
 -- a2.sample, t2.fpkm, t2.fpkm_status
 -- FROM 
@@ -70,7 +70,6 @@
 -- );
 
 -- \copy clcbio_rgam010f from '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/clc_results/RGAM010F_RNA-Seq_rpkm.txt'; 
-
 -- \copy clcbio_rgam009b from '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/clc_results/CS_MB_RGAM009B_RNA-Seq_rpkm.txt';
 
 -- Notes:
@@ -80,7 +79,7 @@
 -- savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th_cond1'
 
 
-
+-- Create one table to contain all the cufflinks mapping data
 -- CREATE TABLE cufflinks_data (
     -- tracking_id character varying(20),
     -- class_code character varying(2),
@@ -97,14 +96,14 @@
     -- FPKM_status character varying(5),
     -- berkid character varying(20));
 
-SELECT COUNT (*) FROM (
-SELECT t0.tracking_id, t0.berkid, t0.fpkm, t0.fpkm_status, t1.berkid, t1.fpkm, t1.fpkm_status 
-    FROM cufflinks_data as t0 
-        FULL OUTER JOIN 
-        cufflinks_data as t1 
-            USING (tracking_id)
-            WHERE t0.berkid = 'RGAM009B' AND t1.berkid = 'RGAM010F' 
-            AND t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK' 
-            ORDER BY tracking_id
-            ) as foo
-            ;
+-- SELECT COUNT (*) FROM (
+-- SELECT t0.tracking_id, t0.berkid, t0.fpkm, t0.fpkm_status, t1.berkid, t1.fpkm, t1.fpkm_status 
+    -- FROM cufflinks_data as t0 
+        -- FULL OUTER JOIN 
+        -- cufflinks_data as t1 
+            -- USING (tracking_id)
+            -- WHERE t0.berkid = 'RGAM009B' AND t1.berkid = 'RGAM010F' 
+            -- AND t0.tracking_id != '' AND t0.fpkm_status = 'OK' AND t1.fpkm_status = 'OK' 
+            -- ORDER BY tracking_id
+            -- ) as foo
+ --            ;

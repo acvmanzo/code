@@ -20,7 +20,7 @@ def get_dirs(folder, globstring):
     #return(get_dirs(seqdir, 'Sample_*'))
 
 def gen_combined_gzfile(sample_seqdir, combined_gzpath):
-    '''
+    '''Combines multiple gzipped sequence files into one combined file.
     Input:
     sampledir = contains sequence files and has the name 'Sample_RGxx0xxx'
     results_dir = main results directory
@@ -38,15 +38,19 @@ def gen_combined_gzfile(sample_seqdir, combined_gzpath):
 
 
 def get_combined_gzpath(sample_resdir, sample, combined_fastq_suffix):
-    '''Inputs:
+    '''Generates the name of the combined sequence file used for the function gen_combined_gzfile().
+    Inputs:
     sample_resdir = results directory for the sample
     sample = name of samplek
     combined_fastq_suffix = suffix to append to end of combined file
+    Output:
+    String specifying the path to the combined gzipped sequence file
     '''
     return(os.path.join(sample_resdir, '{}_{}'.format(sample, combined_fastq_suffix)))
 
 
 def unzip_gzfile(gzfile):
+    '''Gunzips the gzfile'''
     uzfile = gzfile.strip('.gz')
     if not os.path.exists(uzfile):
         logging.info('Unzipping %s', os.path.basename(gzfile))
@@ -56,11 +60,22 @@ def unzip_gzfile(gzfile):
 
 
 def mgen_combined_gzfile(sampledirs, results_base_dir):
+    '''Generates a combined sequence file for the directories in sampledirs and 
+    saves them in the appropriate folder in the results_base_dir.'''
     for sd in sampledirs:
         os.chdir(sd)
         combined_gzpath = gen_combined_gzfile(sd, results_base_dir)
 
 def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
+    '''Runs tophat from the command line with the indicated options and writes the command
+    used into a file.
+    Inputs:
+    tophatdir = name of the directory where tophat saves its results
+    gff_file = name of the gff file used when tophat aligns using a reference genome
+    btindex = root name of the bowtie index files need by tophat
+    fastafile = name of the combined, unzipped fasta file containing reads
+    tophatcmd_file = name of the file where the tophat command is written
+    '''
     tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
     logging.info('%s', tophatcmd)
     #os.system(tophatcmd)
@@ -69,6 +84,16 @@ def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
 
 
 def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinkscmd_file):
+    '''Runs cufflinks from the command line with the indicated options and writes the command
+    used into a file.
+    Inputs:
+    mitogff_file: gff file containing mitochondrial genome annotations for use with masking in cufflinks
+    gff_file: gff file used when cufflinks quanitifies transcript expression using a reference genome
+    bam_file: bam file with the alignment information; output by tophat
+    cufflinkslog_file: file into which the stdout of the cufflinks command will be written
+    cufflinkscmd_file: file into which the cufflinks command is written
+    '''
+
     cufflinkscmd = 'cufflinks -o cufflinks_out -p 8 -M {} -G {} -u {} >& {}'.format(mitogff_file, gff_file, bam_file, cufflinkslog_file)
     logging.info('%s', cufflinkscmd)
     with open(cufflinkscmd_file, 'w') as f:
