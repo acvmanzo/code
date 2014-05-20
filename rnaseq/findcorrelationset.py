@@ -1,10 +1,21 @@
-CORRELATION_DIR = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations'
-CORRFILE = 'correlations.txt' 
+from runtuxedoset import *
+import os
+import cmn.cmn as cmn
+
+SAMPLEINFO_TABLE = 'autin'
+
+#CORRELATION_DIR = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations'
+CORRELATION_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/correlations'
+cmn.makenewdir(CORRELATION_DIR)
+PEARSON_CORRFILE = 'pearson_correlations.txt' 
+SPEARMAN_CORRFILE = 'spearman_correlations.txt' 
 CORRLOG = 'correlations.log'
+CORRLOGPATH = os.path.join(CORRELATION_DIR, CORRLOG)
 
 CUFF_TABLE = 'cufflinks_data'
-SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
-MAXFPKM = False
+#SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+MAXFPKM = False 
 
 FPKM_FILE = 'genes.fpkm_tracking'
 BERKID_FPKM_FILE = 'genes_berkid.fpkm_tracking'
@@ -25,7 +36,7 @@ SCATTER_INFO = {
 HIST_FIGSIZE = (10, 10)
 HIST_DPI = 1000
 HIST_SUBPLOTS = [311, 312, 313]
-HIST_YLIMS = [15000, 25, 200]
+HIST_YLIMS = [18000, 25, 200]
 HIST_TITLES = ['All bins', 'Zoom in on bins with low FPKM', 'Zoom in on bins with high FPKM']
 HIST_MAXFPKM = 2000
 HIST_MAXFPKM_FRAC = 0.008

@@ -11,7 +11,33 @@ import logging
 import cmn.cmn as cmn
 
 BERKIDLEN = 8
-#def get_replicate_cufflink_paths(berkids, cufflinks_result_dir):
+
+    
+
+def get_replicate_berkid_dict(cur, sampleinfo_table):
+    cur.execute("SELECT DISTINCT genotype, sex FROM {} ORDER BY genotype, sex;".format(sampleinfo_table))
+    conditions = cur.fetchall()
+    all_berkid_dict = {}
+    for condition in conditions:
+        selcmd = "SELECT berkid FROM {} WHERE genotype = '{}' and sex = '{}' and seq_received = True ORDER BY berkid;".format(sampleinfo_table, condition[0], condition[1])
+        logging.info('%s', selcmd)
+        cur.execute(selcmd)
+        berkids = [x[0] for x in cur.fetchall()]
+        all_berkid_dict['_'.join(condition)] = berkids
+    logging.info('berkids by condition: %s', all_berkid_dict)
+    return(all_berkid_dict)
+        
+
+def get_cufflink_paths(berkid, cuff_results_dir):
+    return(os.path.join(cuff_results_dir, berkid))
+
+
+def get_replicate_cufflink_paths(cur, sampleinfo_table, cuff_results_dir, cuff_dir, berkid_fpkm_file):
+    replicate_berkid_dict = get_replicate_berkid_dict(cur, sampleinfo_table)
+    replicate_path_dict = {}
+    for condition, berkids in replicate_berkid_dict.items():
+        replicate_path_dict[condition] = [os.path.join(get_cufflink_paths(b, cuff_results_dir), cuff_dir, berkid_fpkm_file) for b in berkids]
+    return(replicate_path_dict)
 
 
 def add_berkid(berkid, fpkm_path, berkid_fpkm_path):
@@ -28,6 +54,9 @@ def add_berkid(berkid, fpkm_path, berkid_fpkm_path):
 def madd_berkid(cufflink_fpkm_paths, berkid_fpkm_file):
     berkid_fpkm_paths = []
     for cf in cufflink_fpkm_paths:
+        if not os.path.exists(cf):
+            logging.info('%s does not exist', cf)
+            continue
         berkid = get_berkid(cf)
         berkid_fpkm_path = os.path.join(os.path.dirname(cf), berkid_fpkm_file) 
         print(berkid_fpkm_path)
@@ -44,9 +73,10 @@ def find_num_genes(dbtable, berkid, cur):
 def copy_to_dbtable(berkid_fpkm_path, dbtable, cur):
     '''copies data from the modfied gene fpkm tracking file output
     by add_berkid() into the sql table dbtable using the cursor
+
     cur.
     '''
-    print(berkid_fpkm_path)
+    #print(berkid_fpkm_p_ath)
     berkid = get_berkid(berkid_fpkm_path)
     print(berkid)
     checkrows = int(find_num_genes(dbtable, berkid, cur))
@@ -77,7 +107,7 @@ def gen_joincmd(selectlist, berkids, dbtable, maxfpkm):
     '''
     selectstring = ", ".join(selectlist)
     if maxfpkm:
-        mfstring = ' and t1.fpkm < {0} and t2.fpkm < {0}'.format(maxfpkm)
+        mfstring = ' and t0.fpkm < {0} and t1.fpkm < {0}'.format(maxfpkm)
     else:
         mfstring = ''
     joincmd = "select {0} from {1} as t0 full outer join {1} as t1 using (tracking_id) where t0.berkid = '{2}' and t1.berkid = '{3}' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK'{4} order by tracking_id;".format(selectstring, dbtable, berkids[0], berkids[1], mfstring)
@@ -134,13 +164,15 @@ def get_fpkm(jointable, colnames):
     return([fpkm0, fpkm1], [berkid0, berkid1])
 
 
-def get_correlation(fpkms):
+def get_pearson_correlation(fpkms):
     '''applies a linear regression to the list of lists fpkms. returns the
     correlation coefficient, slope, and intercept.
     '''
     slope, intercept, r, p, std_err = stats.linregress(fpkms[0], fpkms[1])
     return(r, slope, intercept)
 
+def get_spearman_correlation(fpkms):
+    return(stats.spearmanr(fpkms[0], fpkms[1]))
 
 def create_corr_file(correlationfile):
     '''creates a file where the correlation data will be written.'''
@@ -190,7 +222,8 @@ def plot_scatter(fpkms, berkids, samples, r, slope, intercept, subplotnum, fpkml
     plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=3)
     xline = range(fpkmlim)
     yline = [slope*x + intercept for x in xline] 
-    plt.plot(xline, yline, c='r', ls = '--')
+    plt.plot(xline, yline, c='b', ls = '--')
+    plt.plot(xline, xline, c='r', ls = '--')
     ax = plt.gca()
     textstr = 'r = {:.3f}'.format(r) 
     format_plot(berkids, samples, fpkmlim)
@@ -246,11 +279,11 @@ def compare_hist(fpkms, berkids, samples, fpkmlim, subplotnum, ylim, title):
         plot_hist(fpkms[x], fpkmlim, samples[x], color=c)
     plt.legend()
     plt.ylim(0, ylim)
-    #plt.xlim(0, max(xlims))
     ax = plt.gca()
     ax.ticklabel_format(style='sci', scilimits=(-1,2))
     plt.ylabel('gene number')
-    plt.xlabel(title)
+    plt.xlabel('FPKM')
+    plt.title(title)
 
 def genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_dir):
     '''Generates a figure comprised of three histograms comparing the expression
@@ -271,7 +304,6 @@ def genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_di
     limlist = [fpkmlim, d['hist_maxfpkm'], d['hist_maxfpkm']*d['hist_maxfpkm_frac']]
     fig1 = plt.figure(figsize=d['hist_figsize'], dpi=d['hist_dpi'])
     for s, l, t, y in zip(d['hist_subplots'], limlist, d['hist_titles'], d['hist_ylims']):
-        print('l', l)
         compare_hist(fpkms, berkids, samples, l, s, y, t)
     plt.savefig(os.path.join(fig_dir, make_figname(berkids, samples, 'hist')))
     plt.tight_layout()
@@ -297,36 +329,45 @@ def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
     mcopy_to_dbtable(berkid_cufflink_fpkm_paths, cuff_table, cur)
     conn.commit()
     cur.close()
+    conn.close()
 
-def get_sample_correlations(cufflink_fpkm_paths, fig_dir, corrfile, cuff_table, selectlist, maxfpkm, scatter_info, hist_info):
-    
-    logging.info('opening connection')
+def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm):
+
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
-    
     logging.info('joining and querying tables')
     cur1 = conn.cursor()
     berkidlist = get_berkidlist(cufflink_fpkm_paths)
     joined_arrays = mjoin_db_table(berkidlist, selectlist, cuff_table, maxfpkm, cur1)
+    cur1.close()
+    return(joined_arrays)
 
-    logging.info('finding correlations')
-    create_corr_file(corrfile)
+
+def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile, spearman_corrfile, selectlist, scatter_info, hist_info):
+    
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
+    
     for joined_array in joined_arrays:
         fpkms, berkids = get_fpkm(joined_array, selectlist)
-        samples = [get_samplename(x, cur1) for x in berkids]
+        cur2 = conn.cursor()
+        samples = [get_samplename(x, cur2) for x in berkids]
+        cur2.close()
         fpkmlim = max([axislim(x) for x in fpkms])
         
-        logging.info('%s', samples)
-        r, slope, intercept = get_correlation(fpkms)
-        save_corr_file(r, berkids[0], samples[0], berkids[1], samples[1], corrfile)
+        logging.info('Samples: %s', samples)
+        logging.info('finding correlations')
+        r, slope, intercept = get_pearson_correlation(fpkms)
+        save_corr_file(r, berkids[0], samples[0], berkids[1], samples[1], pearson_corrfile)
+        
+        sr = get_spearman_correlation(fpkms)
+        save_corr_file(sr[0], berkids[0], samples[0], berkids[1], samples[1], spearman_corrfile)
 
         logging.info('plotting scatter plots')
         cmn.makenewdir(fig_dir)
         genfig_scatter_zoom(fpkms, berkids, samples, r, slope, intercept, fpkmlim, scatter_info, fig_dir)
 
-        logging.info('plotting histograms')
-        genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_dir)
+        #logging.info('plotting histograms')
+        #genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_dir)
    
-    cur1.close()
     conn.close()
 
 
