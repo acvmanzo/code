@@ -23,6 +23,5 @@ def main():
 
     #corl.copy_data_to_table(cufflink_fpkm_files, BERKID_FPKM_FILE, CUFF_TABLE)
     corl.get_sample_correlations(cufflink_fpkm_files, fig_dir, corrfile, CUFF_TABLE, SELECTLIST, MAXFPKM, SCATTER_INFO, HIST_INFO)
-
 if __name__ == '__main__':
     main()
