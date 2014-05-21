@@ -242,7 +242,7 @@ def format_plot(berkids, samples, fpkmlim):
     '''formats a scatter plot comaring gene expression of two samples.'''
     xlabel = '{} {}'.format(berkids[0], samples[0])
     ylabel = '{} {}'.format(berkids[1], samples[1])
-    title = 'fpkm of {} vs. {}'.format(samples[0],samples[1])
+    title = '{} vs. {}'.format(samples[0],samples[1])
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
@@ -353,8 +353,8 @@ def genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_di
     fig1 = plt.figure(figsize=d['hist_figsize'], dpi=d['hist_dpi'])
     for s, l, t, y in zip(d['hist_subplots'], limlist, d['hist_titles'], d['hist_ylims']):
         compare_hist(fpkms, berkids, samples, l, s, y, t)
-    plt.savefig(os.path.join(fig_dir, make_figname(berkids, samples, 'hist')))
     plt.tight_layout()
+    plt.savefig(os.path.join(fig_dir, make_figname(berkids, samples, 'hist')))
     plt.close()
 
 def get_berkid(cufflink_fpkm_path, berkidlen=BERKIDLEN):
@@ -390,7 +390,8 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm):
     return(joined_arrays)
 
 
-def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile, spearman_corrfile, selectlist, scatter_info, hist_info):
+def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile, 
+        spearman_corrfile, selectlist, scatter_info, hist_info):
     
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     

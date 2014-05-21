@@ -5,7 +5,7 @@ import cmn.cmn as cmn
 import psycopg2
 import shutil
 import sys
-from findcorrelationset import *
+from all_correlations_settings import *
 
 COPY_TO_TABLE = sys.argv[1] # 'y' or 'n' to copy data into database table
 
@@ -89,6 +89,7 @@ def main():
             logging.info("File Not Found '%s'", cufflink_fpkm_paths)
             continue
 
+    shutil.copyfile(CORRELATION_SETTINGS_PATH, SAVED_CORRELATION_SETTINGS_PATH)
                
 
 

@@ -88,8 +88,8 @@ def main():
         except FileNotFoundError:
             logging.info("File Not Found '%s'", cufflink_fpkm_paths)
             continue
-    shutil.copyfile(CORRELATION_SETTINGS_PATH, SAVED_CORRELATION_SETTINGS_PATH)
 
+    shutil.copyfile(CORRELATION_SETTINGS_PATH, SAVED_CORRELATION_SETTINGS_PATH)
                
 
 
