@@ -349,9 +349,11 @@ def genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_di
         hist_maxfpkm_frac = fraction of max fpkm value to be plotted
     '''
     d = hist_info
-    limlist = [fpkmlim, d['hist_maxfpkm'], fpkmlim]
+    limlist = [fpkmlim, d['hist_maxfpkm']*d['hist_maxfpkm_frac'], 
+            d['hist_maxfpkm'], fpkmlim]
     fig1 = plt.figure(figsize=d['hist_figsize'], dpi=d['hist_dpi'])
-    for s, l, t, y in zip(d['hist_subplots'], limlist, d['hist_titles'], d['hist_ylims']):
+    for s, l, t, y in zip(d['hist_subplots'], limlist, d['hist_titles'], 
+            d['hist_ylims']):
         compare_hist(fpkms, berkids, samples, l, s, y, t)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, make_figname(berkids, samples, 'hist')))

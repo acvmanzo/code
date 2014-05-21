@@ -6,9 +6,16 @@ import datetime
 curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
 SAMPLEINFO_TABLE = 'autin'
+CUFF_TABLE = 'cufflinks_data'
+#SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+MAXFPKM = False 
 
+# Directories used.
 #CORRELATION_DIR = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations'
 CORRELATION_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/correlations_tophat'
+if MAXFPKM != False:
+    CORRELATION_DIR = CORRELATION_DIR + '_maxfpkm{}'.format(MAXFPKM)
 cmn.makenewdir(CORRELATION_DIR)
 CORRELATION_SETTINGS_PATH = '/home/andrea/Documents/lab/code/rnaseq_analysis/all_correlations_settings.py'
 SAVED_CORRELATION_SETTINGS_PATH = os.path.join(CORRELATION_DIR, 'settings.py') 
@@ -18,10 +25,6 @@ SPEARMAN_CORRFILE = 'spearman_correlations.txt'
 CORRLOG = '{}_correlations.log'.format(curtime)
 CORRLOGPATH = os.path.join(CORRELATION_DIR, CORRLOG)
 
-CUFF_TABLE = 'cufflinks_data'
-#SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
-SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
-MAXFPKM = False 
 
 FPKM_FILE = 'genes.fpkm_tracking'
 BERKID_FPKM_FILE = 'genes_berkid.fpkm_tracking'
@@ -38,13 +41,14 @@ SCATTER_INFO = {
         'scatter_maxfpkm': SCATTER_MAXFPKM,
         }
 
-HIST_FIGSIZE = (10, 10)
-HIST_DPI = 1000
-HIST_SUBPLOTS = [311, 312, 313]
-HIST_YLIMS = [18000, 25, 10] 
-HIST_TITLES = ['All bins', 'Zoom in on bins with low FPKM', 'Zoom in on bins with high FPKM']
+HIST_FIGSIZE = (10, 14)
+HIST_DPI = 1250
+HIST_SUBPLOTS = [411, 412, 413, 414]
+HIST_YLIMS = [18000, 1000, 25, 5] 
+HIST_TITLES = ['All bins', 'Zoom in on bins with very low FPKM',
+    'Zoom in on bins with low FPKM', 'Zoom in on bins with high FPKM']
 HIST_MAXFPKM = 2000
-HIST_MAXFPKM_FRAC = 0.008
+HIST_MAXFPKM_FRAC = 0.01
 
 HIST_INFO = {
         'hist_figsize': HIST_FIGSIZE,
