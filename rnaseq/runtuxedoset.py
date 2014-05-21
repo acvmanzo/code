@@ -40,3 +40,6 @@ TOPHAT_CUFFLINKS_INFO = {
 'mitogff_file': MITOGFF_FILE,
 'btindex': BTINDEX
 }
+
+
+SAMPLEINFO_TABLE = 'autin'

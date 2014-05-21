@@ -1,6 +1,6 @@
 
 SEQ_DIR = '/home/andrea/Documents/lab/RNAseq/sequences'
-RESULTS_DIR = '/home/andrea/Documents/lab/RNAseq/results_tophat'
+RESULTS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
 #SEQ_DIR = '/home/andrea/rnaseqanalyze/sequences'
 #RESULTS_DIR = '/home/andrea/rnaseqanalyze/results'
 

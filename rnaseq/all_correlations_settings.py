@@ -1,15 +1,21 @@
 from runtuxedoset import *
 import os
 import cmn.cmn as cmn
+import datetime
+
+curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
 SAMPLEINFO_TABLE = 'autin'
 
 #CORRELATION_DIR = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations'
 CORRELATION_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/correlations'
 cmn.makenewdir(CORRELATION_DIR)
+CORRELATION_SETTINGS_PATH = '/home/andrea/Documents/lab/code/rnaseq/findcorrelationset.py'
+SAVED_CORRELATION_SETTINGS_PATH = os.path.join(CORRELATION_DIR, 'settings.py') 
+
 PEARSON_CORRFILE = 'pearson_correlations.txt' 
 SPEARMAN_CORRFILE = 'spearman_correlations.txt' 
-CORRLOG = 'correlations.log'
+CORRLOG = '{}_correlations.log'.format(curtime)
 CORRLOGPATH = os.path.join(CORRELATION_DIR, CORRLOG)
 
 CUFF_TABLE = 'cufflinks_data'

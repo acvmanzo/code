@@ -10,7 +10,7 @@ def main():
     console = logging.StreamHandler() # Displays output to screen.
     logging.getLogger('').addHandler(console)
 
-    tl.mrun_tophat_cufflinks(DIR_INFO, TOPHAT_CUFFLINKS_INFO)
+    tl.seqdir_run_tophat_cufflinks(DIR_INFO, TOPHAT_CUFFLINKS_INFO)
 
 if __name__ == '__main__':
     main()

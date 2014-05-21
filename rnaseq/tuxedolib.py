@@ -3,6 +3,56 @@ import os
 import glob
 import cmn.cmn as cmn
 import logging
+import datetime
+import psycopg2
+
+
+def get_berkid_info(conn, berkidlist, infotable, colquery):
+    '''Queries a postgresql database table (infotable) and extracts the 
+    information specified in colquery for the berkids specified in berkidlist.
+    Returns a dictionary where the keys are the berkeley ids and the
+    values are a tuple of the database values.
+    Inputs:
+    conn = open psycopg2 connection to the database
+    berkidlist = list of berkids
+    infotable = database table to be queried
+    colquery = list of columns that will be returned; input to a SELECT 
+    statement
+    '''
+    cur = conn.cursor()
+    berkid_dict = {}
+    for bid in berkidlist:
+        query = "SELECT {} FROM {} WHERE berkid = '{}'".format(', '.join(colquery), infotable, bid)
+        cur.execute(query)
+        berkid_dict[bid] = cur.fetchall()[0]
+    cur.close()
+    return(colquery, berkid_dict)
+
+def gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir):
+    '''From the berkid_dict generated in get_berkid_info(), generates a list of
+    sequence directory paths.'''
+    seqdir_paths = []
+    seqd_col = colquery.index('seqd')
+    for berkid, info in berkid_dict.items():
+        seqd = info[seqd_col].strftime("%Y-%m%d")
+        seqdir_path = os.path.join(seq_dir, seqd, seq_subdir, \
+            'Sample_{}'.format(berkid))
+        seqdir_paths.append(seqdir_path)
+    return(seqdir_paths)
+
+def get_berkid_seq_res_paths(berkidlist, infotable, colquery, seq_dir,\
+        seq_subdir, results_dir):
+    '''For a list of berkids (berkidlist), generates the paths to the 
+    sequence directories and the directories containing the results of tophat
+    and cufflinks analyses.
+    '''
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
+    colquery, berkid_dict = get_berkid_info(conn, berkidlist, \
+        infotable, colquery)
+    conn.close()
+    seqpaths = gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir)
+    respaths = [os.path.join(results_dir, berkid) for berkid in berkidlist]
+    return(seqpaths, respaths)
 
 def get_dirs(folder, globstring):
     '''Returns all the directories in a folder that match the string 'globstring'
@@ -78,7 +128,7 @@ def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
     '''
     tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
     logging.info('%s', tophatcmd)
-    #os.system(tophatcmd)
+    os.system(tophatcmd)
     with open(tophatcmd_file, 'w') as f:
         f.write(tophatcmd)
 
@@ -98,12 +148,13 @@ def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinks
     logging.info('%s', cufflinkscmd)
     with open(cufflinkscmd_file, 'w') as f:
         f.write(cufflinkscmd)
-    #os.system(cufflinkscmd)
+    os.system(cufflinkscmd)
 
 def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_info):
     '''
     Runs tophat and cufflinks on one sample.
     Inputs:
+    sample = berkid for the sample
     sample_seqdir = directory containing the sequence files for each sample
     results_dir = main results directory
     tophat_cufflinks_info: dictionary containing the following keys/values:
@@ -118,7 +169,7 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_
         mitogff_file = name of mitochondriol gff file for use in masking during cufflinks
         btindex = name of bowtie index files used for tophat
     '''
-    d = tophat_cufflinks_info 
+    d = tophat_cufflinks_info
     os.chdir(sample_seqdir)
     # Concatenate the sequence files into one file.
     combined_gzpath = get_combined_gzpath(sample_resdir, sample, d['combined_fastq_suffix'])
@@ -136,7 +187,7 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_
         logging.warning('%s', 'tophat directory exists')
     else:
         run_tophat(d['tophat_dir'], d['gff_file'], d['btindex'], fastafile, d['tophatcmd_file'])
-        os.remove(fastafile)
+        #os.remove(fastafile)
    
     # Run cufflinks.
     if os.path.exists(d['cufflinks_dir']):
@@ -175,7 +226,11 @@ def seqdir_run_tophat_cufflinks(dir_info, tophat_cufflinks_info):
             sample = os.path.basename(sample_seqdir).split('_')[1]
             logging.info('%s', sample)
             sample_resdir = os.path.join(d['results_dir'], sample) 
-            cmn.makenewdir(sample_resdir)
-            logging.info('Running tophat and cufflinks')
-            run_tophat_cufflinks(sample, sample_seqdir, sample_resdir , tophat_cufflinks_info)
+            if not os.path.exists(os.path.join(sample_resdir, tophat_cufflinks_info['tophat_dir'])):
+                cmn.makenewdir(sample_resdir)
+                logging.info('Running tophat and cufflinks')
+                run_tophat_cufflinks(sample, sample_seqdir, sample_resdir , tophat_cufflinks_info)
+            else:
+                logging.warning('Tophat and cufflinks output exists')
+
 
