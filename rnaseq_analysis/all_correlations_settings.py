@@ -5,41 +5,56 @@ import datetime
 
 curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
+# IMPORTANT PARAMETERS
+ALLREPS_OR_BERKIDS = 'allreps' # Set to 'allreps' if I want to find correlations
+#for all biological replicates with each other; otherwise set to 'berkids'
 #Only genes with FPKMs below this value will be used to calculate correlations;
 #if no limit is desired, set to False.
 MAXFPKM = 5000 
+#GENE_SUBSET_TABLE = False
+GENE_SUBSET_TABLE = 'prot_coding_genes'
+CORR_DIR_BASE = 'correl_tophat'
+
 # Directories used.
 ANALYSIS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis'
-#CORRELATION_DIR = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations'
-CORRELATION_DIR = os.path.join(ANALYSIS_DIR, 'correlations_test')
+CORRELATION_DIR = os.path.join(ANALYSIS_DIR, CORR_DIR_BASE)
+if GENE_SUBSET_TABLE != False:
+    CORRELATION_DIR = CORRELATION_DIR + '_{}'.format(GENE_SUBSET_TABLE)
 if MAXFPKM != False:
     CORRELATION_DIR = CORRELATION_DIR + '_maxfpkm{}'.format(MAXFPKM)
 cmn.makenewdir(CORRELATION_DIR)
 CORRELATION_SETTINGS_PATH = '/home/andrea/Documents/lab/code/rnaseq_analysis/all_correlations_settings.py'
 SAVED_CORRELATION_SETTINGS_PATH = os.path.join(CORRELATION_DIR, 'settings.py') 
 
+# Files generated.
 PEARSON_CORRFILE = 'pearson_correlations.txt' 
 SPEARMAN_CORRFILE = 'spearman_correlations.txt' 
 CORRLOG = '{}_correlations.log'.format(curtime)
 CORRLOGPATH = os.path.join(CORRELATION_DIR, CORRLOG)
 
-ALLREPS_OR_BERKIDS = 'berkids' # Set to 'allreps' if I want to find correlations
-#for all biological replicates with each other; otherwise set to 'berkids'
+if ALLREPS_OR_BERKIDS == 'allreps':
+    COND_DIR = False
+    BERKIDLIST = False
 
+# Adjust paths for condition subset analyses.
 if ALLREPS_OR_BERKIDS == 'berkids':
     TESTED_BERKIDS = 'tested_berkids' # File with list of berkeley ids for analysis.
     COND_DIR = 'test' # Name of folder where results will be saved.
     COND_PATH = os.path.join(CORRELATION_DIR, COND_DIR)
+    cmn.makenewdir(COND_PATH)
     BERKIDLIST = cmn.load_keys(os.path.join(COND_PATH, TESTED_BERKIDS))
     PEARSON_CORRFILE, SPEARMAN_CORRFILE = [os.path.join(COND_PATH, x) \
             for x in [PEARSON_CORRFILE, SPEARMAN_CORRFILE]]
     CORRLOGPATH = os.path.join(COND_PATH, CORRLOG)
+    SAVED_CORRELATION_SETTINGS_PATH = os.path.join(COND_PATH, 'settings.py')
 
 
 SAMPLEINFO_TABLE = 'autin'
 CUFF_TABLE = 'cufflinks_data'
-#SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
-SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+#SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
+    #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
+SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status',
+    't1.berkid', 't1.fpkm', 't1.fpkm_status']
 
 FPKM_FILE = 'genes.fpkm_tracking'
 BERKID_FPKM_FILE = 'genes_berkid.fpkm_tracking'

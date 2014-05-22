@@ -95,7 +95,7 @@ def main():
             # Generates a list of arrays in which each array has the gene FPKM
             # data for two samples.
             joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
-                    SELECTLIST, CUFF_TABLE, MAXFPKM) 
+                    SELECTLIST, CUFF_TABLE, MAXFPKM, GENE_SUBSET_TABLE) 
             # Finds the correlations between each sample within a condition and
             # generates plots.
             corl.get_sample_correlations(joined_arrays, fig_dir, 

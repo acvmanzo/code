@@ -75,7 +75,7 @@ def main():
     pearson_corrfile, spearman_corrfile = create_corrfiles()
     # Find paths to the cufflink output files for each condition.
     cufflink_path_dict = gen_cufflink_path_dict(ALLREPS_OR_BERKIDS, BERKIDLIST,
-           KEY)
+           COND_DIR)
 
     for condition, cufflink_fpkm_paths in sorted(cufflink_path_dict.items()):
         # Define and create figure directory.
