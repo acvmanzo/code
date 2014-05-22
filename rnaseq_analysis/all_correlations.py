@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import correlationlib as corl
 import logging
 import os
@@ -7,7 +9,7 @@ import shutil
 import sys
 from all_correlations_settings import *
 
-COPY_TO_TABLE = sys.argv[1] # 'y' or 'n' to copy data into database table
+COPY_TO_TABLE = sys.argv[1] # 'y' to copy data into database table
 
 def create_corrfiles():
     # Creates files for pearson and spearman correlation coefficients.
@@ -17,17 +19,30 @@ def create_corrfiles():
     corl.create_corr_file(spearman_corrfile)
     return(pearson_corrfile, spearman_corrfile)
    
-def gen_cufflink_path_dict():
-    # Generates a dictionary where they keys are conditions (e.g., CS_M or
-    # en_F) and the values are the paths to the cufflinks gene FPKM files for
-    # the relevant samples.
+def gen_cufflink_path_dict(whichberkids, berkidlist, key):
+    '''
+    If whichberkids = 'all':
+        Generates a dictionary where they keys are conditions (e.g., CS_M or
+        en_F) and the values are the paths to the cufflinks gene FPKM files for
+        the relevant samples.
+    If whichberkids = 'subset':
+        Still generates a dictionary but there is only one key given by the
+        value key.
+    '''
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
-    cufflink_path_dict = corl.get_replicate_cufflink_paths(
-        cur, SAMPLEINFO_TABLE, RESULTS_DIR, CUFFLINKS_DIR, FPKM_FILE)
+    if whichberkids == 'allreps':
+        cufflink_path_dict = corl.get_all_replicate_cufflink_paths(
+            cur, SAMPLEINFO_TABLE, RESULTS_DIR, CUFFLINKS_DIR, FPKM_FILE)
+    if whichberkids == 'berkids':
+        assert key != None
+        assert berkidlist != None
+        cufflink_path_dict = corl.get_some_cufflink_paths(berkidlist, 
+            RESULTS_DIR, CUFFLINKS_DIR, FPKM_FILE, key)
     cur.close()
     conn.close()
     return(cufflink_path_dict)
+
 
 def prune_cufflink_path(cufflink_fpkm_paths):
     # Removes paths to files that don't exist.
@@ -59,10 +74,11 @@ def main():
     # Create correlation output files.
     pearson_corrfile, spearman_corrfile = create_corrfiles()
     # Find paths to the cufflink output files for each condition.
-    cufflink_path_dict = gen_cufflink_path_dict()
+    cufflink_path_dict = gen_cufflink_path_dict(ALLREPS_OR_BERKIDS, BERKIDLIST,
+           COND_DIR)
 
     for condition, cufflink_fpkm_paths in sorted(cufflink_path_dict.items()):
-        # Define and create figure dictionary.
+        # Define and create figure directory.
         fig_dir = os.path.join(CORRELATION_DIR, condition)
         cmn.makenewdir(fig_dir)
 

@@ -1,6 +1,10 @@
+import os
 
 SEQ_DIR = '/home/andrea/Documents/lab/RNAseq/sequences'
 RESULTS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
+LOG_FILE = os.path.join(RESULTS_DIR, 'mrun.log')
+SETTINGS_FILE = '/home/andrea/Documents/lab/code/rnaseq_analysis/all_tuxedo_settings.py'
+NEW_SETTINGS_FILE = os.path.join(RESULTS_DIR, 'all_tuxedo_settings.py')
 #SEQ_DIR = '/home/andrea/rnaseqanalyze/sequences'
 #RESULTS_DIR = '/home/andrea/rnaseqanalyze/results'
 

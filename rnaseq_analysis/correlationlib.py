@@ -13,6 +13,7 @@ import cmn.cmn as cmn
 BERKIDLEN = 8
 
 def get_replicate_berkid_dict(cur, condition, sampleinfo_table):
+
     '''Queries the database to identify the biological replicates for the
     condition.
     Inputs:
@@ -51,19 +52,39 @@ def get_all_replicate_berkid_dict(cur, sampleinfo_table):
         all_berkid_dict[condition] = berkids
     return(all_berkid_dict)
 
-def get_cufflink_paths(berkid, cuff_results_dir):
+
+def get_sample_results_dir(berkid, cuff_results_dir):
     '''Returns the path to a sample results directory by joining the berkid
     with the cuff_results_dir'''
     return(os.path.join(cuff_results_dir, berkid))
 
-def mget_cufflink_paths(conditionlist, cuff_results_dir, cuff_dir,
-        berkid_fpkm_file):
-    '''Returns a dictionary of paths to the cufflink output FPKM files for
-    every condition in conditionlist.
-    with the cuff_results_dir for every element in berkidlist'''
-    return([get_cufflink_paths(b, cuff_results_dir) for b in berkidlist])
+def get_cufflink_path(berkid, cuff_results_dir, cuff_dir, berkid_fpkm_file):
+    '''Returns the path to a cufflink fpkm file given a berkid'''
+    return(os.path.join(get_sample_results_dir(berkid, cuff_results_dir),
+        cuff_dir, berkid_fpkm_file))
 
-def get_replicate_cufflink_paths(cur, sampleinfo_table, cuff_results_dir, 
+
+def get_replicate_cufflink_paths(condition_berkid_dict, cuff_results_dir,
+        cuff_dir, berkid_fpkm_file):
+    '''Returns a dictionary of paths to the cufflink output FPKM files for
+    every condition in condition_berkid_dict. This dictionary has keywords
+    that are conditions and values that are berkids.
+    '''
+    replicate_path_dict = {} 
+    for condition, berkids in condition_berkid_dict.items():
+        replicate_path_dict[condition] = [get_cufflink_path(b, 
+            cuff_results_dir, cuff_dir, berkid_fpkm_file) for b in berkids]
+    return(replicate_path_dict)
+
+def get_some_cufflink_paths(berkidlist, cuff_results_dir, cuff_dir,
+    berkid_fpkm_file, key):
+    '''Returns a dictionary of paths to the cufflink output FPKM files for 
+    the berkids in the berkidlist; key is given by key'''
+    return({key: [get_cufflink_path(berkid, cuff_results_dir, cuff_dir,
+        berkid_fpkm_file) for berkid in berkidlist]})
+
+
+def get_all_replicate_cufflink_paths(cur, sampleinfo_table, cuff_results_dir, 
         cuff_dir, berkid_fpkm_file):
     '''Returns a dictionary of paths to the cufflink output FPKM files for
     every condition in the queried table.
@@ -79,13 +100,11 @@ def get_replicate_cufflink_paths(cur, sampleinfo_table, cuff_results_dir,
     A dictionary where the keys are the condition names and the values are
     paths to the FPKM file.
     '''
-    replicate_berkid_dict = get_all_replicate_berkid_dict(cur, sampleinfo_table)
-    replicate_path_dict = {}
-    for condition, berkids in replicate_berkid_dict.items():
-        replicate_path_dict[condition] = [os.path.join(get_cufflink_paths(b, 
-            cuff_results_dir), cuff_dir, berkid_fpkm_file) for b in berkids]
-    return(replicate_path_dict)
-
+    replicate_berkid_dict = get_all_replicate_berkid_dict(cur, 
+        sampleinfo_table)
+    return(get_replicate_cufflink_paths(replicate_berkid_dict, 
+        cuff_results_dir, cuff_dir, berkid_fpkm_file))
+    
 
 def add_berkid(berkid, fpkm_path, berkid_fpkm_path):
     '''adds the berkid to the last columns of an
@@ -119,9 +138,7 @@ def find_num_genes(dbtable, berkid, cur):
 
 def copy_to_dbtable(berkid_fpkm_path, dbtable, cur):
     '''copies data from the modfied gene fpkm tracking file output
-    by add_berkid() into the sql table dbtable using the cursor
-
-    cur.
+    by add_berkid() into the sql table dbtable using the cursor cur.
     '''
     #print(berkid_fpkm_p_ath)
     berkid = get_berkid(berkid_fpkm_path)
@@ -160,6 +177,7 @@ def gen_joincmd(selectlist, berkids, dbtable, maxfpkm):
     joincmd = "select {0} from {1} as t0 full outer join {1} as t1 using (tracking_id) where t0.berkid = '{2}' and t1.berkid = '{3}' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK'{4} order by tracking_id;".format(selectstring, dbtable, berkids[0], berkids[1], mfstring)
     logging.debug('%s', joincmd)
     return(joincmd)
+
 
 
 def join_db_table(joincmd, cur):
@@ -269,10 +287,10 @@ def plot_scatter(fpkms, berkids, samples, r, slope, intercept, subplotnum, fpkml
     plt.scatter(fpkms[0], fpkms[1], c='k', marker='o', s=3)
     xline = range(fpkmlim)
     yline = [slope*x + intercept for x in xline] 
-    plt.plot(xline, yline, c='b', ls = '--')
-    plt.plot(xline, xline, c='r', ls = '--')
+    plt.plot(xline, yline, c='b', ls = '--', label='Reg line')
+    plt.plot(xline, xline, c='r', ls = '--', label='slope=1')
+    plt.legend()
     ax = plt.gca()
-    #ax1 = fig.add_axes([0,0,1,1])
     textstr = 'r = {:.3f}'.format(r) 
     format_plot(berkids, samples, fpkmlim)
 
@@ -370,6 +388,14 @@ def get_berkidlist(cufflink_fpkm_paths):
 
 
 def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
+    '''Copies cufflinks data to database table.
+    Inputs:
+    cufflink_fpkm_paths: paths to original genes.fpkm_tracking file output by
+    cufflinks
+    berkid_fpkm_file: new name for fpkm file with the berkid appended to each
+    row
+    cuff_table: database table with cufflinks data
+    '''
     logging.info('opening connection')
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()

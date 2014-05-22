@@ -31,9 +31,12 @@
 -- SERVER andreaserver;
 
 -- -- To count the number of rows in a select query:
+
 -- select count (*) from (select autin.berkid from cuff_genes_fpkm_rgam009b inner join autin on (autin.berkid = cuff_genes_fpkm_rgam009b.sample)) as foo;
 
+
 -- To join tables for correlation tests (double join method)
+
 -- SELECT t1.tracking_id, t1.berkid, a1.sample, t1.fpkm, t1.fpkm_status, t2.berkid,
 -- a2.sample, t2.fpkm, t2.fpkm_status
 -- FROM 
@@ -45,6 +48,7 @@
 -- ORDER BY tracking_id;
 
 -- -- To check the # of rows in the joined table.
+
 -- select count (*) from (
 -- SELECT t1.tracking_id, t1.fpkm, t1.fpkm_status, t2.fpkm, t2.fpkm_status,
 -- t1.berkid, t2.berkid, a1.sample, a2.sample
@@ -107,3 +111,33 @@
             -- ORDER BY tracking_id
             -- ) as foo
  --            ;
+
+
+-- Create a table of protein-coding genes; output of QueryBuilder on Flybase where I selected genes
+-- that matched the class 'protein_coding_genes'
+
+-- CREATE TABLE prot_coding_genes (
+    -- tracking_id character varying(20),
+    -- gene_long_name character varying(100),
+    -- gene_short_name character varying(100)
+-- );
+
+-- Copy into table.
+-- \copy prot_coding_genes from '/home/andrea/rnaseqanalyze/references/protein_coding_genes/flybase_results_protein_coding_genes_dmel_symbol.txt';
+
+-- create view test as select t0.tracking_id, t0.berkid as berkid0, t0.fpkm as fpkm0, t1.berkid as berkid1, t1.fpkm as fpkm1 from cufflinks_data as t0 full outer join cufflinks_data as t1 using (tracking_id) where t0.berkid = 'RGAM009G' and t1.berkid = 'RGAM011A' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' order by tracking_id;
+
+select count (*) from (
+select t0.tracking_id, t0.berkid as berkid0, t0.fpkm as fpkm0, t1.berkid as berkid1, t1.fpkm as fpkm1 
+    from 
+        cufflinks_data as t0 
+        full outer join 
+        cufflinks_data as t1 
+            using (tracking_id)
+        inner join
+        prot_coding_genes as t2 
+            using (tracking_id)
+        where t0.berkid = 'RGAM009G' and t1.berkid = 'RGAM011A' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' 
+            order by tracking_id
+) as foo
+;

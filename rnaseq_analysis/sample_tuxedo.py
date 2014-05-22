@@ -5,7 +5,7 @@ import logging
 import datetime
 import os
 import psycopg2
-from runtuxedoset import *
+from tuxedo_settings import *
 
 curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 print(curtime)
@@ -32,6 +32,7 @@ def main():
     for berkid, sample_seqdir, sample_resdir in berkid_params:
         tl.run_tophat_cufflinks(berkid, sample_seqdir, sample_resdir, 
             TOPHAT_CUFFLINKS_INFO)
+    shutil.copy(SETTINGS_FILE, NEW_SETTINGS_FILE)
 
 if __name__ == '__main__':
     main()
