@@ -127,18 +127,46 @@
 
 -- create view test as select t0.tracking_id, t0.berkid as berkid0, t0.fpkm as fpkm0, t1.berkid as berkid1, t1.fpkm as fpkm1 from cufflinks_data as t0 full outer join cufflinks_data as t1 using (tracking_id) where t0.berkid = 'RGAM009G' and t1.berkid = 'RGAM011A' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' order by tracking_id;
 
-select count (*) from (
-select t0.tracking_id, t0.berkid as berkid0, t0.fpkm as fpkm0, t1.berkid as berkid1, t1.fpkm as fpkm1 
-    from 
-        cufflinks_data as t0 
-        full outer join 
-        cufflinks_data as t1 
-            using (tracking_id)
-        inner join
-        prot_coding_genes as t2 
-            using (tracking_id)
-        where t0.berkid = 'RGAM009G' and t1.berkid = 'RGAM011A' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' 
-            order by tracking_id
-) 
-as foo
-;
+-- Testing code for doing a join with the protein_coding_genes table
+-- select count (*) from (
+-- select t0.tracking_id, t0.berkid as berkid0, t0.fpkm as fpkm0, t1.berkid as berkid1, t1.fpkm as fpkm1 
+    -- from 
+        -- cufflinks_data as t0 
+        -- full outer join 
+        -- cufflinks_data as t1 
+            -- using (tracking_id)
+        -- inner join
+        -- prot_coding_genes as t2 
+            -- using (tracking_id)
+        -- where t0.berkid = 'RGAM009G' and t1.berkid = 'RGAM011A' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' 
+            -- order by tracking_id
+-- ) as foo
+-- ;
+
+
+-- Create one table to contain all the cufflinks mapping data
+CREATE TABLE clc_data (
+    gene_short_name character varying(100),
+    exp_vale double precision,
+    trans_annot int,
+    trans_detected int,
+    exon_length int,
+    unique_gene_reads int,
+    tot_gene_reads int,
+    unique_exon_reads int,
+    tot_exon_reads int,
+    ratio_exon_reads real,
+    unique_exon_exon_reads int,
+    total_exon_exon_reads int,
+    unique_intron_exon_reads int,
+    total_intron_exon_reads int,
+    exons int,
+    put_exons int,
+    rpkm double precision,
+    med_cov real,
+    chrom varchar(200),
+    chrom_start int,
+    chrom_end int
+    berkid varchar(20)
+);
+

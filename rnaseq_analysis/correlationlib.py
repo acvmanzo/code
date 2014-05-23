@@ -117,18 +117,22 @@ def add_berkid(berkid, fpkm_path, berkid_fpkm_path):
                 newline = l.strip('\n') + '\t{0}\n'.format(berkid)
                 g.write(newline) 
 
-def madd_berkid(cufflink_fpkm_paths, berkid_fpkm_file):
-    berkid_fpkm_paths = []
-    for cf in cufflink_fpkm_paths:
+def get_cufflink_berkid_fpkm_path(cufflink_fpkm_path, berkid_fpkm_file):
+    berkid = get_berkid(cufflink_fpkm_path)
+    berkid_fpkm_path = os.path.join(os.path.dirname(cufflink_fpkm_path), 
+            berkid_fpkm_file) 
+    return(berkid_fpkm_path)
+
+
+def madd_berkid(cufflink_fpkm_path_tuples):
+    '''Input is list of tuples of the following form:
+    (berkid, fpkm path, berkid_fpkm_path)
+    '''
+    for berkid, cf, bcf in cufflink_fpkm_path_tuples:
         if not os.path.exists(cf):
             logging.info('%s does not exist', cf)
             continue
-        berkid = get_berkid(cf)
-        berkid_fpkm_path = os.path.join(os.path.dirname(cf), berkid_fpkm_file) 
-        print(berkid_fpkm_path)
-        add_berkid(berkid, cf, berkid_fpkm_path)
-        berkid_fpkm_paths.append(berkid_fpkm_path)
-    return(berkid_fpkm_paths)
+        add_berkid(berkid, cf, bcf)
 
 def find_num_genes(dbtable, berkid, cur):
     checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
@@ -141,7 +145,9 @@ def copy_to_dbtable(berkid_fpkm_path, dbtable, cur):
     by add_berkid() into the sql table dbtable using the cursor cur.
     '''
     #print(berkid_fpkm_p_ath)
-    berkid = get_berkid(berkid_fpkm_path)
+    with open(berkid_fpkm_path, 'r') as f:
+        info = next(f)
+    berkid = info.strip('\n').split('\t')[-1]
     print(berkid)
     checkrows = int(find_num_genes(dbtable, berkid, cur))
     if checkrows != 0:
@@ -389,7 +395,7 @@ def genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_di
 def get_berkid(cufflink_fpkm_path, berkidlen=BERKIDLEN):
     '''return a berkid extracted from a cufflink_fpkm_path'''
     cf = cufflink_fpkm_path
-    return(cf[cf.find('RG'):cf.find('RG')+berkidlen])
+    return(cf[cf.find('rg'):cf.find('rg')+berkidlen])
 
 def get_berkidlist(cufflink_fpkm_paths):
     '''returns a list of berkids extracted from a list of cufflink output paths'''
@@ -397,8 +403,8 @@ def get_berkidlist(cufflink_fpkm_paths):
 
 
 def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
-    '''Copies cufflinks data to database table.
-    Inputs:
+    '''copies cufflinks data to database table.
+    inputs:
     cufflink_fpkm_paths: paths to original genes.fpkm_tracking file output by
     cufflinks
     berkid_fpkm_file: new name for fpkm file with the berkid appended to each
@@ -408,7 +414,11 @@ def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
     logging.info('opening connection')
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
-    berkid_cufflink_fpkm_paths = madd_berkid(cufflink_fpkm_paths, berkid_fpkm_file)
+    berkid_cufflink_fpkm_paths = [get_cufflink_berkid_fpkm_path(cf,
+            berkid_fpkm_file) for cf in cufflink_fpkm_paths]
+    berkids = [get_berkid(cf) for cf in cufflink_fpkm_paths]
+    madd_berkid(zip(berkids, cufflink_fpkm_paths, 
+        berkid_cufflink_fpkm_paths))
     mcopy_to_dbtable(berkid_cufflink_fpkm_paths, cuff_table, cur)
     conn.commit()
     cur.close()
