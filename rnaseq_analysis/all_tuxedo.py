@@ -9,7 +9,7 @@ from tuxedo_settings import *
 
 def main():
     # Writes output to mrun.log and specifies format of logging output.
-    logging.basicConfig(filename=LOG_FILE, format='%(asctime)s %(levelname)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filemode='w', level=logging.INFO)
+    logging.basicConfig(filename=LOG_FILE, format='%(asctime)s %(levelname)s %(message)s', datefmt='%m/%d/%Y_%I-%M-%S %p', filemode='w', level=logging.INFO)
     console = logging.StreamHandler() # Displays output to screen.
     logging.getLogger('').addHandler(console)
 

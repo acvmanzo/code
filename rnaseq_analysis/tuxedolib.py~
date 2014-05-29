@@ -148,7 +148,7 @@ def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinks
     logging.info('%s', cufflinkscmd)
     with open(cufflinkscmd_file, 'w') as f:
         f.write(cufflinkscmd)
-    #os.system(cufflinkscmd)
+    os.system(cufflinkscmd)
 
 def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_info):
     '''

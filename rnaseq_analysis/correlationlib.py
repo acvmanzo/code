@@ -395,7 +395,7 @@ def genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_di
 def get_berkid(cufflink_fpkm_path, berkidlen=BERKIDLEN):
     '''return a berkid extracted from a cufflink_fpkm_path'''
     cf = cufflink_fpkm_path
-    return(cf[cf.find('rg'):cf.find('rg')+berkidlen])
+    return(cf[cf.find('RG'):cf.find('RG')+berkidlen])
 
 def get_berkidlist(cufflink_fpkm_paths):
     '''returns a list of berkids extracted from a list of cufflink output paths'''
@@ -422,17 +422,20 @@ def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
     mcopy_to_dbtable(berkid_cufflink_fpkm_paths, cuff_table, cur)
     conn.commit()
     cur.close()
+    logging.info('closing connection')
     conn.close()
 
 def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm, gene_subset_table):
 
-    conn = psycopg2.connect("dbname=rnaseq user=andrea")
     logging.info('joining and querying tables')
+    logging.info('opening connection')
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur1 = conn.cursor()
     berkidlist = get_berkidlist(cufflink_fpkm_paths)
-    print(berkidlist)
+    logging.info(berkidlist)
     joined_arrays = mjoin_db_table(berkidlist, selectlist, cuff_table, maxfpkm, cur1, gene_subset_table)
     cur1.close()
+    logging.info('closing connection')
     conn.close()
     return(joined_arrays)
 
@@ -440,6 +443,8 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm, gene
 def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile, 
         spearman_corrfile, selectlist, scatter_info, hist_info):
     
+    logging.info('finding correlations')
+    logging.info('opening connection') 
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     
     for joined_array in joined_arrays:
@@ -451,7 +456,6 @@ def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile,
         fpkmlim = max([axislim(x) for x in fpkms])
         
         logging.info('Samples: %s', samples)
-        logging.info('finding correlations')
         r, slope, intercept = get_pearson_correlation(fpkms)
         save_corr_file(r, berkids[0], samples[0], berkids[1], samples[1],
                 num_genes, pearson_corrfile)
@@ -467,7 +471,8 @@ def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile,
 
         logging.info('plotting histograms')
         genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_dir)
-   
+    
+    logging.info('closing connections') 
     conn.close()
 
 

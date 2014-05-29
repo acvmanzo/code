@@ -10,6 +10,7 @@ import sys
 from all_correlations_settings import *
 
 COPY_TO_TABLE = sys.argv[1] # 'y' to copy data into database table
+FIND_CORRELATIONS = sys.argv[2] # 'y' or 'yes' to find correlations
 
 def create_corrfiles():
     # Creates files for pearson and spearman correlation coefficients.
@@ -91,11 +92,14 @@ def main():
         # or 'yes'
         if COPY_TO_TABLE == 'y' or COPY_TO_TABLE == 'yes':
             corl.copy_data_to_table(extant_cufflink_fpkm_paths, BERKID_FPKM_FILE, CUFF_TABLE)
+        # Finds correlations if sys.argv is 'y' # or 'yes'
+        if FIND_CORRELATIONS == 'y' or FIND_CORRELATIONS == 'yes':
+            corl.copy_data_to_table(extant_cufflink_fpkm_paths, BERKID_FPKM_FILE, CUFF_TABLE)
         try:
             # Generates a list of arrays in which each array has the gene FPKM
             # data for two samples.
             joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
-                    SELECTLIST, CUFF_TABLE, MAXFPKM) 
+                    SELECTLIST, CUFF_TABLE, MAXFPKM, GENE_SUBSET_TABLE) 
             # Finds the correlations between each sample within a condition and
             # generates plots.
             corl.get_sample_correlations(joined_arrays, fig_dir, 

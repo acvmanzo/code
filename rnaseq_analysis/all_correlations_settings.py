@@ -8,11 +8,13 @@ curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 # IMPORTANT PARAMETERS
 ALLREPS_OR_BERKIDS = 'allreps' # Set to 'allreps' if I want to find correlations
 #for all biological replicates with each other; otherwise set to 'berkids'
+
 #Only genes with FPKMs below this value will be used to calculate correlations;
 #if no limit is desired, set to False.
-MAXFPKM = 5000 
-#GENE_SUBSET_TABLE = False
-GENE_SUBSET_TABLE = 'prot_coding_genes'
+MAXFPKM = False
+#MAXFPKM = 5000 
+GENE_SUBSET_TABLE = False
+#GENE_SUBSET_TABLE = 'prot_coding_genes'
 CORR_DIR_BASE = 'correl_tophat'
 
 # Directories used.

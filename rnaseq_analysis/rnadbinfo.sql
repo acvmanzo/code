@@ -145,28 +145,60 @@
 
 
 -- Create one table to contain all the cufflinks mapping data
-CREATE TABLE clc_data (
-    gene_short_name character varying(100),
-    exp_vale double precision,
-    trans_annot int,
-    trans_detected int,
-    exon_length int,
-    unique_gene_reads int,
-    tot_gene_reads int,
-    unique_exon_reads int,
-    tot_exon_reads int,
-    ratio_exon_reads real,
-    unique_exon_exon_reads int,
-    total_exon_exon_reads int,
-    unique_intron_exon_reads int,
-    total_intron_exon_reads int,
-    exons int,
-    put_exons int,
-    rpkm double precision,
-    med_cov real,
-    chrom varchar(200),
-    chrom_start int,
-    chrom_end int,
-    berkid varchar(20)
-);
+-- CREATE TABLE clc_data (
+    -- gene_short_name character varying(100),
+    -- exp_vale double precision,
+    -- trans_annot int,
+    -- trans_detected int,
+    -- exon_length int,
+    -- unique_gene_reads int,
+    -- tot_gene_reads int,
+    -- unique_exon_reads int,
+    -- tot_exon_reads int,
+    -- ratio_exon_reads real,
+    -- unique_exon_exon_reads int,
+    -- total_exon_exon_reads int,
+    -- unique_intron_exon_reads int,
+    -- total_intron_exon_reads int,
+    -- exons int,
+    -- put_exons int,
+    -- rpkm double precision,
+    -- med_cov real,
+    -- chrom varchar(200),
+    -- chrom_start int,
+    -- chrom_end int,
+    -- berkid varchar(20)
+-- );
 
+-- Testing using htseq and SERE
+-- CREATE TABLE htseq (
+    -- gene_name varchar(100),
+    -- counts int,
+    -- berkid varchar(20)
+-- );
+
+-- \copy htseq from '/home/andrea/bookmarks/analysis/results_tophat/RGAM009H/tophat_out/htseq_results_edit_berkid.txt';
+-- \copy htseq from '/home/andrea/bookmarks/analysis/results_tophat/RGAM009D/tophat_out/htseq_results_edit_berkid.txt';
+-- \copy htseq from '/home/andrea/bookmarks/analysis/results_tophat/RGSJ006H/tophat_out/htseq_results_edit_berkid.txt';
+-- \copy htseq from '/home/andrea/bookmarks/analysis/results_tophat/RGSJ007D/tophat_out/htseq_results_edit_berkid.txt';
+
+-- select count (*) from (
+-- \copy (select t0.gene_name, t0.counts as RGSJ007D, t1.counts as RGSJ006H from htseq as t0 inner join htseq as t1 using (gene_name) where t0.berkid = 'RGSJ007D' and t1.berkid = 'RGSJ006H' order by gene_name) TO '/home/andrea/bookmarks/analysis/cg34127m_htseq_test.txt';
+-- ) as foo
+-- ;
+
+-- \copy prot_coding_genes  to '/home/andrea/bookmarks/analysis/test.txt';
+
+-- DROP TABLE htseq_gene;
+-- CREATE TABLE htseq_gene (
+    -- gene_short_name varchar(100),
+    -- counts int,
+    -- berkid varchar(20)
+-- );
+
+-- \copy htseq_gene from '/home/andrea/bookmarks/analysis/results_tophat/RGSJ007D/tophat_out/htseq_results_edit_gene_berkid.txt';
+-- \copy htseq_gene from '/home/andrea/bookmarks/analysis/results_tophat/RGSJ006H/tophat_out/htseq_results_edit_gene_berkid.txt';
+
+-- \copy (select t0.gene_short_name, t0.counts as RGSJ007D, t1.counts as RGSJ006H from htseq_gene as t0 inner join htseq_gene as t1 using (gene_short_name) inner join prot_coding_genes as t2 using (gene_short_name) where t0.berkid = 'RGSJ007D' and t1.berkid = 'RGSJ006H' order by gene_short_name) TO '/home/andrea/bookmarks/analysis/cg34127m_htseq_test_pcg.txt';
+-- select t0.gene_short_name, t0.counts as RGSJ007D, t1.counts as RGSJ006H from htseq_gene as t0 inner join htseq_gene as t1 using (gene_short_name) inner join prot_coding_genes as t2 using (gene_short_name) where t0.berkid = 'RGSJ007D' and t1.berkid = 'RGSJ006H' order by gene_short_name; 
+-- select t0.gene_short_name, t0.counts as RGSJ007D, t1.counts as RGSJ006H from htseq_gene as t0 inner join htseq_gene as t1 using (gene_short_name) where t0.berkid = 'RGSJ007D' and t1.berkid = 'RGSJ006H' order by gene_short_name; 

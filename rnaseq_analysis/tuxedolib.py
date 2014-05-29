@@ -187,7 +187,7 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_
         logging.warning('%s', 'tophat directory exists')
     else:
         run_tophat(d['tophat_dir'], d['gff_file'], d['btindex'], fastafile, d['tophatcmd_file'])
-        #os.remove(fastafile)
+        os.remove(fastafile)
    
     # Run cufflinks.
     if os.path.exists(d['cufflinks_dir']):
