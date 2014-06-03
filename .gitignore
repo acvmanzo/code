@@ -1,3 +1,9 @@
 *.pyc
-*.lyx~
+*~
 *.lyx#
+*.swp
+*.png
+*.jpg
+*.backup
+*.current
+*.old
