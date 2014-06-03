@@ -246,6 +246,13 @@ def get_pearson_correlation(fpkms):
     slope, intercept, r, p, std_err = stats.linregress(fpkms[0], fpkms[1])
     return(r, slope, intercept)
 
+def add_pseudocount(fpkms):
+    return(np.array(fpkms)+1)
+
+def log_transform(fpkms):
+    return(np.log2(np.array(fpkms)))
+
+
 def get_spearman_correlation(fpkms):
     return(stats.spearmanr(fpkms[0], fpkms[1]))
 
@@ -441,7 +448,7 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm, gene
 
 
 def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile, 
-        spearman_corrfile, selectlist, scatter_info, hist_info):
+        spearman_corrfile, selectlist, scatter_info, hist_info, pc_log):
     
     logging.info('finding correlations')
     logging.info('opening connection') 
@@ -450,6 +457,8 @@ def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile,
     for joined_array in joined_arrays:
         num_genes = np.shape(joined_array)[0]
         fpkms, berkids = get_fpkm(joined_array, selectlist)
+        if pc_log == True:
+            fpkms = log_transform(add_pseudocount(fpkms))
         cur2 = conn.cursor()
         samples = [get_samplename(x, cur2) for x in berkids]
         cur2.close()
