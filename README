@@ -15,8 +15,7 @@ code/ - code used in data analysis
     qpcr/ - scripts for analyzing qpcr data
 
     R/ - scripts written in R
-        wgcna/ - code used in WGCNA tutorials
-(http://labs.genetics.ucla.edu/horvath/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/)
+        wgcna/ - code used in WGCNA tutorials (http://labs.genetics.ucla.edu/horvath/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/)
         examples/ - scripts testing usage of different R functions
 
     rnaseq_analysis/ - scripts for analyzing RNA-Seq reads
