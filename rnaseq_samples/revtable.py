@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+# Functions for manipulating a wiki table containing information about the 
+# RNA-Seq samples.
 import re
 import itertools
 import os

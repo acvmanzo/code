@@ -1,3 +1,5 @@
+#This library contains functions useful for detecting wing extension in 
+#aggression movies. Uses opencv.
 
 import os
 import numpy as np

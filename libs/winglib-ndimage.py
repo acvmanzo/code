@@ -1,3 +1,5 @@
+#This library contains functions useful for detecting wing extension in 
+#aggression movies. Uses ndimage.
 
 import os
 import numpy as np

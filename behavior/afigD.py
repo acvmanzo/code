@@ -1,3 +1,7 @@
+#! /usr/bin/env python
+
+# Executable function for plotting a four-panel figure with the aggression 
+# data showing duration of different aggressive behaviors.
 
 import os
 import sys

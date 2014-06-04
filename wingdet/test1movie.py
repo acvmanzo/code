@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+# For one movie, takes several frames and plots thresholded plots.
+
 from libs.winglib import *
 from wingsettings import *
 import sys

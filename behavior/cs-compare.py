@@ -1,7 +1,12 @@
+#Script to compare courtship behavior of CS flies from several of my
+#experiments.
+
 from courtshiplib import *
 import cmn.writefiles as wf
 
-KINDLIST = ['wing', 'copsuc', 'copatt1'] # List of behaviors; wing = wing extension; copsuc = successful copulation; copatt1 = first attempted copulation.
+# List of behaviors; wing = wing extension; copsuc = successful copulation;
+# copatt1 = first attempted copulation.
+KINDLIST = ['wing', 'copsuc', 'copatt1'] 
 FNAME = '2013-0718_courtship_comp_cs.csv'
 KEYFILE = 'keylist'
 

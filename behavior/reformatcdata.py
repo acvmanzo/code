@@ -1,3 +1,5 @@
+# Reformats courtship data.
+
 import libs.courtshiplib as cl
 import sys
 

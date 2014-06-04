@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-# Executable function for plotting a six-panel figure with courtship data.
+# Executable function for plotting a six-panel figure with courtship data
+# showing latency and frequency to different courtship behaviors.
 
 import sys
 import matplotlib.pyplot as plt

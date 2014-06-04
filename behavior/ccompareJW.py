@@ -1,3 +1,6 @@
+# Script to compare courtship behavior of CS flies from Jenee's experiments
+# and my experiments.
+
 import matplotlib as mpl
 import numpy as np
 import os

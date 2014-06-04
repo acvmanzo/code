@@ -1,3 +1,5 @@
+#Removes fastq files from a directory.
+
 import glob
 import os
 

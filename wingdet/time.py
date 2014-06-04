@@ -1,3 +1,5 @@
+# Uses timeit to time a function.
+
 from wingsettings import *
 from libs.winglib import *
 

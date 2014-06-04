@@ -1,3 +1,4 @@
+# Script to convert probe name to gene name from FlyAtlas data.
 
 PGFILE = 'probset_to_gene2.txt'
 DATAFILE = 'microarray_data.txt'

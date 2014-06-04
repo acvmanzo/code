@@ -1,3 +1,5 @@
+# Settings for all_correlations.py
+
 from tuxedo_settings import *
 import os
 import cmn.cmn as cmn

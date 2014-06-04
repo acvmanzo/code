@@ -1,4 +1,4 @@
-
+-- SQL code for manipulating/testing tables in the rnaseq database.
 
 -- Creating a foreign database wrapper so that I can access the data in the
 -- autin table from the rnaseq database.

@@ -1,3 +1,6 @@
+#This script extracts data from the REST output files so that I can plot
+#it using matplotlib.
+
 import os
 import libs.genplotlib as gpl
 import numpy as np

@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+# Finds instances of wing extension in 1 movie.
+
 from libs.winglib import *
 from wingsettings import *
 

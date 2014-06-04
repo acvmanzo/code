@@ -1,3 +1,5 @@
+#Settings for wing detection.
+
 import numpy as np
 import os
 

@@ -1,3 +1,5 @@
+# Script for profiling different functions.
+
 from wingsettings import *
 from libs.winglib import *
 from s5 import *

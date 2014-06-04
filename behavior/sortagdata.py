@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 
+#There are two movies for each experiment; sorts data in the master behavior 
+#file so that the data from the two movies are adjacent.
+
 from libs.aglib import *
 
 

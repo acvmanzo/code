@@ -1,3 +1,5 @@
+# Finds correlation between biological replicates using CLCBio output.
+
 from correlationlib import *
 import glob
 

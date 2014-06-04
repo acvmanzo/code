@@ -1,3 +1,6 @@
+# Library containing functions useful for running tophat and cufflinks on 
+# multiple samples.
+
 import sys
 import os
 import glob

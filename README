@@ -1,14 +1,31 @@
 README
 
-Code for data analysis.
 
-cmn/cmn.py - Library of commonly-used functions.
-cmn/csvtabletowiki.py - Code for converting tables made in gnumeric to wiki format.
+Directories:
 
-canal.py - Executable function for analyzing courtship data.
-courtshiplib.py - Library with functions useful for analyzing courtship data from a csv file generated during manual scoring.
-cplotfig.py - Executable function for plotting a four-panel figure with the courtship data.
-genplotlib.py - Library with functions to plot scatter plots and bar graphs.
-rstatslib.py - Wrappers for R functions. 
+code/ - code used in data analysis 
+    behavior/ - scripts for analysis of courtship and aggression data
 
-prac.py, rpyprac.py, and rtest.R are files used for testing code.
+    cmn/ - contains commonly-used functions
+
+    libs/ - contains libraries for analysis of behavioral and qRT-PCR data
+
+    misc/ - contains scripts for miscellaneous analyses
+
+    qpcr/ - scripts for analyzing qpcr data
+
+    R/ - scripts written in R
+        wgcna/ - code used in WGCNA tutorials
+(http://labs.genetics.ucla.edu/horvath/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/)
+        examples/ - scripts testing usage of different R functions
+
+    rnaseq_analysis/ - scripts for analyzing RNA-Seq reads
+
+    rnaseq_samples/ - scripts for managing data related to the RNA-Seq samples
+
+    sql/ - scripts for managing PostgreSQL databases
+
+    testing/ - scripts used for testing
+
+    wingdet/ - scripts for detecting wing extension in behavior moviesA
+

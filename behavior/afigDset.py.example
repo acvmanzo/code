@@ -1,3 +1,5 @@
+#Example settings file containing parameters used for the afigD.py script.
+
 import os
 import numpy as np
 

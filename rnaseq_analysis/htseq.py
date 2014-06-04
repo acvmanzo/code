@@ -1,3 +1,6 @@
+#Functions useful for preparing files for analysis using htseq.
+
+
 import os
 
 def add_berkid(berkid, fpkm_path, berkid_fpkm_path):

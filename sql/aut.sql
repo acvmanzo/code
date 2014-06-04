@@ -1,3 +1,6 @@
+-- SQL code used for manipulating and querying a database with information
+-- about RNASeq samples.
+
 --CREATE TABLE autin_bad
 --(
   --genotype character varying(80) NOT NULL,

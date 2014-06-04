@@ -1,3 +1,5 @@
+# Script for plotting standard curves for primers used in qRT-PCR.
+
 from libs.qrtpcrlib import *
 
 DATAFILES = sorted(glob.glob('*.csv'))

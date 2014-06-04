@@ -1,3 +1,5 @@
+# Rename files for use with Ryan's correlation script.
+
 import os
 import sys
 import glob

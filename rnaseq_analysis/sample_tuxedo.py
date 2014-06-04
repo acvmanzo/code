@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+#Runs tophat and cufflinks on a fixed set of samples.
+
 import tuxedolib as tl
 import logging 
 import datetime

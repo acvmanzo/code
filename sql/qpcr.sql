@@ -1,3 +1,5 @@
+-- SQL code for manipulating/querying tables containing qRT-PCR data.
+
 --drop table qpcr_primers;
 
 --CREATE TABLE qpcr_primers

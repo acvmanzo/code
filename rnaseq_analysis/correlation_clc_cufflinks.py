@@ -1,3 +1,6 @@
+# Finds the correlation of gene expression between values output by CLCBio and
+# values output by Cufflinks for the same sample.
+
 from correlation import *
 
 MAXFPKMPLOT = 500

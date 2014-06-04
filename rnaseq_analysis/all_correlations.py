@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+#Finds the correlation of gene expression values between biological replicates 
+
 import correlationlib as corl
 import logging
 import os

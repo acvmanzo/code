@@ -1,3 +1,5 @@
+# This library contains functions for analyzing qRT-PCR data.
+
 import glob
 import matplotlib.pyplot as plt
 import numpy as np

@@ -1,3 +1,5 @@
+# Script to extrapolate fruit fly generation times at various temperatures.
+
 import matplotlib.pyplot as plt
 import numpy as np
 

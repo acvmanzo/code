@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Test script for determining the correlation of gene expression between 
+# biological replicates.
+
 import correlationlib as corl
 import logging
 import os

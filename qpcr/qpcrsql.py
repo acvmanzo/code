@@ -1,3 +1,6 @@
+# This script contains functions for querying a SQL database containing
+# qRT-PCR data.
+
 import glob
 import itertools
 import psycopg2

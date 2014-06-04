@@ -1,5 +1,5 @@
-import os
-import sys
+
+# Converts data from old autism format to new autism data format.
 
 #Old Format: 
 #Date	Movie	Offset (s)	Well #	Genotype	Wing ext (m)	Wing ext (s)	Cop Suc (m)	Cop Suc (s)	Cop Att 1 (m)	Cop Att 1 (s)	Cop Att 2 (m)	Cop Att 2 (s)	Cop Att 3 (m)	Cop Att 3 (s)	Cop Att 4 (m)	Cop Att 4 (s)	Cop Att 5 (m)	Cop Att 5 (s)	Cop Att 6 (m)	Cop Att 6 (s)	Cop Att 7 (m)	Cop Att 7 (s)	Cop Att 8 (m)	Cop Att 8 (s)	Cop Att 9 (m)	Cop Att 9 (s)	Cop Att 10 (m)	Cop Att 10 (s)	Cop Att 11 (m)	Cop Att 11 (s)	Comments
@@ -9,7 +9,8 @@ import sys
 			#(min)		Min	Sec	Dur	Type	Comments
 
 
-# Converts data from old autism format to new autism data format.
+import os
+import sys
 
 OLDFILE = sys.argv[1]
 C_OR_A = sys.argv[2]

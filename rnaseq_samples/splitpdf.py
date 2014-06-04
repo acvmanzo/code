@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+#Extracts bioanalyzer data for each sample from a combined PDF file; saves
+#the sample bioanalyzer data into a separate file.
 
 import os
 import itertools

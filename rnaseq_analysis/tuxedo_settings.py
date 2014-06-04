@@ -1,3 +1,5 @@
+# Settings for running tuxedo scripts.
+
 import os
 
 SEQ_DIR = '/home/andrea/Documents/lab/RNAseq/sequences'

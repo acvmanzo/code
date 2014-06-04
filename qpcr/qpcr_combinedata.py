@@ -1,3 +1,4 @@
+# Combines qPCR data into one file and copies it into the SQL table qpcr_mut
 
 import os
 import psycopg2

@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+#Code for converting tables to and from wiki format.
+
 import os
 import sys
 

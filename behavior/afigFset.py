@@ -1,4 +1,5 @@
-# Settings for afig.py.
+#Example settings file containing parameters used for the afigD.py script.
+
 import os
 
 # Input and output files.

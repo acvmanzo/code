@@ -1,3 +1,5 @@
+# Functions for converting output of SQL query into wiki formatting.
+
 import psycopg2
 import numpy as np
 import datetime

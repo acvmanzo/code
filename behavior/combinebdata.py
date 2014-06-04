@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 
+# Script for combining multiple files containing behaviorl data into one 
+# file (more general than combineagdata.py)
+
 import numpy as np
 import os
 import sys

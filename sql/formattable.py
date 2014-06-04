@@ -1,3 +1,5 @@
+# Code for formatting csv table to add the date.
+
 with open('20140319_db_date.csv', 'w') as g:
     with open('20140319_db.csv', 'r') as f:
         for l in f:

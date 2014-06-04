@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 
+# Script for combining multiple files containing aggression data into one 
+# file.
+
 import numpy as np
 import os
 import glob

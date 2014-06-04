@@ -1,3 +1,5 @@
+# Rename the genotypes from Jenee's experiments in the behavior data files.
+
 import libs.courtshiplib as cl
 import sys
 

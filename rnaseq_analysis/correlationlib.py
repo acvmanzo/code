@@ -1,3 +1,6 @@
+# Library containing functions useful for finding correlation coefficients
+# of samples based on gene expression.
+
 import numpy as np
 import math
 import matplotlib as mpl
