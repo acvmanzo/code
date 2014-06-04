@@ -1,18 +1,15 @@
 README
 
-
-Directories:
-
 code/ - code used in data analysis 
     behavior/ - scripts for analysis of courtship and aggression data
 
-    cmn/ - contains commonly-used functions
+    cmn/ - contains commonly used functions
 
     libs/ - contains libraries for analysis of behavioral and qRT-PCR data
 
     misc/ - contains scripts for miscellaneous analyses
 
-    qpcr/ - scripts for analyzing qpcr data
+    qpcr/ - scripts for analyzing qpcr/qRT-PCR data
 
     R/ - scripts written in R
         wgcna/ - code used in WGCNA tutorials (http://labs.genetics.ucla.edu/horvath/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/)
@@ -24,7 +21,7 @@ code/ - code used in data analysis
 
     sql/ - scripts for managing PostgreSQL databases
 
-    testing/ - scripts used for testing
+    testing/ - scripts being tested
 
-    wingdet/ - scripts for detecting wing extension in behavior moviesA
+    wingdet/ - scripts for detecting wing extension in behavior movies
 
