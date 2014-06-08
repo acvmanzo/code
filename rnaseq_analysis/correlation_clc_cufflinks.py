@@ -9,7 +9,9 @@ def get_ids(sid):
     idlist = ['{}_clc'.format(sid), '{}_th'.format(sid)]
     return(idlist)
 
-cuffpaths = ['/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/tux_results/tophat_run3/cufflinks_out_3', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/tux_results/tophat_run2/cufflinks_out', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGSJ006G_index24/tux_results/tophat_run1/cufflinks_out']
+cuffpaths = [
+'/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM009B/tux_results/tophat_run3/cufflinks_out_3','/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGAM010F/tux_results/tophat_run2/cufflinks_out', '/home/andrea/rnaseqanalyze/sequences/CSM/Sample_RGSJ006G_index24/tux_results/tophat_run1/cufflinks_out'
+]
 corrfile = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th/correlations.txt'
 savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th'
 #savefigdir = '/home/andrea/rnaseqanalyze/sequences/CSM/correlations_clc_th_cond1'

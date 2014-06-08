@@ -207,7 +207,8 @@ def mjoin_db_table(berkidlist, selectlist, dbtable, maxfpkm, cur, gene_subset_ta
     '''applies join_db_table and gen_joincmd for each pairwise 
     combination of samples given in berkidlist; returns a list of lists
     '''
-    comp_index = itertools.combinations(range(len(berkidlist)), 2) # list of indices for all pairwise comparisons of each sample.
+    comp_index = itertools.combinations(range(len(berkidlist)), 2) # list of indices for all 
+    #pairwise comparisons of each sample.
     comparisons = []
     for i in comp_index:
         #cur = conn.cursor()
@@ -237,8 +238,10 @@ def get_fpkm(jointable, colnames):
     used in join_db_table().
     '''
     array = np.transpose(jointable)
-    fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),colnames.index('t1.fpkm')]]
-    berkid0, berkid1, = [array[x][0] for x in [colnames.index('t0.berkid'), colnames.index('t1.berkid')]]
+    fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),
+        colnames.index('t1.fpkm')]]
+    berkid0, berkid1, = [array[x][0] for x in [colnames.index('t0.berkid'), 
+        colnames.index('t1.berkid')]]
     return([fpkm0, fpkm1], [berkid0, berkid1])
 
 
@@ -325,7 +328,8 @@ def plot_scatter(fpkms, berkids, samples, r, slope, intercept,
 def make_figname(berkids, samples, figtype):
     '''generates a figure name using the berkids and sample names of the
     samples being compared. figtype can be 'hist' or 'correlation'.'''
-    figname_base = '{}-{}_vs_{}-{}_{}.png'.format(samples[0], berkids[0], samples[1], berkids[1], figtype)
+    figname_base = '{}-{}_vs_{}-{}_{}.png'.format(samples[0], berkids[0], samples[1], 
+            berkids[1], figtype)
     return(figname_base)
 
 
@@ -443,7 +447,8 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm, gene
     cur1 = conn.cursor()
     berkidlist = get_berkidlist(cufflink_fpkm_paths)
     logging.info(berkidlist)
-    joined_arrays = mjoin_db_table(berkidlist, selectlist, cuff_table, maxfpkm, cur1, gene_subset_table)
+    joined_arrays = mjoin_db_table(berkidlist, selectlist, cuff_table, maxfpkm, cur1, 
+            gene_subset_table)
     cur1.close()
     logging.info('closing connection')
     conn.close()

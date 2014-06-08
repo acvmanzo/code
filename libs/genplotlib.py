@@ -12,8 +12,8 @@ import cmn.cmn as cmn
 def gendict(fname='peakf.txt'):
     """Generates a dictionary from a file listing the peak frequencies.
 
-    Keywords are the conditions and values are the peak frequencies of each sample for that given
-    condition.
+    Keywords are the conditions and values are the peak frequencies of each 
+    sample for that given condition.
     """
 
     data_dict = {}
@@ -38,8 +38,9 @@ def gendict(fname='peakf.txt'):
 
 
 def genlist(dict, label='data'):
-    """Generates a new dictionary in which the keywords are conditions and the values are lists of
-    the mean frequency, standard deviation, standard error, and n for that condition.
+    """Generates a new dictionary in which the keywords are conditions and 
+    the values are lists of the mean frequency, standard deviation, standard
+    error, and n for that condition.
     """
 
     mean_dict = {}
@@ -65,9 +66,9 @@ def genlist(dict, label='data'):
 
 
 def genalldict(fname='peakf.txt'):
-    """Generates two dictionaries: in the first, the keywords are conditions and the values are the
-    data points, and in the second, the values are lists of the mean frequency, std dev, std
-    error, and n for each condition.
+    """Generates two dictionaries: in the first, the keywords are conditions 
+    and the values are the data points, and in the second, the values are 
+    lists of the mean frequency, std dev, std error, and n for each condition.
     """
 
     d = gendict(fname)
@@ -94,7 +95,8 @@ def savebar(fname = 'bargraph'):
 def plotdata(dictdata, dictmeans, keylist, ptype, ylabel, ftitle, datac='b', 
 meanc='r', bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, 
 end=1, titlesize='xx-large', xlabelsize='large', figw=4, figh=2, figdpi=1000):
-    """Plots either a bar graph or a scatter plot using data from 'dictdata', with means taken from 'dictmeans' in the
+    """Plots either a bar graph or a scatter plot using data from 'dictdata', 
+    with means taken from 'dictmeans' in the
     order specified by 'keylist'.
 
     ptype = ['b' | 's']
@@ -113,12 +115,14 @@ end=1, titlesize='xx-large', xlabelsize='large', figw=4, figh=2, figdpi=1000):
     err = ['stderr' | 'stdev']
         Plot standard error or standard deviation.
     xd = the distance between data points on the x-axis
-    xstart is the distance from zero to the first set of data points on the x-axis.
+    xstart is the distance from zero to the first set of data points on the 
+    x-axis.
     xtoffset is the distance between the labels on the x-axis.
 
-    Start and xtoffset can be changed to provide the appropriate spacing for the data points along the
-    x-axis. Also, if two sets of data are to be plotted using the same x-axis labels, start and
-    xtoffset can be changed so that the two sets of data share the same labels.
+    Start and xtoffset can be changed to provide the appropriate spacing for 
+    the data points along the x-axis. Also, if two sets of data are to be 
+    plotted using the same x-axis labels, start and xtoffset can be changed 
+    so that the two sets of data share the same labels.
     """
 
     i = keylist
@@ -154,9 +158,9 @@ end=1, titlesize='xx-large', xlabelsize='large', figw=4, figh=2, figdpi=1000):
         bwyvals.append(dictdata[condition])
 
 
-        # 'meanyvals' is a list of the mean values for each condition, 'meanstdev' is a list of
-        # the standard deviations for each condition, and 'meansterr' is a list of the standard errors
-        # for each condition.
+        # 'meanyvals' is a list of the mean values for each condition, 
+        # 'meanstdev' is a list of the standard deviations for each condition,
+        # and 'meansterr' is a list of the standard errors for each condition.
         mean, stdev, sterr, n, label = dictmeans[condition]
         meanyvals.append(mean)
         meanstdev.append(stdev)
@@ -165,8 +169,9 @@ end=1, titlesize='xx-large', xlabelsize='large', figw=4, figh=2, figdpi=1000):
         # 'x_list' is a list of the xvalues for each condition.
         x_list.append(x)
 
-        # If the length of the condition name is too long, this adds a line break at the first
-        # space in the condition name for so that it looks better as an xlabel in the graph.
+        # If the length of the condition name is too long, this adds a line 
+        # break at the first space in the condition name for so that it looks 
+        # better as an xlabel in the graph.
         if len(condition) > 40:
             formcondition = condition.replace(' ', '\n', 1)
         else:
@@ -179,30 +184,36 @@ end=1, titlesize='xx-large', xlabelsize='large', figw=4, figh=2, figdpi=1000):
 
     if ptype == 'b':
         if err == 'sterr':
-            plt.bar(x_list, meanyvals, width=0.5, color=bcolor, yerr=meansterr, ecolor=bcolor, label=label)
+            plt.bar(x_list, meanyvals, width=0.5, color=bcolor, 
+                    yerr=meansterr, ecolor=bcolor, label=label)
         if err == 'stdev':
-            plt.bar(x_list, meanyvals, width=0.5, color=bcolor, yerr=meanstdev, ecolor=bcolor, label=label)
+            plt.bar(x_list, meanyvals, width=0.5, color=bcolor,
+                    yerr=meanstdev, ecolor=bcolor, label=label)
         if err == 'none':
-            plt.bar(x_list, meanyvals, width=0.5, color=bcolor, ecolor=bcolor, label=label)
+            plt.bar(x_list, meanyvals, width=0.5, color=bcolor, ecolor=bcolor,
+                    label=label)
         xtoffset = xtoffset + 0.25
 
     if ptype == 's':
 
         # Plots the data as points.
-        # Uncomment this line if you want the label to just include the label in the dictmeans
-        # dictionary.
+        # Uncomment this line if you want the label to just include the label
+        # in the dictmeans dictionary.
         plt.scatter(dataxvals, datayvals, c=datac, marker='s', label=label)
 
-        #Uncomment these lines if you want the label to include the condition and the n.
-        #plt.scatter(dataxvals, datayvals, c=datac, marker='s', label=condition + ', ' +
-        #label + ', n = {0}'.format(n))
+        #Uncomment these lines if you want the label to include the condition 
+        #and the n.
+        #plt.scatter(dataxvals, datayvals, c=datac, marker='s', 
+        #label=condition + ', ' + label + ', n = {0}'.format(n))
 
         # Plots the mean values and the error bar.
         if err == 'sterr':
-            plt.errorbar(x_list, meanyvals, meansterr, mfc=meanc, mec=meanc, ecolor=meanc, ms=7,
+            plt.errorbar(x_list, meanyvals, meansterr, mfc=meanc, mec=meanc, 
+                    ecolor=meanc, ms=7,
             elinewidth=2, barsabove='True', capsize=8, fmt='o')
         if err == 'stdev':
-            plt.errorbar(x_list, meanyvals, meanstdev, mfc=meanc, mec=meanc, ecolor=meanc, ms=7,
+            plt.errorbar(x_list, meanyvals, meanstdev, mfc=meanc, mec=meanc, 
+                    ecolor=meanc, ms=7,
             elinewidth=2, barsabove='True', capsize=8, fmt='o')
 
     if ptype == 'bw':
@@ -235,10 +246,12 @@ end=1, titlesize='xx-large', xlabelsize='large', figw=4, figh=2, figdpi=1000):
     return(fig1)
 
 
-def plotdata_ci(dictdata, dictpercent, keylist, ptype, ylabel, ftitle, ymin=-5, ylim=100, datac='b', meanc='r',
-bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titlesize='xx-large', xlabelsize='large'):
-    """Plots either a bar graph or a scatter plot using data from 'dictdata', with means taken from 'dictmeans' in the
-    order specified by 'keylist'.
+def plotdata_ci(dictdata, dictpercent, keylist, ptype, ylabel, ftitle, 
+        ymin=-5, ylim=100, datac='b', meanc='r', bcolor='k', withleg='no', 
+        err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titlesize='xx-large',
+        xlabelsize='large'):
+    """Plots either a bar graph or a scatter plot using data from 'dictdata', 
+    with means taken from 'dictmeans' in the order specified by 'keylist'.
 
     ptype = ['b' | 's']
         b: bar graph
@@ -255,12 +268,14 @@ bcolor='k', withleg='no', err='sterr', xd=1, xstart=0, xtoffset=0, end=1, titles
     err = ['stderr' | 'stdev']
         Plot standard error or standard deviation.
     xd = the distance between data points on the x-axis
-    xstart is the distance from zero to the first set of data points on the x-axis.
+    xstart is the distance from zero to the first set of data points on the 
+    x-axis.
     xtoffset is the distance between the labels on the x-axis.
 
-    Start and xtoffset can be changed to provide the appropriate spacing for the data points along the
-    x-axis. Also, if two sets of data are to be plotted using the same x-axis labels, start and
-    xtoffset can be changed so that the two sets of data share the same labels.
+    Start and xtoffset can be changed to provide the appropriate spacing for 
+    the data points along the x-axis. Also, if two sets of data are to be 
+    plotted using the same x-axis labels, start and xtoffset can be changed 
+    so that the two sets of data share the same labels.
     """
 
     i = keylist
@@ -684,7 +699,8 @@ def plot_phase_freq(dictdata, title, ymin=0, ylim=8, datac='b', meanc='r', bcolo
             #t.set_fontsize('medium')
 
 
-def plot_phase_freq_oneplot(dictdata, keys, title, markersize, ymin=0, ylim=8, datac='b', meanc='r', bcolor='k', withleg='no'):
+def plot_phase_freq_oneplot(dictdata, keys, title, markersize, ymin=0, ylim=8, datac='b', meanc='r', bcolor='k', 
+        withleg='no'):
 
     colors = ['r', 'b', 'g', 'y', 'k']
     plt.suptitle(title, fontsize='x-large' )
@@ -718,7 +734,8 @@ def plot_phase_freq_oneplot(dictdata, keys, title, markersize, ymin=0, ylim=8, d
 
 
 def gendictgc(fname):
-    # Returns three dictionaries, one containing data for the peak deltaf/f, one for the area of the response, and one for the duration of the response.
+    # Returns three dictionaries, one containing data for the peak deltaf/f, one for the area of the response, 
+    # and one for the duration of the response.
 
     peakd = {}
     aread = {}
@@ -728,7 +745,8 @@ def gendictgc(fname):
         f.next()
         for l in f:
             movie, tastant, fps, zmotion, neurons, peak, area, dur, dfthreshold = map(str.strip, l.split(','))
-            fps, zmotion, neurons, peak, area, dur, dfthreshold = map(float, [fps, zmotion, neurons, peak, area, dur, dfthreshold])
+            fps, zmotion, neurons, peak, area, dur, dfthreshold = map(float, [fps, zmotion, neurons, peak, area, dur, 
+            dfthreshold])
 
             ds = zip([peakd, aread, durd], [peak, area, dur])
             for d in ds:
