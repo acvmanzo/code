@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-# Executable function for plotting a four-panel figure with the aggression data showing frequency of different aggressive behaviors.
+# Executable function for plotting a four-panel figure with the aggression data showing frequency
+# of different aggressive behaviors.
 
 import os
 import sys

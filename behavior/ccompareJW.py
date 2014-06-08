@@ -20,17 +20,25 @@ def reformatJW():
                 f.next()
                 for l in f:
                     print repr(l)
-                    genotype, f_copsuc_mean, f_copsuc_sem, f_we_mean, f_we_sem, f_copatt1_mean, f_copatt1_sem, l_copsuc_mean, l_copsuc_sem, l_we_mean, l_we_sem, l_copatt1_mean, l_copatt1_sem = l.strip('\r\n').split(',')
+                    genotype, f_copsuc_mean, f_copsuc_sem, f_we_mean, f_we_sem, f_copatt1_mean, 
+                    f_copatt1_sem, l_copsuc_mean, l_copsuc_sem, l_we_mean, l_we_sem, 
+                    l_copatt1_mean, l_copatt1_sem = l.strip('\r\n').split(',')
 
                     genotype = genotype + '-JW'
 
-                    g.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'we', 100*float(f_we_mean), 'x', 'x', 100*float(f_we_sem)))
-                    g.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copatt1', 100*float(f_copatt1_mean), 'x', 'x', 100*float(f_copatt1_sem)))
-                    g.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copsuc', 100*float(f_copsuc_mean), 'x', 'x', 100*float(f_copsuc_sem)))
+                    g.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'we', 
+                        100*float(f_we_mean), 'x', 'x', 100*float(f_we_sem)))
+                    g.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copatt1', 
+                        100*float(f_copatt1_mean), 'x', 'x', 100*float(f_copatt1_sem)))
+                    g.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copsuc', 
+                        100*float(f_copsuc_mean), 'x', 'x', 100*float(f_copsuc_sem)))
 
-                    h.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'we', l_we_mean, 'x', l_we_sem, 'x'))
-                    h.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copatt1', l_copatt1_mean, 'x', l_copatt1_sem, 'x'))
-                    h.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copsuc', l_copsuc_mean, 'x', l_copsuc_sem, 'x'))
+                    h.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'we', l_we_mean, 
+                        'x', l_we_sem, 'x'))
+                    h.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copatt1', 
+                        l_copatt1_mean, 'x', l_copatt1_sem, 'x'))
+                    h.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n'.format(genotype, 'copsuc', 
+                        l_copsuc_mean, 'x', l_copsuc_sem, 'x'))
              
 
 
@@ -83,7 +91,9 @@ def plotdata(dlat, dprop):
 
     SUBPLOTNS1 = [[231, 232, 233], [234, 235, 236]]
     YLIMS1 = [[100, 400, 400], [150, 150, 150]]
-    TITLES1 = [['Latency to\nwing extension', 'Latency to\nfirst copulation attempt', 'Latency to\ncopulation'], ['% flies displaying\nwing extension', '% flies\nattempting copulation', '% flies copulating']]
+    TITLES1 = [['Latency to\nwing extension', 'Latency to\nfirst copulation attempt', 
+        'Latency to\ncopulation'], ['% flies displaying\nwing extension', 
+        '% flies\nattempting copulation', '% flies copulating']]
     YLABEL = ['Latency (s)', '%']
     #FIGNAME = 'courtship_comparison_JW_AM_latency.png'
 
@@ -91,7 +101,8 @@ def plotdata(dlat, dprop):
     fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
     edgecolor='k')
 
-    keylist = ['cs-JW', 'cs', 'cg30116-JW', 'cg30116', 'fz-JW', 'fz', 'syx-JW', 'syx', 'tou-JW', 'tou']
+    keylist = ['cs-JW', 'cs', 'cg30116-JW', 'cg30116', 'fz-JW', 'fz', 'syx-JW', 'syx', 'tou-JW',
+            'tou']
     behlist = ['we', 'copatt1', 'copsuc']
 
     fontsz = 12

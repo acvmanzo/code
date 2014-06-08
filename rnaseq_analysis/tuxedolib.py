@@ -25,7 +25,8 @@ def get_berkid_info(conn, berkidlist, infotable, colquery):
     cur = conn.cursor()
     berkid_dict = {}
     for bid in berkidlist:
-        query = "SELECT {} FROM {} WHERE berkid = '{}'".format(', '.join(colquery), infotable, bid)
+        query = "SELECT {} FROM {} WHERE berkid = '{}'".format(', '.join(colquery), 
+                infotable, bid)
         cur.execute(query)
         berkid_dict[bid] = cur.fetchall()[0]
     cur.close()
@@ -129,7 +130,8 @@ def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
     fastafile = name of the combined, unzipped fasta file containing reads
     tophatcmd_file = name of the file where the tophat command is written
     '''
-    tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
+    tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir, gff_file, 
+            btindex, fastafile)
     logging.info('%s', tophatcmd)
     os.system(tophatcmd)
     with open(tophatcmd_file, 'w') as f:
@@ -140,14 +142,17 @@ def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinks
     '''Runs cufflinks from the command line with the indicated options and writes the command
     used into a file.
     Inputs:
-    mitogff_file: gff file containing mitochondrial genome annotations for use with masking in cufflinks
-    gff_file: gff file used when cufflinks quanitifies transcript expression using a reference genome
+    mitogff_file: gff file containing mitochondrial genome annotations for use with masking in 
+    cufflinks
+    gff_file: gff file used when cufflinks quanitifies transcript expression using a reference 
+    genome
     bam_file: bam file with the alignment information; output by tophat
     cufflinkslog_file: file into which the stdout of the cufflinks command will be written
     cufflinkscmd_file: file into which the cufflinks command is written
     '''
 
-    cufflinkscmd = 'cufflinks -o cufflinks_out -p 8 -M {} -G {} -u {} >& {}'.format(mitogff_file, gff_file, bam_file, cufflinkslog_file)
+    cufflinkscmd = 'cufflinks -o cufflinks_out -p 8 -M {} -G {} -u {} >& {}'.format(mitogff_file, 
+            gff_file, bam_file, cufflinkslog_file)
     logging.info('%s', cufflinkscmd)
     with open(cufflinkscmd_file, 'w') as f:
         f.write(cufflinkscmd)
@@ -166,7 +171,8 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_
         tophatcmd_file = file containing the tophat command used
         bam_file = name of bamfile output by the tophat program
         cufflinks_dir = directory for cufflinks results
-        cufflinkslog_file = file containing info about cufflinks program (writes stdout to this file)
+        cufflinkslog_file = file containing info about cufflinks program (writes stdout to this 
+        file)
         cufflinkscmd_file = file containing the cufflinks command used
         gff_file = name of genome gff file for use wtih tophat and cufflinks 
         mitogff_file = name of mitochondriol gff file for use in masking during cufflinks
@@ -196,26 +202,30 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_
     if os.path.exists(d['cufflinks_dir']):
         logging.warning('cufflinks directory exists')
     else:
-        run_cufflinks(d['mitogff_file'], d['gff_file'], d['bam_file'], d['cufflinkslog_file'], d['cufflinkscmd_file']) 
+        run_cufflinks(d['mitogff_file'], d['gff_file'], d['bam_file'], d['cufflinkslog_file'], 
+                d['cufflinkscmd_file']) 
     
 
 def seqdir_run_tophat_cufflinks(dir_info, tophat_cufflinks_info):
     '''Runs tophat and cufflinks on multiple samples organized in the following manner:
-    main seqdir > sequence batch folder (date) > sequence subdirectory (sequences/) > sample folder
+    main seqdir > sequence batch folder (date) > sequence subdirectory (sequences/) > sample 
+    folder
     Inputs:
     dir_info: List containing the following variables:
         seqdir = directory that contains all the sequence files; I have divided the 
         sequence files into 'sequence batch' folders based on the date that they were sent to be 
-        sequenced. Each 'sequence batch' folder contains multiple 'sample folders' that contains the
-        sequences for that sample.
+        sequenced. Each 'sequence batch' folder contains multiple 'sample folders' that contains 
+        the sequences for that sample.
         seq_subdir = directory that contains the compressed sequence files in each sample folder
-        results_dir = directory that will contain all the aligning and expression results for each sample
+        results_dir = directory that will contain all the aligning and expression results for 
+        each sample
         seqbatchglob = string that is unique to names of sequence batch folders
         sampleglob = string that is unique to names of sample folders
     tophat_cufflinks_info: List containing the variables needed for the run_tophat_cufflinks()
     '''
     d = dir_info
-    seqbatchdirs = get_dirs(d['seq_dir'], d['seqbatchglob']) # Finds all the sequence batch folders.
+    seqbatchdirs = get_dirs(d['seq_dir'], d['seqbatchglob']) # Finds all the sequence batch 
+    # folders.
     logging.info('Sequence batch directories %s', seqbatchdirs)
     for sbd in seqbatchdirs:
         try:

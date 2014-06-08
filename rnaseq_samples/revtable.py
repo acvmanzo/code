@@ -278,7 +278,8 @@ def add_bioanalyzer_attachment(oldtable, newtable):
                 try:
                     datesent = elist[11].split('|')[1].replace('-', '').rstrip(']] ')
                     print datesent
-                    bioanalyzerlink = '[[attachment:RNASeq-Autism-BioanalyzerResults/{0}_{1}.pdf|ok]]'.format(datesent, blabel)
+                    bioanalyzerlink = '[[attachment:RNASeq-Autism-BioanalyzerResults/{0}_{1}.pdf|ok]]'.format(datesent, 
+                            blabel)
                     print bioanalyzerlink
                     elist[10] = bioanalyzerlink
                     

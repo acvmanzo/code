@@ -56,8 +56,9 @@ def agline2(line):
     y.extend(movieparse)
     
     
-    x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
-    'agtype', 'agcomm', 'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 'gen', 'date', 'assay', 'fps', 'flyid', 'side', 'moviepart']
+    x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 'agtype', 'agcomm', 
+            'escmin', 'escsec', 'escdur', 'esctype', 'escbeh', 'gen', 'date', 'assay', 'fps', 
+            'flyid', 'side', 'moviepart']
     
     z = zip(x, y)
 
@@ -80,7 +81,8 @@ def defbehaviors():
 
 
 def agfreqcmd(kind, blist, genlist):
-    '''Helper function used in dictagfreq2() that appends values to a list depending on whether a specific behavior has occurred.
+    '''Helper function used in dictagfreq2() that appends values to a list depending on whether 
+    a specific behavior has occurred.
 
     Input:
     kind = kind of behavior
@@ -167,13 +169,16 @@ def agdurcmd(kind, blist, durlist, genlist):
         
 
 def agnumcmd(kind, blist, genlist, allorex):
-    '''Helper function used in dictagnum() that appends values to a list depending on whether a specific behavior has occurred.
+    '''Helper function used in dictagnum() that appends values to a list depending on whether a 
+    specific behavior has occurred.
 
     Input:
     kind = kind of behavior
     blist = list of behaviors
-    genlist = list of occurrences of each behavior; if a behavior has occurred, genlist is extended
-    allorex = 'all' or 'ex'. If 'all', then flies that do not exhibit a behavior are given a value of 0. If 'ex', then flies that do not exhibit a behavior are excluded from the analysis.
+    genlist = list of occurrences of each behavior; if a behavior has occurred, genlist is 
+    extended
+    allorex = 'all' or 'ex'. If 'all', then flies that do not exhibit a behavior are given a 
+    value of 0. If 'ex', then flies that do not exhibit a behavior are excluded from the analysis.
 
 
     '''
@@ -258,7 +263,9 @@ def dictagnum(kind, fname, allorex):
     Input:
     kind = behavioral category
     fname = file with raw data
-    allorex = 'all' or 'ex'. If 'all', then flies that do not exhibit a behavior are given a value of 0. If 'ex', then flies that do not exhibit a behavior are excluded from the analysis.
+    allorex = 'all' or 'ex'. If 'all', then flies that do not exhibit a behavior are given 
+    a value of 0. If 'ex', then flies that do not exhibit a behavior are excluded from the 
+    analysis.
     """
 
     #x = ['movie', 'moviecode', 'offset', 'well', 'agmin', 'agsec', 'agdur', 
@@ -1218,7 +1225,8 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
         
     # Generate coordinate and pvalue lists.
     
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummedall' or metric == 'agnummedex' or metric == 'agdurmed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' \ 
+    or metric == 'agnummedall' or metric == 'agnummedex' or metric == 'agdurmed':
         for k in keylist:
             if not d[k]:
                 continue
@@ -1263,7 +1271,8 @@ def loadplotdata(metric, kind, fname, ctrlkey, binconf, keyfile):
 
 def plotbdata(metric, vals, x_list, sterr, truebarw, lw, lowerci, upperci):
 
-    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' or metric == 'agnummedall' or metric == 'agnummedex' or metric == 'agdurmed':
+    if metric == 'aglatmed' or metric == 'aglatmed' or metric == 'clatmed' \ 
+    or metric == 'agnummedall' or metric == 'agnummedex' or metric == 'agdurmed':
     #Plots the box and whisker plot.
         bp = plt.boxplot(vals, positions=x_list, sym='')
         pylab.setp(bp['boxes'], color='black')
