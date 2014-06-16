@@ -49,6 +49,7 @@ def copy_to_dbtable(berkid_fpkm_path, dbtable, cur):
     by add_berkid() into the sql table dbtable using the cursor cur.
     '''
     #print(berkid_fpkm_p_ath)
+    print(os.getcwd())
     with open(berkid_fpkm_path, 'r') as f:
         info = next(f)
     berkid = info.strip('\n').split('\t')[-1]
