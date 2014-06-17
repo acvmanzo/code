@@ -50,8 +50,8 @@ def add_htseq_counts(htseqfile):
     with open(htseqfile, 'r') as f:
         for l in f:
             gene, count = l.split('\t')
-            if '__' in gene:
-                continue
+            #if '__' in gene:
+                #continue
             counts += int(count)
     print(counts)
 
@@ -198,6 +198,6 @@ EXPTLIST = ['CG34127_M', 'en_M', 'NrxI_M', 'Betaintnu_M', 'Nhe3_M', 'NrxIV_M', '
 #conn.close()
 
 #batch_edger_pairwise_DE(EXPTLIST, CTRL)
-groups_edger_DE()
-#add_htseq_counts('htseq_count_results_bam2')
+#groups_edger_DE()
+add_htseq_counts('htseq_count_results_bam2')
 
