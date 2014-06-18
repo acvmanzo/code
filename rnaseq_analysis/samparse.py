@@ -1,6 +1,9 @@
 
 #SAMFILE = 'accepted_hits_2_short.sam'
 SAMFILE = 'accepted_hits_2.sam'
+NH1FILE = 'nh=1.txt'
+NHMFILE = 'nhm1.txt'
+LOWMQFILE = 'lowmq.txt'
 
 def parse_nh():
     
@@ -11,8 +14,12 @@ def parse_nh():
             nhval = int(l[l.find('NH:i:')+5])
             if nhval > 1:
                 multi_align += 1
+                with open(NHMFILE, 'a') as g:
+                    g.write(l)
             if nhval == 1:
                 uniq_align += 1
+                #with open(NH1FILE, 'a') as g:
+                    #g.write(l)
 
     print('unique', uniq_align)
     print('multi', multi_align)
@@ -24,6 +31,8 @@ def parse_mapq():
             mapq = int(l.split('\t')[4])
             if mapq < 10:
                 low_qual_reads +=1
+                with open(LOWMQFILE, 'a') as g:
+                    g.write(l)
     print('low quality reads', low_qual_reads)
 
 
@@ -46,7 +55,7 @@ def parse_nh_mapq():
 
 
 def main():
-    parse_nh_mapq()
+    parse_mapq()
 
 if __name__ == '__main__':
    main() 

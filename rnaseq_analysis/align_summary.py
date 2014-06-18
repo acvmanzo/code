@@ -1,3 +1,7 @@
+# Script with functions to that extract alignment statistics for each sample 
+# and saves them to a file. Have functions to extract statistics for clc and
+# tophat alignments.
+
 import csv
 import rnaseqdirlib as rdl
 import psycopg2
@@ -8,7 +12,8 @@ TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
 CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
 TOPHAT_DIR = 'tophat_out'
 SUMM_FILE = 'align_summary.txt'
-ALL_SUMM_FILE = 'all_align_summary.txt'
+CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
+TH_ALL_SUMM_FILE = 'tophat_all_align_summary.txt'
 
 
 
@@ -102,9 +107,25 @@ def write_summ_file(all_summ_file, d, berkid, sample):
         d['pmapped'] = d['mapped']/d['input_reads']*100
 
         with open (all_summ_file, 'a') as g:
-            g.write('{}\t{}\t{:,}\t{:,}\t{:.1f}\t{:,}\t{:.1f}\n'.format(berkid,
+            g.write('{}\t{}\t{:}\t{:}\t{:.1f}\t{:}\t{:.1f}\n'.format(berkid,
                 sample, d['input_reads'], d['mapped'], d['pmapped'], 
                 d['multireads'], d['pmulti']))
-    
+
+
+def add_aligner_col(all_summ_file, aligner):
+
+    new_all_summ_file = all_summ_file.rstrip('.txt') + 'withal.txt'
+
+    with open(new_all_summ_file, 'w') as g:
+        with open(all_summ_file, 'r') as f:
+            #g.write(next(f).strip('\n') + '\tAligner\n')
+            next(f)
+            for l in f:
+                g.write(l.replace(',', '').rstrip('\n') + '\t{}\n'.format(aligner))
+
+
+
+                
 if __name__ == '__main__':
-    batch_align_summ_clc(CLC_ALIGN_DIR, ALL_SUMM_FILE)
+    #add_aligner_col(CLC_ALL_SUMM_FILE, 'clc')
+    add_aligner_col(TH_ALL_SUMM_FILE, 'tophat')
