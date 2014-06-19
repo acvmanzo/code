@@ -6,5 +6,6 @@
 *.jpg
 *.backup
 *.current
-*.old
+*.old*
+
 wingdet/wingdet.lyx

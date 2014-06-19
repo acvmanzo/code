@@ -6,6 +6,7 @@ import os
 import psycopg2
 import glob
 import sys
+import de_settings
 
 
 "htseq-count -f bam -s no -t gene -i Name accepted_hits.bam /home/andrea/rnaseqanalyze/references/dmel-all-filtered-r5.57-nofa.gff > htseq_count_results_bam2"
@@ -62,65 +63,6 @@ def get_cufflink_path(berkid, exp_results_dir, exp_dir, berkid_fpkm_file):
         exp_dir, berkid_fpkm_file))
 
 
-def get_count_paths(berkids):
-    paths = []
-    for berkid in berkids:
-        paths.append(rdl.get_cufflink_path(berkid, ALIGN_DIR, TOPHAT_DIR,
-            COUNTFILE))
-    return(paths)
-
-def get_metadata(conn, condlist, sample_infotable):
-    cur = conn.cursor()
-    berkids = []
-    samples = []
-    for cond in condlist:
-        berkids.extend(rdl.get_replicate_berkid_dict(cur, cond, sample_infotable))
-    cur.close()
-    cur = conn.cursor()
-    for b in berkids:
-        samples.append(rdl.get_samplename(b, cur))
-    cur.close()
-    paths = get_count_paths(berkids)
-    return(zip(berkids, samples, paths))
-    
-def write_metadata(metadatafile, condlist, sample_infotable, controllist):
-
-    conn = psycopg2.connect("dbname=rnaseq user=andrea")
-    items = get_metadata(conn, condlist, sample_infotable) 
-    with open(metadatafile, 'w') as f:
-        f.write('Sample\tBerkid\tCorE\tHTSeqPath\n')
-        for berkid, sample, path in items:
-            if sample[:-1] in controllist:
-                core = 'ctrl'
-            else:
-                core = 'expt'
-            f.write('{}\t{}\t{}\t{}\n'.format(sample, berkid, core, path))
-    conn.close()
-
-def batch_edger_pairwise_DE(exptlist, ctrl):
-    for cond in exptlist:
-        os.chdir(EDGER_DIR)
-        condlist = [ctrl, cond]
-        print(condlist)
-        cmn.makenewdir(cond)
-        os.chdir(cond)
-        write_metadata(METADATAFILE, condlist, INFODBTABLE, [ctrl])
-        run_edger()
-
-def run_edger():
-        cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R'
-        os.system(cmd)
-
-
-def groups_edger_DE():
-
-    condstotest = ['CG34127_M', 'en_M', 'NrxI_M']
-    #controls = ['Betaintnu_M', 'Nhe3_M', 'NrxIV_M', 'pten_M', 'CS_M']
-    controls = ['CS_M']
-    conditions = condstotest + controls
-    
-    write_metadata(METADATAFILE, conditions, INFODBTABLE, controls)
-    run_edger()
 
 def count_add_berkid():
     if os.path.exists(COUNTFILE):
@@ -186,10 +128,6 @@ def join_table(cur, berkid, dbtable, gene_subset_table, newtable):
     
 
 
-COUNTFILE = 'htseqcount_prot_coding_genes'
-METADATAFILE = 'metadata.txt'
-CTRL = 'CS_M'
-EXPTLIST = ['CG34127_M', 'en_M', 'NrxI_M', 'Betaintnu_M', 'Nhe3_M', 'NrxIV_M', 'pten_M']
 
 #conn = psycopg2.connect("dbname=rnaseq user=andrea")
 ##batch_copy_to_dbtable(cur)
@@ -199,5 +137,5 @@ EXPTLIST = ['CG34127_M', 'en_M', 'NrxI_M', 'Betaintnu_M', 'Nhe3_M', 'NrxIV_M', '
 
 #batch_edger_pairwise_DE(EXPTLIST, CTRL)
 #groups_edger_DE()
-add_htseq_counts('htseq_count_results_bam2')
+#add_htseq_counts('htseq_count_results_bam2')
 

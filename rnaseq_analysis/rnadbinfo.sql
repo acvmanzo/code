@@ -220,4 +220,47 @@
 -- \copy aligninfo from '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat/tophat_all_align_summarywithal.txt';
 -- \copy aligninfo from '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results/clc_all_align_summarywithal.txt';
 
-\copy (select t0.berkid, t0.sample, t1.input as total_sequenced_reads, t0.mapped as clc_mapped, t1.mapped as th_mapped, t1.mapped-t0.mapped as diff_thmap_clcmap, t0.pmapped as clc_percent_mapped, t1.pmapped as th_percent_mapped, t0.mapped-t0.multimapped as clc_unique, (t0.mapped-t0.multimapped)/t1.input::float as clc_ratio_totalseq_unique, t1.mapped-t1.multimapped as th_unique, (t1.mapped-t1.multimapped)/t1.input::float as th_ratio_totalseq_unique from aligninfo as t0 inner join aligninfo as t1 using (berkid) where t0.aligner = 'clc' and t1.aligner = 'tophat' order by sample) to 'clc_tophat_mapping.csv' csv header;
+-- \copy (select t0.berkid, t0.sample, t1.input as total_sequenced_reads, t0.mapped as clc_mapped, t1.mapped as th_mapped, t1.mapped-t0.mapped as diff_thmap_clcmap, t0.pmapped as clc_percent_mapped, t1.pmapped as th_percent_mapped, t0.mapped-t0.multimapped as clc_unique, (t0.mapped-t0.multimapped)/t1.input::float as clc_ratio_totalseq_unique, t1.mapped-t1.multimapped as th_unique, (t1.mapped-t1.multimapped)/t1.input::float as th_ratio_totalseq_unique from aligninfo as t0 inner join aligninfo as t1 using (berkid) where t0.aligner = 'clc' and t1.aligner = 'tophat' order by sample) to 'clc_tophat_mapping.csv' csv header;
+
+
+-- Creates a table for the DE gene data.
+-- DROP TABLE degenes;
+-- CREATE TABLE degenes (
+    -- gene varchar(100),
+    -- logfc double precision,
+    -- logcpm double precision,
+    -- pvalue double precision, 
+    -- fdr double precision,
+    -- tool varchar(40),
+    -- group1 varchar(50),
+    -- group2 varchar(50),
+    -- UNIQUE (gene, group1, group2)
+-- );
+
+-- \copy (select * from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05.csv' csv header;
+-- \copy (select * from degenes where group1 = 'CG34127_M' and group2 = 'CS_M' and fdr < 0.05) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/CG34127_M/toptags_edgeR_fdr05.csv' csv header;
+
+
+-- select t0.gene, t0.group1, 2^t0.logfc as foldchange, t1.group1, 2^t1.logfc as foldchange
+-- select t0.gene
+    -- from degenes as t0 
+        -- inner join 
+        -- degenes as t1 
+        -- using (gene)
+        -- inner join
+        -- degenes as t2
+        -- using (gene) 
+        -- inner join
+        -- degenes as t3
+        -- using (gene) 
+    -- where 
+    -- t0.group1 = 'en_M' and t1.group1 = 'CG34127_M' and t2.group1 = 'NrxI_M' and t3.group1 = 'pten_M' and
+    -- t0.group1 = 'en_M' and t1.group1 = 'CG34127_M' and t2.group1 = 'NrxI_M' and t3.group1 = 'pten_M' and
+    -- t0.fdr < 0.05 and t1.fdr < 0.05 and t2.fdr < 0.05 and t3.fdr < 0.05
+    -- order by gene
+-- ;
+
+\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'CG34127_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/CG34127_M/toptags_edgeR_fdr05_fc.csv' csv header ;
+\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'en_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/en_M/toptags_edgeR_fdr05_fc.csv' csv header ;
+\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'NrxI_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/NrxI_M/toptags_edgeR_fdr05_fc.csv' csv header ;
+\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05_fc.csv' csv header ;
