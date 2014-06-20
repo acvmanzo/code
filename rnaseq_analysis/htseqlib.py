@@ -18,7 +18,7 @@ ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
 TOPHAT_DIR = 'tophat_out'
 EDGER_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/edgeR'
 
-GFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-all-filtered-r5.57-nofa.gff'
+GFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-filtered-r5.57-nofa.gff'
 ALIGN_FILE_BAM = 'accepted_hits.bam'
 INFOFILE = 'htseq.info'
 

@@ -22,9 +22,9 @@ CUFFLINKS_DIR = 'cufflinks_out'
 CUFFLINKSLOG_FILE = 'cufflinks.log'
 CUFFLINKSCMD_FILE = 'cufflinkscmd.txt'
 
-GFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-all-filtered-r5.57.gff'
-MITOGFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-dmel_mitochondrion_genome-r5.57.gff'
-BTINDEX = '/home/andrea/rnaseqanalyze/references/dmel-all-chromosome-r5.57'
+GFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-filtered-r5.57.gff'
+MITOGFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-dmel_mitochondrion_genome-r5.57.gff'
+BTINDEX = '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-chromosome-r5.57'
 
 DIR_INFO = {
 'seq_dir': SEQ_DIR,

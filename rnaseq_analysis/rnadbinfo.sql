@@ -240,7 +240,7 @@
 -- \copy (select * from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05.csv' csv header;
 -- \copy (select * from degenes where group1 = 'CG34127_M' and group2 = 'CS_M' and fdr < 0.05) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/CG34127_M/toptags_edgeR_fdr05.csv' csv header;
 
-
+-- Selects different combinations of the DE_genes data.
 -- select t0.gene, t0.group1, 2^t0.logfc as foldchange, t1.group1, 2^t1.logfc as foldchange
 -- select t0.gene
     -- from degenes as t0 
@@ -260,7 +260,47 @@
     -- order by gene
 -- ;
 
-\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'CG34127_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/CG34127_M/toptags_edgeR_fdr05_fc.csv' csv header ;
-\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'en_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/en_M/toptags_edgeR_fdr05_fc.csv' csv header ;
-\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'NrxI_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/NrxI_M/toptags_edgeR_fdr05_fc.csv' csv header ;
-\copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05_fc.csv' csv header ;
+-- \copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'CG34127_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/CG34127_M/toptags_edgeR_fdr05_fc.csv' csv header ;
+-- \copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'en_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/en_M/toptags_edgeR_fdr05_fc.csv' csv header ;
+-- \copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'NrxI_M' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/NrxI_M/toptags_edgeR_fdr05_fc.csv' csv header ;
+-- \copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05_fc.csv' csv header ;
+
+
+-- Creates a table to hold the list of genes from the specified gff file.
+-- CREATE TABLE gff_genes (
+    -- fbgn_ID varchar (20),
+    -- name_Name varchar (100),
+    -- gff_file varchar (50),
+    -- unique (fbgn_ID, name_Name, gff_file)
+-- );
+
+-- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_r5.50';
+-- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_r5.57';
+
+
+-- select count (*) from (
+-- -- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff'
+-- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff'
+-- -- )as foo;
+-- EXCEPT 
+-- -- select count (*) from (
+-- select t0.fbgn_ID, t0.name_Name 
+-- select *
+select t0.fbgn_ID
+from gff_genes as t0
+inner join
+gff_genes as t1
+-- using (fbgn_ID)
+using (name_Name)
+where t0.gff_file = 'dmel-all-filtered-r5.57.gff' AND t1.gff_file = 'dmel-all-r5.50.gff' AND 
+-- t0.name_Name != t1.name_Name
+t0.fbgn_ID != t1.fbgn_ID
+-- order by fbgn_ID
+order by name_Name
+-- ) as foo
+;
+
+-- select count (*) from (
+-- select distinct fbgn_ID from gff_genes where gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo
+-- ;
