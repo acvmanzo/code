@@ -286,21 +286,137 @@
 -- -- select count (*) from (
 -- select t0.fbgn_ID, t0.name_Name 
 -- select *
-select t0.fbgn_ID
-from gff_genes as t0
-inner join
-gff_genes as t1
--- using (fbgn_ID)
-using (name_Name)
-where t0.gff_file = 'dmel-all-filtered-r5.57.gff' AND t1.gff_file = 'dmel-all-r5.50.gff' AND 
--- t0.name_Name != t1.name_Name
-t0.fbgn_ID != t1.fbgn_ID
--- order by fbgn_ID
-order by name_Name
+-- select t0.fbgn_ID
+-- from gff_genes as t0
+-- inner join
+-- gff_genes as t1
+-- -- using (fbgn_ID)
+-- using (name_Name)
+-- where t0.gff_file = 'dmel-all-filtered-r5.57.gff' AND t1.gff_file = 'dmel-all-r5.50.gff' AND 
+-- -- t0.name_Name != t1.name_Name
+-- t0.fbgn_ID != t1.fbgn_ID
+-- -- order by fbgn_ID
+-- order by name_Name
 -- ) as foo
-;
+-- ;
 
 -- select count (*) from (
 -- select distinct fbgn_ID from gff_genes where gff_file = 'dmel-all-r5.50.gff'
 -- ) as foo
+-- ;
+
+
+-- Table containing info about fbgn and annotation IDs. Copies info from the 
+-- file output by fbgnconvert.py
+
+-- DROP TABLE fbgn_annot_ID;
+-- CREATE TABLE fbgn_annot_ID (
+    -- genesymbol varchar (100),
+    -- fbgn_primary varchar (20),
+    -- fbgn_secondary text[],
+    -- annotid_primary varchar (20),
+    -- annotid_secondary text[], 
+    -- unique (genesymbol, fbgn_primary, annotid_primary)
+-- );
+
+-- \copy fbgn_annot_ID from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/misc/fbgn_annotation_ID_fb_2014_03_fordb_braces.tsv';
+
+
+-- Creates a table gfftest which has the first 5 rows of the gff_genes table;
+-- used for testing joins, etc. with the fbgn_annot_ID table.
+-- DROP TABLE gfftest
+-- CREATE TABLE gfftest (
+    -- fbgn_id varchar (20),
+    -- name_name varchar (100),
+    -- gff_file varchar (50)
+    -- )
+-- INSERT into gfftest VALUES
+    -- ('FBgn0031208', 'CG11023', 'dmel-all-r5.50.gff'),
+    -- ('FBgn0002121', 'l(2)gl', 'dmel-all-r5.50.gff'),
+    -- ('FBgn0031209', 'Ir21a', 'dmel-all-r5.50.gff'),
+    -- ('FBgn0263584', 'CR43609', 'dmel-all-r5.50.gff'),
+    -- ('FBgn0051973', 'Cda5', 'dmel-all-r5.50.gff')
+    -- ;
+
+-- select count (*) from (
+-- select *
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- -- on t0.fbgn_ID = t1.fbgn_primary
+    -- on t0.fbgn_ID = ANY (t1.fbgn_secondary)
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+    -- order by t1.fbgn_primary
+-- ) as foo
+-- ;
+
+
+--- Lists the FBgns for entries that are in the gff_genes file but not in
+--- the 'fbgn_primary' field of the Flybase_annotation_ID file.
+-- select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff'
+-- EXCEPT
+-- select t0.fbgn_id
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- on t0.fbgn_ID = t1.fbgn_primary
+    -- where t0.gff_file = 'dmel-all-filtered-r5.57.gff'
+    -- -- order by t1.fbgn_primary
+-- ;
+
+--- Lists the FBgns and Names for entries that are in the gff_genes file but not in
+--- the Flybase_annotation_ID file (queried by FBgn primary ID and by secondary ID)
+-- select count (*) from (
+-- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff'
+-- EXCEPT
+-- select t0.fbgn_ID, t0.name_Name
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- on t0.fbgn_ID = t1.fbgn_primary
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+    -- -- order by t1.fbgn_primary
+-- -- ) as foo
+-- EXCEPT
+-- select t0.fbgn_ID, t0.name_Name
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- -- on t0.fbgn_ID = t1.fbgn_primary
+    -- on t0.fbgn_ID = ANY (t1.fbgn_secondary)
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+
+-- Copies the result of the above query into a file.
+-- \copy ( select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = t1.fbgn_primary where t0.gff_file = 'dmel-all-r5.50.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = ANY (t1.fbgn_secondary) where t0.gff_file = 'dmel-all-r5.50.gff') to '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/r5.50_ingff_notfbgn_annot_ID_fbgn_name.txt'
+
+-- \copy ( select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = t1.fbgn_primary where t0.gff_file = 'dmel-all-filtered-r5.57.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = ANY (t1.fbgn_secondary) where t0.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/r5.57_ingff_notfbgn_annot_ID_fbgn_name.txt'
+
+
+--- Lists the FBgns and names for entries that are in the gff_genes file but not in
+--- the Flybase_annotation_ID file (queried by Name) (query after second 
+--- EXCEPT statement is slow.
+-- select count (*) from (
+-- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff'
+-- EXCEPT
+-- select t0.fbgn_ID, t0.name_Name
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- on t0.name_Name = t1.annotid_primary
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+    -- -- order by t1.fbgn_primary
+-- -- ) as foo
+-- EXCEPT
+-- select t0.fbgn_ID, t0.name_Name
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- on t0.name_Name = ANY (t1.annotid_secondary)
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
 -- ;
