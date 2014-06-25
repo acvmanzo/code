@@ -16,7 +16,14 @@ R550_FBGN_NAME_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_r5.50')
 R550_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r5.50')
 
 def main():
-    get_fbgn_name_annid(R550_FNA_FILE, R550_GFF_FILE)
+    open(R550_FNA_FILE, 'w')
+    open(R557_FNA_FILE, 'w')
+    for og in [(R557_FNA_FILE, R557_GFF_FILE),
+           (R550_FNA_FILE, R550_GFF_FILE)]:
+        try:
+            get_fbgn_name_annid(og[0], og[1])
+        except ValueError:
+            continue
 
 def batch_fbgn_name():
     '''Applies get_fbgn_name to multiple gff files'''
