@@ -267,17 +267,21 @@
 
 
 -- Creates a table to hold the list of genes from the specified gff file.
+-- DROP TABLE gff_genes;
 -- CREATE TABLE gff_genes (
     -- fbgn_ID varchar (20),
     -- name_Name varchar (100),
+    -- annid varchar (100),
     -- gff_file varchar (50),
-    -- unique (fbgn_ID, name_Name, gff_file)
+    -- unique (fbgn_ID, name_Name, annid, gff_file)
 -- );
 
--- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_r5.50';
--- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_r5.57';
+-- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_annID_r5.50';
+-- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_annID_r5.57';
 
 
+-- QUERY TO LOOK FOR GENES THAT ARE THE SAME IN THE R5.57 AND R5.5 FILES;
+-- HOWEVER, PRIMARY FBGNS AND NAMES CHANGED BETWEEN THE TWO RELEASES
 -- select count (*) from (
 -- -- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff'
 -- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff'
@@ -306,8 +310,8 @@
 -- ;
 
 
--- Table containing info about fbgn and annotation IDs. Copies info from the 
--- file output by fbgnconvert.py
+-- TABLE CONTAINING INFO ABOUT FBGN AND ANNOTATION IDS. COPIES INFO FROM THE 
+-- FILE OUTPUT BY FBGNCONVERT.PY
 
 -- DROP TABLE fbgn_annot_ID;
 -- CREATE TABLE fbgn_annot_ID (
@@ -338,19 +342,6 @@
     -- ('FBgn0051973', 'Cda5', 'dmel-all-r5.50.gff')
     -- ;
 
--- select count (*) from (
--- select *
-    -- from 
-    -- gff_genes as t0
-    -- inner join
-    -- fbgn_annot_ID as t1
-    -- -- on t0.fbgn_ID = t1.fbgn_primary
-    -- on t0.fbgn_ID = ANY (t1.fbgn_secondary)
-    -- where t0.gff_file = 'dmel-all-r5.50.gff'
-    -- order by t1.fbgn_primary
--- ) as foo
--- ;
-
 
 --- Lists the FBgns for entries that are in the gff_genes file but not in
 --- the 'fbgn_primary' field of the Flybase_annotation_ID file.
@@ -366,12 +357,18 @@
     -- -- order by t1.fbgn_primary
 -- ;
 
---- Lists the FBgns and Names for entries that are in the gff_genes file but not in
---- the Flybase_annotation_ID file (queried by FBgn primary ID and by secondary ID)
+---- Lists the FBgns and Names for entries that are in the gff_genes file but not in
+---- the Flybase_annotation_ID file 
 -- select count (*) from (
--- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff'
+-- all genes in the gff file
+-- select fbgn_ID, name_Name, annid
+    -- from 
+    -- gff_genes 
+    -- where gff_file = 'dmel-all-r5.50.gff'
 -- EXCEPT
--- select t0.fbgn_ID, t0.name_Name
+-- -- subtract genes that are in the fbgn_annot table that have matching primary 
+-- -- FBGNs.
+-- select t0.fbgn_ID, t0.name_Name, t0.annid
     -- from 
     -- gff_genes as t0
     -- inner join
@@ -381,7 +378,9 @@
     -- -- order by t1.fbgn_primary
 -- -- ) as foo
 -- EXCEPT
--- select t0.fbgn_ID, t0.name_Name
+-- -- subtract genes that are in the fbgn_annot table whose FBGNs are in the
+-- -- secondary FBGN list
+-- select t0.fbgn_ID, t0.name_Name, t0.annid
     -- from 
     -- gff_genes as t0
     -- inner join
@@ -389,34 +388,127 @@
     -- -- on t0.fbgn_ID = t1.fbgn_primary
     -- on t0.fbgn_ID = ANY (t1.fbgn_secondary)
     -- where t0.gff_file = 'dmel-all-r5.50.gff'
+-- EXCEPT
+-- -- subtract genes that are in the fbgn_annot table where the primary 
+-- -- annotation ID match
+-- select t0.fbgn_ID, t0.name_Name, t0.annid
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- on t0.annid = t1.annotid_primary
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+-- EXCEPT
+-- -- subtract genes that are in the fbgn_annot table where the annotation ID 
+-- -- matches a secondary annotation
+-- select t0.fbgn_ID, t0.name_Name, t0.annid
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- -- on t0.fbgn_ID = t1.fbgn_primary
+    -- on t0.annid = ANY (t1.annotid_secondary)
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+    -- ;
 
 -- Copies the result of the above query into a file.
--- \copy ( select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = t1.fbgn_primary where t0.gff_file = 'dmel-all-r5.50.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = ANY (t1.fbgn_secondary) where t0.gff_file = 'dmel-all-r5.50.gff') to '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/r5.50_ingff_notfbgn_annot_ID_fbgn_name.txt'
 
+-- (DOES NOT INCLUDE THE ANNOTATION QUERYING)
+-- \copy ( select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = t1.fbgn_primary where t0.gff_file = 'dmel-all-r5.50.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = ANY (t1.fbgn_secondary) where t0.gff_file = 'dmel-all-r5.50.gff') to '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/r5.50_ingff_notfbgn_annot_ID_fbgn_name.txt'
 -- \copy ( select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = t1.fbgn_primary where t0.gff_file = 'dmel-all-filtered-r5.57.gff' EXCEPT select t0.fbgn_ID, t0.name_Name from gff_genes as t0 inner join fbgn_annot_ID as t1 on t0.fbgn_ID = ANY (t1.fbgn_secondary) where t0.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/r5.57_ingff_notfbgn_annot_ID_fbgn_name.txt'
 
+-- Creates a table with info about homologs of genes in various databases.
+-- DROP TABLE homologs;
+-- CREATE TABLE homologs (
+    -- searchterm varchar (50),
+    -- humangeneid int,
+    -- hgncid varchar (20),
+    -- human_sym varchar (100),
+    -- flygeneid int,
+    -- fbgn varchar (20),
+    -- fly_sym varchar (100),
+    -- diopt_score int,
+    -- weighted_score real,
+    -- prediction_db text[],
+    -- gene_source varchar (20),
+    -- unique (searchterm, human_sym, fbgn, fly_sym, gene_source)
+-- );
 
---- Lists the FBgns and names for entries that are in the gff_genes file but not in
---- the Flybase_annotation_ID file (queried by Name) (query after second 
---- EXCEPT statement is slow.
+-- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/sfari/autism_sfari_list_diopt_filtered.txt'
+-- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/autkb/all_entrezid_unique_diopt_filtered.txt'
+
+
+-- Check if the homologs of the genes in the SFARI database are in the CLC 
+-- r5.50 gff files.
+
+    
+-- -- genes in gff that are in the fbgn_annot table that have matching primary 
+-- -- FBGNs.
+select count (*) from (
+select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    from 
+    gff_genes as t0
+    inner join
+    fbgn_annot_ID as t1
+    on t0.fbgn_ID = t1.fbgn_primary
+    where t0.gff_file = 'dmel-all-r5.50.gff'
+    -- order by t1.fbgn_primary
+-- ) as foo;
+UNION
+-- -- genes in gff that are in the fbgn_annot table whose FBGNs are in the
+-- -- secondary FBGN list
 -- select count (*) from (
--- select fbgn_ID, name_Name from gff_genes where gff_file = 'dmel-all-r5.50.gff'
--- EXCEPT
--- select t0.fbgn_ID, t0.name_Name
-    -- from 
-    -- gff_genes as t0
-    -- inner join
-    -- fbgn_annot_ID as t1
-    -- on t0.name_Name = t1.annotid_primary
-    -- where t0.gff_file = 'dmel-all-r5.50.gff'
-    -- -- order by t1.fbgn_primary
--- -- ) as foo
--- EXCEPT
--- select t0.fbgn_ID, t0.name_Name
-    -- from 
-    -- gff_genes as t0
-    -- inner join
-    -- fbgn_annot_ID as t1
-    -- on t0.name_Name = ANY (t1.annotid_secondary)
-    -- where t0.gff_file = 'dmel-all-r5.50.gff'
--- ;
+select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    from 
+    gff_genes as t0
+    inner join
+    fbgn_annot_ID as t1
+    on t0.fbgn_ID = ANY (t1.fbgn_secondary)
+    where t0.gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo;
+UNION 
+-- -- genes in gff that are in the fbgn_annot table where the primary 
+-- -- annotation ID match
+-- select count (*) from (
+select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    from 
+    gff_genes as t0
+    inner join
+    fbgn_annot_ID as t1
+    on t0.annid = t1.annotid_primary
+    where t0.gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo;
+UNION
+-- -- genes in gff that are in the fbgn_annot table where the annotation ID 
+-- -- matches a secondary annotation
+-- select count (*) from (
+select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    from 
+    gff_genes as t0
+    inner join
+    fbgn_annot_ID as t1
+    -- on t0.fbgn_ID = t1.fbgn_primary
+    on t0.annid = ANY (t1.annotid_secondary)
+    where t0.gff_file = 'dmel-all-r5.50.gff'
+) as foo;
+
+ -- count 
+-- -------
+ -- 15880
+-- (1 row)
+
+ -- count 
+-- -------
+   -- 151
+-- (1 row)
+
+ -- count 
+-- -------
+ -- 15893
+-- (1 row)
+
+ -- count 
+-- -------
+   -- 450
+-- (1 row)
+

@@ -7,7 +7,7 @@ fbgn_file = '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/m
 with open(fbgn_file.rstrip('.tsv') + '_braces.tsv', 'w') as g:
     with open(fbgn_file, 'r') as f:
         for l in f:
-            llist = l.strip('\n').split('\t')
+            llist = l.rstrip('\n').split('\t')
             llist[2] = '{'+llist[2]+'}'
             llist[4] = '{'+llist[4]+'}'
             #newline = '{}\t{}\t{{}}\t{}\t{{}}\n'.format(llist[0], llist[1],
