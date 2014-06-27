@@ -444,53 +444,53 @@
     
 -- -- genes in gff that are in the fbgn_annot table that have matching primary 
 -- -- FBGNs.
-select count (*) from (
-select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
-    from 
-    gff_genes as t0
-    inner join
-    fbgn_annot_ID as t1
-    on t0.fbgn_ID = t1.fbgn_primary
-    where t0.gff_file = 'dmel-all-r5.50.gff'
-    -- order by t1.fbgn_primary
--- ) as foo;
-UNION
--- -- genes in gff that are in the fbgn_annot table whose FBGNs are in the
--- -- secondary FBGN list
 -- select count (*) from (
-select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
-    from 
-    gff_genes as t0
-    inner join
-    fbgn_annot_ID as t1
-    on t0.fbgn_ID = ANY (t1.fbgn_secondary)
-    where t0.gff_file = 'dmel-all-r5.50.gff'
--- ) as foo;
-UNION 
--- -- genes in gff that are in the fbgn_annot table where the primary 
--- -- annotation ID match
--- select count (*) from (
-select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
-    from 
-    gff_genes as t0
-    inner join
-    fbgn_annot_ID as t1
-    on t0.annid = t1.annotid_primary
-    where t0.gff_file = 'dmel-all-r5.50.gff'
--- ) as foo;
-UNION
--- -- genes in gff that are in the fbgn_annot table where the annotation ID 
--- -- matches a secondary annotation
--- select count (*) from (
-select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
-    from 
-    gff_genes as t0
-    inner join
-    fbgn_annot_ID as t1
+-- select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
     -- on t0.fbgn_ID = t1.fbgn_primary
-    on t0.annid = ANY (t1.annotid_secondary)
-    where t0.gff_file = 'dmel-all-r5.50.gff'
-) as foo;
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+    -- -- order by t1.fbgn_primary
+-- -- ) as foo;
+-- UNION
+-- -- -- genes in gff that are in the fbgn_annot table whose FBGNs are in the
+-- -- -- secondary FBGN list
+-- -- select count (*) from (
+-- select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- on t0.fbgn_ID = ANY (t1.fbgn_secondary)
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+-- -- ) as foo;
+-- UNION 
+-- -- -- genes in gff that are in the fbgn_annot table where the primary 
+-- -- -- annotation ID match
+-- -- select count (*) from (
+-- select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- on t0.annid = t1.annotid_primary
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+-- -- ) as foo;
+-- UNION
+-- -- -- genes in gff that are in the fbgn_annot table where the annotation ID 
+-- -- -- matches a secondary annotation
+-- -- select count (*) from (
+-- select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
+    -- from 
+    -- gff_genes as t0
+    -- inner join
+    -- fbgn_annot_ID as t1
+    -- -- on t0.fbgn_ID = t1.fbgn_primary
+    -- on t0.annid = ANY (t1.annotid_secondary)
+    -- where t0.gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo;
 
  -- count 
 -- -------
@@ -511,4 +511,26 @@ select t1.fbgn_primary, t0.fbgn_ID, t0.name_Name, t0.annid
 -- -------
    -- 450
 -- (1 row)
+
+-- select count (*) from (
+-- select fbgn, fly_sym
+-- from homologs where gene_source = 'sfari'
+-- EXCEPT
+-- select fbgn, fly_sym
+-- from homologs
+-- where gene_source = 'autkb'
+-- order by fly_sym
+-- ) as foo
+;
+
+-- select count (*) from (
+    -- select distinct t0.fbgn, t0.fly_sym 
+    -- from homologs as t0
+    -- inner join
+    -- homologs as t1
+    -- using (fbgn)
+    -- where t0.gene_source = 'sfari' and t1.gene_source = 'autkb'
+-- ) as foo
+    -- ;
+
 
