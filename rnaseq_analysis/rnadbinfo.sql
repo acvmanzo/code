@@ -534,3 +534,204 @@
     -- ;
 
 
+-- TABLE CONTAINING INFO ABOUT FBGN. Second column has all 
+-- the primary and secondary fbgns and the first column has the primary fbgns.
+-- COPIES INFO FROM THE FILE OUTPUT BY FBGNCONVERT.PY
+-- DROP TABLE all_fbgns;
+-- CREATE TABLE all_fbgns (
+    -- pfbgn varchar (20),
+    -- psfbgn varchar (20),
+    -- gene_sym varchar (100),
+    -- unique (pfbgn, psfbgn)
+-- );
+-- \copy all_fbgns from '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/fbgn_annotation_ID_fb_2014_03_fordb_2fbgn.tsv' ;
+
+
+-- As above, but with annotation IDs.
+-- DROP TABLE all_annids;
+-- CREATE TABLE all_annids (
+    -- pannid varchar (50),
+    -- psannid varchar (50),
+    -- gene_sym varchar (100),
+    -- unique (pannid, psannid)
+-- );
+-- \copy all_annids from '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/fbgn_annotation_ID_fb_2014_03_fordb_2annid.tsv' ;
+
+-- Determining if all the genes in the gff_file is in all_fbgns. All but
+-- 19 genes show up, as before, but searching through the all_fbgns table
+-- is much faster.
+
+-- select count (*) from gff_genes where gff_file = 'dmel-all-r5.50.gff';
+-- select count (*) from (
+-- select pfbgn
+-- from all_fbgns
+-- inner join
+-- gff_genes
+-- on (psfbgn = fbgn_id)
+-- where gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo
+-- ;
+
+-- As above, but also searching with gene symbols. Not as specific.
+-- select fbgn_id, name_name from gff_genes where gff_file = 'dmel-all-r5.50.gff'
+-- except
+-- select fbgn_id, name_name
+    -- from gff_genes
+    -- inner join
+    -- all_fbgns
+    -- on (gene_sym = name_name)
+    -- where gff_file = 'dmel-all-r5.50.gff'
+-- except
+-- select fbgn_id, name_name
+    -- from gff_genes
+    -- inner join
+    -- all_fbgns
+    -- on (fbgn_id = psfbgn)
+    -- where gff_file = 'dmel-all-r5.50.gff'
+
+-- Determining if all gene homologs of sfari and autkb genes are in the 
+-- all_annids table
+-- select count (*) from homologs where gene_source = 'autkb';
+-- -- select fly_sym from homologs where gene_source = 'autkb'
+-- -- except
+-- select count (*) from (
+-- select fbgn 
+    -- from homologs
+    -- inner join
+    -- all_annids
+    -- on (fly_sym = psannid)
+    -- where gene_source = 'autkb'
+-- ) as foo
+-- ;
+
+
+-- Lists the gff_genes from the indicated gff_file that are duplicates.
+-- select count (*) from (
+-- select all fbgn_id, name_name
+    -- from gff_genes
+    -- inner join
+    -- all_fbgns
+    -- on (psfbgn = fbgn_id)
+    -- where gff_file = 'dmel-all-r5.50.gff'
+    -- -- order by fbgn_id
+-- -- ) as foo
+-- except all
+-- select distinct fbgn_id
+    -- from gff_genes
+    -- inner join
+    -- all_fbgns
+    -- on (psfbgn = fbgn_id)
+    -- where gff_file = 'dmel-all-r5.50.gff'
+    -- -- order by fbgn_id
+-- ) as foo
+-- ;
+
+-- Lists the pfbgn from the gff_genes from the indicated gff_file that are duplicates.
+-- select pfbgn, gene_sym
+    -- from gff_genes
+    -- inner join
+    -- all_fbgns
+    -- on (psfbgn = fbgn_id)
+    -- where gff_file = 'dmel-all-r5.50.gff'
+-- except all
+-- select count (*) from (
+-- select distinct pfbgn, gene_sym
+    -- from gff_genes
+    -- inner join
+    -- all_fbgns
+    -- on (psfbgn = fbgn_id)
+    -- where gff_file = 'dmel-all-r5.50.gff'
+    -- order by pfbgn
+-- ) as foo
+-- ;
+
+-- Determining if all gene homologs in the autkb/sfari database are in the gff files.
+-- Selects the distinct primary fbgns of the autkb homologs.
+-- select count (*) from (
+-- select distinct pfbgn, gene_sym
+    -- from homologs
+    -- inner join
+    -- all_fbgns
+    -- on (fbgn = psfbgn)
+    -- where gene_source = 'sfari' 
+-- -- -- ) as foo
+-- -- -- ;
+-- -- except 
+-- intersect
+-- -- -- selects the distinct primary fbns of the gff genes
+-- -- -- select count (*) from (
+-- select distinct pfbgn, gene_sym
+    -- from gff_genes
+    -- inner join
+    -- all_fbgns
+    -- on (psfbgn = fbgn_id)
+    -- where gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo
+-- ;
+
+--- Copies the 43 genes that are in the autkb homologs list but not in the 
+--- filtered 5.57 gff file into the file shown.
+-- \copy (select distinct pfbgn, gene_sym from homologs inner join all_fbgns on (fbgn = psfbgn) where gene_source = 'autkb'  except select distinct pfbgn, gene_sym from gff_genes inner join all_fbgns on (psfbgn = fbgn_id) where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/autkb/autkb_homologs_not_in_r5.57_gff' header csv;
+
+---- Copies the 11 genes that are in the sfari homologs list but not the 
+---- filtered 5.57 gff file into the file shown.
+-- \copy (select distinct pfbgn, gene_sym from homologs inner join all_fbgns on (fbgn = psfbgn) where gene_source = 'sfari'  except select distinct pfbgn, gene_sym from gff_genes inner join all_fbgns on (psfbgn = fbgn_id) where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/sfari/sfari_homologs_not_in_r5.57_filtered_gff' header csv;
+
+
+-- Determining if all gene homologs in the autkb/sfari database are in the gff files.
+-- Selects the distinct primary fbgns of the autkb homologs.
+
+-- Create a temporary view of the primary fbgns of the sfari homologs.
+-- create or replace view temp_sfari_pfbgns as (
+-- select distinct pfbgn, gene_sym
+    -- from homologs
+    -- inner join
+    -- all_fbgns
+    -- on (fbgn = psfbgn)
+    -- where gene_source = 'sfari' 
+-- );
+
+---- All sfari_pbgns have only one matching primary or secondary fbgn in the
+---- all_fbgns table.
+select count (*) from (
+select t1.psfbgn, t1.gene_sym 
+from temp_sfari_pfbgns as t0
+left outer inner join
+all_fbgns as t1
+on (t0.pfbgn = t1.psfbgn)
+) as foo
+;
+
+-- select count (*) from (
+    -- create or replace view temp_test1 as (
+    -- select t0.psfbgn, t0.gene_sym
+    -- -- , gff.fbgn_id, gff.name_name 
+    -- from
+-- (select allf.psfbgn, allf.gene_sym
+-- from temp_sfari_pfbgns as sfari
+-- left outer join 
+-- all_fbgns as allf 
+-- on (sfari.pfbgn = allf.psfbgn)) as t0
+    -- left outer join 
+    -- gff_genes as gff 
+    -- on (t0.psfbgn = gff.fbgn_id)
+    -- where gff.gff_file = 'dmel-all-r5.50.gff'
+    -- order by t0.psfbgn
+-- )
+-- -- ) as foo
+-- ;
+
+-- -- select count (*) from (
+    -- select t0.psfbgn
+   -- from 
+-- (select allf.psfbgn, allf.gene_sym
+-- from temp_sfari_pfbgns as sfari
+-- left outer join 
+-- all_fbgns as allf 
+-- on (sfari.pfbgn = allf.psfbgn)) as t0
+-- except
+    -- select fbgn_id from gff_genes
+    -- where gff_file = 'dmel-all-r5.50.gff'
+-- -- ) as foo
+-- ;
+
