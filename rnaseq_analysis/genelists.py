@@ -12,6 +12,11 @@ WILLIAMS_PARAMS = [
 'williams'
 ]
 
+SARAH_WILLIAMS_PARAMS = [
+'/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/williams/sarah_williams_genes_diopt_output.txt',
+'sarah_williams'
+]
+
 def dbfilter_diopt_list(dioptfile, source):
     '''Removes entries for which there are 0 reported homologs (prints the #
     of entries at the end), removes the header, puts braces around the
@@ -45,7 +50,8 @@ def dbfilter_diopt_list(dioptfile, source):
 def main():
     #dbfilter_diopt_list(SFARI_PARAMS[0], SFARI_PARAMS[1])
     #dbfilter_diopt_list(AUTKB_PARAMS[0], AUTKB_PARAMS[1])
-    dbfilter_diopt_list(WILLIAMS_PARAMS[0], WILLIAMS_PARAMS[1])
+    #dbfilter_diopt_list(WILLIAMS_PARAMS[0], WILLIAMS_PARAMS[1])
+    dbfilter_diopt_list(SARAH_WILLIAMS_PARAMS[0], SARAH_WILLIAMS_PARAMS[1])
 
 if __name__ == '__main__':
     main()

@@ -437,6 +437,7 @@
 -- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/sfari/autism_sfari_list_diopt_filtered.txt'
 -- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/autkb/all_entrezid_unique_diopt_filtered.txt'
 -- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/williams/williams_njem_diopt_filtered.txt'
+-- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/williams/sarah_williams_genes_diopt_output_filtered.txt'
 
 
 -- Check if the homologs of the genes in the SFARI database are in the CLC 
@@ -893,25 +894,50 @@
 -----------release-specific FBGNs of DIOPT homologs ---------------- 
 
         
-CREATE OR REPLACE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS void
-AS 
-        $BODY$
-        BEGIN
-        EXECUTE format('
-        create or replace view %s as 
-            select distinct pfbgn, gene_sym
-            from homologs
-            inner join
-            all_fbgns
-            on (fbgn = psfbgn)
-            where homologs.gene_source = %L;'
-            ,viewname
-            ,gene_source);
+-- CREATE OR REPLACE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS void
+-- AS 
+        -- $BODY$
+        -- BEGIN
+        -- EXECUTE format('
+        -- create or replace view %s as 
+            -- select distinct pfbgn, gene_sym
+            -- from homologs
+            -- inner join
+            -- all_fbgns
+            -- on (fbgn = psfbgn)
+            -- where homologs.gene_source = %L;'
+            -- ,viewname
+            -- ,gene_source);
 
-        END
-        $BODY$
-        LANGUAGE plpgsql;
+        -- END
+        -- $BODY$
+        -- LANGUAGE plpgsql;
+
+-- select create_homolog_view('sarah_williams_pfbgns', 'sarah_williams');
 
 
+-- CREATE OR REPLACE FUNCTION get_homolog_gff_names(id_index text, homolog_list text, gff_file text) RETURNS TABLE (gff_fbgn_id varchar(20), gff_name_name varchar(100)) as
+    -- $BODY$
+    -- BEGIN
+    -- RETURN QUERY EXECUTE format ('
+        -- select gff.fbgn_id, name_name
+        -- from (
+            -- select r.fbgn_id
+            -- from %I as h 
+            -- inner join
+            -- %I as r
+            -- on (h.pfbgn = r.pfbgn)
+        -- ) as sf_fbgn_ids
+        -- inner join
+        -- gff_genes as gff
+        -- on (sf_fbgn_ids.fbgn_id = gff.fbgn_id)
+        -- where gff.gff_file = %L;'
+        -- ,homolog_list
+        -- ,id_index
+        -- ,gff_file);
+    -- END
+    -- $BODY$
+    -- LANGUAGE plpgsql;
 
-select create_homolog_view('williams_hom', 'williams');
+-- select * from get_homolog_gff_names('r550_id_index', 'sarah_williams_pfbgns', 'dmel-all-r5.50.gff')
+-- select count(*) from (select distinct gff_fbgn_id from get_homolog_gff_names('r550_id_index', 'autkb_pfbgns', 'dmel-all-r5.50.gff')) as foo;
