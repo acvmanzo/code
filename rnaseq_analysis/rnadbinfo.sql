@@ -436,6 +436,7 @@
 
 -- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/sfari/autism_sfari_list_diopt_filtered.txt'
 -- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/autkb/all_entrezid_unique_diopt_filtered.txt'
+-- \copy homologs from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/williams/williams_njem_diopt_filtered.txt'
 
 
 -- Check if the homologs of the genes in the SFARI database are in the CLC 
@@ -873,7 +874,7 @@
 
 -- -- Gets the r550 name_names of the autkb homologs:
 -- select count (*) from (
--- select name_name
+-- select gff.fbgn_id, name_name
 -- from (
     -- select r550.fbgn_id
     -- from autkb_pfbgns as sf
@@ -887,3 +888,27 @@
 -- where gff.gff_file = 'dmel-all-r5.50.gff'
 -- ) as foo
 -- ;
+
+-------------- General functions for getting the ------------------- 
+-----------release-specific FBGNs of DIOPT homologs ---------------- 
+
+-- CREATE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS TABLE(f1 text, f2 text) AS $$ create or replace view $1 as (select distinct pfbgn, gene_sym from homologs inner join all_fbgns on (fbgn = psfbgn) where gene_source = $2) $$ LANGUAGE SQL;
+        
+CREATE TYPE hom_result AS (f1 varchar(20), f2 varchar(100));
+CREATE OR REPLACE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS setof hom_result AS 
+        $BODY$
+        BEGIN
+        -- create or replace view  as (
+            return query  
+            select distinct pfbgn, gene_sym
+            from homologs
+            inner join
+            all_fbgns
+            on (fbgn = psfbgn)
+            where homologs.gene_source = $2;
+            -- select * from $viewname;
+        END
+        $BODY$
+        LANGUAGE plpgsql;
+
+select create_homolog_view('williams_hom', 'williams');
