@@ -616,13 +616,13 @@
     -- -- order by fbgn_id
 -- -- ) as foo
 -- except all
--- select distinct fbgn_id
+-- select distinct fbgn_id, name_name
     -- from gff_genes
     -- inner join
     -- all_fbgns
     -- on (psfbgn = fbgn_id)
     -- where gff_file = 'dmel-all-r5.50.gff'
-    -- -- order by fbgn_id
+    -- order by fbgn_id
 -- ) as foo
 -- ;
 
@@ -634,7 +634,7 @@
     -- on (psfbgn = fbgn_id)
     -- where gff_file = 'dmel-all-r5.50.gff'
 -- except all
--- select count (*) from (
+-- -- select count (*) from (
 -- select distinct pfbgn, gene_sym
     -- from gff_genes
     -- inner join
@@ -642,7 +642,7 @@
     -- on (psfbgn = fbgn_id)
     -- where gff_file = 'dmel-all-r5.50.gff'
     -- order by pfbgn
--- ) as foo
+-- -- ) as foo
 -- ;
 
 -- Determining if all gene homologs in the autkb/sfari database are in the gff files.
@@ -659,15 +659,16 @@
 -- -- except 
 -- intersect
 -- -- -- selects the distinct primary fbns of the gff genes
--- -- -- select count (*) from (
--- select distinct pfbgn, gene_sym
+-- select count (*) from (
+-- select distinct pfbgn 
     -- from gff_genes
     -- inner join
     -- all_fbgns
     -- on (psfbgn = fbgn_id)
     -- where gff_file = 'dmel-all-r5.50.gff'
 -- ) as foo
--- ;
+-- -- ;
+
 
 --- Copies the 43 genes that are in the autkb homologs list but not in the 
 --- filtered 5.57 gff file into the file shown.
@@ -678,11 +679,9 @@
 -- \copy (select distinct pfbgn, gene_sym from homologs inner join all_fbgns on (fbgn = psfbgn) where gene_source = 'sfari'  except select distinct pfbgn, gene_sym from gff_genes inner join all_fbgns on (psfbgn = fbgn_id) where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/sfari/sfari_homologs_not_in_r5.57_filtered_gff' header csv;
 
 
--- Determining if all gene homologs in the autkb/sfari database are in the gff files.
--- Selects the distinct primary fbgns of the autkb homologs.
-
--- Create a temporary view of the primary fbgns of the sfari homologs.
--- create or replace view temp_sfari_pfbgns as (
+------------------- GETTING LISTS OF SFARI HOMOLOGS --------------------
+-- Create a view of the primary fbgns of the sfari homologs.
+-- create or replace view sfari_pfbgns as (
 -- select distinct pfbgn, gene_sym
     -- from homologs
     -- inner join
@@ -693,45 +692,198 @@
 
 ---- All sfari_pbgns have only one matching primary or secondary fbgn in the
 ---- all_fbgns table.
-select count (*) from (
-select t1.psfbgn, t1.gene_sym 
-from temp_sfari_pfbgns as t0
-left outer inner join
-all_fbgns as t1
-on (t0.pfbgn = t1.psfbgn)
-) as foo
+-- select count (*) from (
+-- select t1.psfbgn, t1.gene_sym 
+-- from sfari_pfbgns as t0
+-- inner join
+-- all_fbgns as t1
+-- on (t0.pfbgn = t1.psfbgn)
+-- ) as foo
+-- ;
+
+-- -- Create view: fbgn_ID of gff file and primary_ID from fbgn_annot_id file.
+-- create or replace view r550_id_index as (
+    -- select gff.fbgn_id, allf.pfbgn from
+    -- gff_genes as gff
+    -- inner join
+    -- all_fbgns as allf
+    -- on (fbgn_id = psfbgn)
+    -- where gff.gff_file = 'dmel-all-r5.50.gff')
+
+-- Gets the r550 fbgn_ids of the sfari homologs
+-- select count (*) from (
+    -- select r550.fbgn_id
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r550_id_index as r550
+    -- on (sf.pfbgn = r550.pfbgn)
+    -- order by sf.pfbgn
+-- ) as foo
+-- ;
+
+-- Returns a list of duplicated fbgns in the inner join of the sfari homolog 
+-- pfbgns and the r550 pfbgns.
+    -- select sf.pfbgn, sf.gene_sym
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r550_id_index as r550
+    -- on (sf.pfbgn = r550.pfbgn)
+    -- except all 
+    -- select distinct sf.pfbgn, sf.gene_sym
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r550_id_index as r550
+    -- on (sf.pfbgn = r550.pfbgn)
+    -- ;
+
+-- Gets the r550 name_names of the sfari homologs:
+-- select count (*) from (
+-- select name_name
+-- from (
+    -- select r550.fbgn_id
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r550_id_index as r550
+    -- on (sf.pfbgn = r550.pfbgn)
+-- ) as sf_fbgn_ids
+-- inner join
+-- gff_genes as gff
+-- on (sf_fbgn_ids.fbgn_id = gff.fbgn_id)
+-- where gff.gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo
+-- ;
+
+-- -- -- Create view: fbgn_ID of gff file and primary_ID from fbgn_annot_id file.
+-- create or replace view r557_id_index as (
+    -- select gff.fbgn_id, allf.pfbgn from
+    -- gff_genes as gff
+    -- inner join
+    -- all_fbgns as allf
+    -- on (fbgn_id = psfbgn)
+    -- where gff.gff_file = 'dmel-all-filtered-r5.57.gff')
+-- ;
+
+-- -- -- Gets the r557 fbgn_ids of the sfari homologs
+-- select count (*) from (
+    -- select r.fbgn_id
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r557_id_index as r 
+    -- on (sf.pfbgn = r.pfbgn)
+    -- order by sf.pfbgn
+-- ) as foo
+-- ;
+
+-- Returns a list of duplicated fbgns in the inner join of the sfari homolog 
+-- pfbgns and the r557 pfbgns.
+    -- select sf.pfbgn, sf.gene_sym
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r557_id_index as r
+    -- on (sf.pfbgn = r.pfbgn)
+    -- except all 
+    -- select distinct sf.pfbgn, sf.gene_sym
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r557_id_index as r
+    -- on (sf.pfbgn = r.pfbgn)
+    -- ;
+
+-- -- Gets the r557 name_names of the sfari homologs:
+-- select count (*) from (
+-- select name_name
+-- from (
+    -- select r.fbgn_id
+    -- from sfari_pfbgns as sf
+    -- inner join
+    -- r557_id_index as r
+    -- on (sf.pfbgn = r.pfbgn)
+-- ) as sf_fbgn_ids
+-- inner join
+-- gff_genes as gff
+-- on (sf_fbgn_ids.fbgn_id = gff.fbgn_id)
+-- where gff.gff_file = 'dmel-all-filtered-r5.57.gff'
+-- ) as foo
 ;
 
+-- -- Following code displays how inner join works; it will return every row
+-- -- for which the condition is true.
+    -- drop table test1;
+    -- create table test1 (
+        -- col1 int,
+        -- col2 int
+    -- );
+
+    -- insert into test1 values (1, 2);
+    -- insert into test1 values (1, 3);
+    -- insert into test1 values (1, 4);
+    -- insert into test1 values (2, 5);
+
+    -- drop table test2;
+    -- create table test2 (
+        -- col3 int,
+        -- col4 int
+    -- );
+
+    -- insert into test2 values (7, 1);
+    -- insert into test2 values (8, 9);
+
+    -- select * from 
+    -- test2 inner join test1
+    -- on (col4 = col1);
+
+----------- GETTING LISTS OF AUTKB HOMOLOGS --------------
+-- -- Create a view of the primary fbgns of the autkb homologs.
+-- create or replace view autkb_pfbgns as (
+-- select distinct pfbgn, gene_sym
+    -- from homologs
+    -- inner join
+    -- all_fbgns
+    -- on (fbgn = psfbgn)
+    -- where gene_source = 'autkb' 
+-- );
+
+-- Gets the r550 fbgn_ids of the autkb homologs
 -- select count (*) from (
-    -- create or replace view temp_test1 as (
-    -- select t0.psfbgn, t0.gene_sym
-    -- -- , gff.fbgn_id, gff.name_name 
-    -- from
--- (select allf.psfbgn, allf.gene_sym
--- from temp_sfari_pfbgns as sfari
--- left outer join 
--- all_fbgns as allf 
--- on (sfari.pfbgn = allf.psfbgn)) as t0
-    -- left outer join 
-    -- gff_genes as gff 
-    -- on (t0.psfbgn = gff.fbgn_id)
-    -- where gff.gff_file = 'dmel-all-r5.50.gff'
-    -- order by t0.psfbgn
--- )
--- -- ) as foo
+    -- select r550.fbgn_id
+    -- from autkb_pfbgns as ak
+    -- inner join
+    -- r550_id_index as r550
+    -- on (ak.pfbgn = r550.pfbgn)
+    -- order by ak.pfbgn
+-- ) as foo
 -- ;
 
+-- Returns a list of duplicated fbgns in the inner join of the autkb homolog 
+-- pfbgns and the r550 pfbgns.
 -- -- select count (*) from (
-    -- select t0.psfbgn
-   -- from 
--- (select allf.psfbgn, allf.gene_sym
--- from temp_sfari_pfbgns as sfari
--- left outer join 
--- all_fbgns as allf 
--- on (sfari.pfbgn = allf.psfbgn)) as t0
--- except
-    -- select fbgn_id from gff_genes
-    -- where gff_file = 'dmel-all-r5.50.gff'
+    -- select sf.pfbgn, sf.gene_sym
+    -- from autkb_pfbgns as sf
+    -- inner join
+    -- r550_id_index as r550
+    -- on (sf.pfbgn = r550.pfbgn)
+    -- except all 
+    -- select distinct sf.pfbgn, sf.gene_sym
+    -- from autkb_pfbgns as sf
+    -- inner join
+    -- r550_id_index as r550
+    -- on (sf.pfbgn = r550.pfbgn)
 -- -- ) as foo
--- ;
+    -- ;
 
+-- -- Gets the r550 name_names of the autkb homologs:
+-- select count (*) from (
+-- select name_name
+-- from (
+    -- select r550.fbgn_id
+    -- from autkb_pfbgns as sf
+    -- inner join
+    -- r550_id_index as r550
+    -- on (sf.pfbgn = r550.pfbgn)
+-- ) as sf_fbgn_ids
+-- inner join
+-- gff_genes as gff
+-- on (sf_fbgn_ids.fbgn_id = gff.fbgn_id)
+-- where gff.gff_file = 'dmel-all-r5.50.gff'
+-- ) as foo
+-- ;
