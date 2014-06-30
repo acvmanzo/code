@@ -892,23 +892,26 @@
 -------------- General functions for getting the ------------------- 
 -----------release-specific FBGNs of DIOPT homologs ---------------- 
 
--- CREATE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS TABLE(f1 text, f2 text) AS $$ create or replace view $1 as (select distinct pfbgn, gene_sym from homologs inner join all_fbgns on (fbgn = psfbgn) where gene_source = $2) $$ LANGUAGE SQL;
         
-CREATE TYPE hom_result AS (f1 varchar(20), f2 varchar(100));
-CREATE OR REPLACE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS setof hom_result AS 
+CREATE OR REPLACE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS void
+AS 
         $BODY$
         BEGIN
-        -- create or replace view  as (
-            return query  
+        EXECUTE format('
+        create or replace view %s as 
             select distinct pfbgn, gene_sym
             from homologs
             inner join
             all_fbgns
             on (fbgn = psfbgn)
-            where homologs.gene_source = $2;
-            -- select * from $viewname;
+            where homologs.gene_source = %L;'
+            ,viewname
+            ,gene_source);
+
         END
         $BODY$
         LANGUAGE plpgsql;
+
+
 
 select create_homolog_view('williams_hom', 'williams');
