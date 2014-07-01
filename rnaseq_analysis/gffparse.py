@@ -7,9 +7,13 @@ import HTSeq
 REF_DIR = '/home/andrea/rnaseqanalyze/references'
 LIST_DIR = 'dmel-r5.50_r5.57_lists'
 
-R557_GFF_FILE = os.path.join(REF_DIR, 'dmel-r5.57', 'dmel-all-filtered-r5.57.gff')
-R557_FBGN_NAME_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_r5.57')
-R557_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r5.57')
+R557_GFF_FILE = os.path.join(REF_DIR, 'dmel-r5.57', 'dmel-all-r5.57.gff')
+R557_FBGN_NAME_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_r5.57_all')
+R557_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r5.57_all')
+
+R557_FIL_GFF__FILE = os.path.join(REF_DIR, 'dmel-r5.57', 'dmel-all-filtered-r5.57.gff')
+R557_FIL_FBGN_NAME_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_r5.57')
+R557_FIL_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r5.57')
 
 R550_GFF_FILE = os.path.join(REF_DIR, 'dmel-r5.50-mingus', 'dmel-all-r5.50.gff')
 R550_FBGN_NAME_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_r5.50')
@@ -17,11 +21,11 @@ R550_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r5.50')
 R550_FN2F_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_2fbgn_r5.50')
 
 def main():
-    open(R550_FN2F_FILE, 'w')
-    og = [R550_FN2F_FILE, R550_GFF_FILE]
+    open(R557_FNA_FILE, 'w')
+    og = [R557_FNA_FILE, R557_GFF_FILE]
        
     try:
-        get_fbgn_name_2fbgn(og[0], og[1])
+        get_fbgn_name_annid(og[0], og[1])
     except ValueError:
         pass 
 
@@ -65,7 +69,7 @@ def get_fbgn_name(outfile, gff_file):
 
 def get_fbgn_name_annid(outfile, gff_file):
     '''From gff_file, writes the fbgn, gene name, annotation ID, and gff_file
-    name of each gene in gff_file into the file called 'outfile'. Also returns
+    name of each gene in gff_file into the file calle'outfile'. Also returns
     a list of (fbgn, gene name) tuples. 
     '''
     gf = HTSeq.GFF_Reader(gff_file, end_included=True)
@@ -94,9 +98,10 @@ def get_fbgn_name_annid(outfile, gff_file):
     return(fbgn_name_annid)
 
 def get_fbgn_name_2fbgn(outfile, gff_file):
-    '''From gff_file, writes the fbgn, gene name, annotation ID, and gff_file
+    '''From gff_file, writes the fbgn, gene name, secondary annotation ID, and gff_file
     name of each gene in gff_file into the file called 'outfile'. Also returns
     a list of (fbgn, gene name) tuples. 
+    Not all genes have secondary flybase ids; then it picks up the annotation id.
     '''
     gf = HTSeq.GFF_Reader(gff_file, end_included=True)
     fbgn_name_annid = []
