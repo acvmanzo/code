@@ -705,7 +705,7 @@
 
 -- -- Create view: fbgn_ID of gff file and primary_ID from fbgn_annot_id file.
 -- create or replace view r550_id_index as (
-    -- select gff.fbgn_id, allf.pfbgn from
+    -- select gff.name_name, gff.fbgn_id, allf.pfbgn from
     -- gff_genes as gff
     -- inner join
     -- all_fbgns as allf
@@ -757,7 +757,7 @@
 
 -- -- -- Create view: fbgn_ID of gff file and primary_ID from fbgn_annot_id file.
 -- create or replace view r557_id_index as (
-    -- select gff.fbgn_id, allf.pfbgn from
+    -- select gff.name_name, gff.fbgn_id, allf.pfbgn from
     -- gff_genes as gff
     -- inner join
     -- all_fbgns as allf
@@ -893,7 +893,7 @@
 -------------- General functions for getting the ------------------- 
 -----------release-specific FBGNs of DIOPT homologs ---------------- 
 
-        
+---- Creates a view showing the homologs for a specific gene source.        
 -- CREATE OR REPLACE FUNCTION create_homolog_view(viewname text, gene_source text) RETURNS void
 -- AS 
         -- $BODY$
@@ -915,29 +915,48 @@
 
 -- select create_homolog_view('sarah_williams_pfbgns', 'sarah_williams');
 
-
--- CREATE OR REPLACE FUNCTION get_homolog_gff_names(id_index text, homolog_list text, gff_file text) RETURNS TABLE (gff_fbgn_id varchar(20), gff_name_name varchar(100)) as
+---- Returns the gff-specific fbgn_ids and name_names for the pfbgns in
+---- the homolog view.
+-- CREATE OR REPLACE FUNCTION get_homolog_gff_names(id_index text, homolog_view text, gff_file text) RETURNS TABLE (gff_fbgn_id varchar(20), gff_name_name varchar(100)) as
     -- $BODY$
     -- BEGIN
     -- RETURN QUERY EXECUTE format ('
-        -- select gff.fbgn_id, name_name
+        -- select gff.fbgn_id, gff.name_name
         -- from (
             -- select r.fbgn_id
             -- from %I as h 
             -- inner join
             -- %I as r
             -- on (h.pfbgn = r.pfbgn)
-        -- ) as sf_fbgn_ids
+        -- ) as h_fbgn_ids
         -- inner join
         -- gff_genes as gff
-        -- on (sf_fbgn_ids.fbgn_id = gff.fbgn_id)
+        -- on (h_fbgn_ids.fbgn_id = gff.fbgn_id)
         -- where gff.gff_file = %L;'
-        -- ,homolog_list
-        -- ,id_index
-        -- ,gff_file);
-    -- END
-    -- $BODY$
-    -- LANGUAGE plpgsql;
-
--- select * from get_homolog_gff_names('r550_id_index', 'sarah_williams_pfbgns', 'dmel-all-r5.50.gff')
+        -- ,homolog_vier550_id_index', 'sarah_williams_pfbgns', 'dmel-all-r5.50.gff')
 -- select count(*) from (select distinct gff_fbgn_id from get_homolog_gff_names('r550_id_index', 'autkb_pfbgns', 'dmel-all-r5.50.gff')) as foo;
+
+
+------------------------------------------------------------------------
+---- Copying Sarah's list of Brain, Williams, and autism genes. ----
+
+-- DROP TABLE sarah_bwa;
+-- CREATE TABLE sarah_bwa (
+    -- name_name varchar (100),
+    -- unique (name_name)
+-- );
+
+-- Used linux's cat, sort, and uniq functions to get the uniq names out.
+-- \copy sarah_bwa from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/BWA_GENELIST_0626_uniq.txt'
+
+---- Checking to see if sarah_williams_pfbgns are in sarah's BWA list.
+-- select * from 
+        -- (select gff_fbgn_id, gff_name_name 
+            -- from get_homolog_gff_names('r550_id_index', 'sarah_williams_pfbgns', 'dmel-all-r5.50.gff'))
+            -- as hnames
+        -- left outer join
+        -- sarah_bwa as sbwa
+        -- on (hnames.gff_name_name = sbwa.name_name)
+        -- order by gff_name_name;
+
+-- \copy (select * from (select gff_fbgn_id, gff_name_name from get_homolog_gff_names('r550_id_index', 'sarah_williams_pfbgns', 'dmel-all-r5.50.gff')) as hnames left outer join sarah_bwa as sbwa on (hnames.gff_name_name = sbwa.name_name) order by gff_name_name) to '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/williams/Sarah/williams_genes_not_in_bwa.csv' header csv;
