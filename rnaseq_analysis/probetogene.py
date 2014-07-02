@@ -76,9 +76,10 @@ def probe_to_fbgn_gene():
                     for fgs in fbgn_gene_sym:
                         print('fgs', fgs)
                         dscopy = list(ds)
-                        dscopy.insert(1, fgs[2])
-                        dscopy.insert(1, fgs[1])
-                        dscopy.insert(1, fgs[0])
+                        dscopy.insert(1, fgs[2].strip(' '))
+                        dscopy.insert(1, fgs[1].strip(' '))
+                        dscopy.insert(1, fgs[0].strip(' '))
+                        print(dscopy)
                         newline = '\t'.join(dscopy) + '\tfly_atlas\n'
                         print(newline)
                         h.write(newline)

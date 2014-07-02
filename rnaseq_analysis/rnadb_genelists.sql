@@ -655,26 +655,46 @@
 -- -- select * from create_homolog_view('sarah_williams_pfbgns', 'homologs', 'sarah_williams');
 -- select * from create_homolog_view('williams_pfbgns', 'homologs', 'williams');
 
+
+-- -- -- One homolog/gene view with pfbgns of homologs -- -- --
+-- create or replace view homolog_pfbgns as 
+    -- select distinct all_fbgns.pfbgn, all_fbgns.gene_sym, homologs.gene_source
+    -- from homologs
+    -- inner join
+    -- all_fbgns
+    -- on (fbgn = psfbgn)
+    -- UNION
+    -- select distinct all_fbgns.pfbgn, all_fbgns.gene_sym, flyatlas_brain.gene_source
+    -- from flyatlas_brain 
+    -- inner join
+    -- all_fbgns
+    -- on (fbgn = psfbgn)
+    -- where upordown = 'Up';
+
+
 ---- Returns the gff-specific fbgn_ids and name_names for the pfbgns in
 ---- the homolog view.
--- CREATE OR REPLACE FUNCTION get_homolog_gff_names(id_index text, homolog_view text, gff_file text) RETURNS TABLE (gff_fbgn_id varchar(20), gff_name_name varchar(100)) as
+-- DROP FUNCTION get_homolog_gff_names(text,text,text);
+-- CREATE OR REPLACE FUNCTION get_homolog_gff_names(id_index text, gff_file text, gene_source text) RETURNS TABLE (gff_fbgn_id varchar(20), gff_name_name varchar(100)) as
     -- $BODY$
     -- BEGIN
     -- RETURN QUERY EXECUTE format ('
         -- select gff.fbgn_id, gff.name_name
         -- from (
             -- select r.fbgn_id
-            -- from %I as h 
+            -- from homolog_pfbgns as h 
             -- inner join
             -- %I as r
             -- on (h.pfbgn = r.pfbgn)
+            -- where h.gene_source = %L
         -- ) as h_fbgn_ids
         -- inner join
         -- gff_genes as gff
         -- on (h_fbgn_ids.fbgn_id = gff.fbgn_id)
-        -- where gff.gff_file = %L;'
-        -- ,homolog_view
+        -- where gff.gff_file = %L 
+        -- ;'
         -- ,id_index
+        -- ,gene_source
         -- ,gff_file);
     -- END
     -- $BODY$
@@ -693,10 +713,13 @@
     -- unique (name_name)
 -- );
 
--- Used linux's cat, sort, and uniq functions to get the uniq names out.
--- \copy sarah_bwa from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/BWA_GENELIST_0626_uniq.txt'
+-- -- Used linux's cat, sort, and uniq functions to get the uniq names out.
+-- -- \copy sarah_bwa from '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/BWA_GENELIST_0626_uniq.txt'
+-- -- This version already has no duplicates.
+-- \copy sarah_bwa from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/BWA_compare/BWA_GENELIST_0701.txt'
 
----- Checking to see if sarah_williams_pfbgns are in sarah's BWA list.
+
+-- --Checking to see if sarah_williams_pfbgns are in sarah's BWA list.
 -- select * from 
         -- (select gff_fbgn_id, gff_name_name 
             -- from get_homolog_gff_names('r550_id_index', 'sarah_williams_pfbgns', 'dmel-all-r5.50.gff'))
@@ -744,19 +767,30 @@
 -- select count(*) from (select distinct gff_fbgn_id from get_homolog_gff_names('r557_id_index', 'flyatlasbrain_pfbgns', 'dmel-all-filtered-r5.57.gff')) as foo;
 
 
------ Putting all the lists together ------
--- select count (*) from (
--- CREATE VIEW brain_aut_will_r557 AS (
--- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'flyatlasbrain_pfbgns', 'dmel-all-filtered-r5.57.gff')
+-- ---Putting all the lists together ------
+-- CREATE OR REPLACE VIEW brain_aut_will_r557 AS (
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'williams')
 -- UNION
--- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'autkb_pfbgns', 'dmel-all-filtered-r5.57.gff')
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'sfari')
 -- UNION
--- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'sfari_pfbgns', 'dmel-all-filtered-r5.57.gff')
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'autkb')
 -- UNION
--- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'williams_pfbgns', 'dmel-all-filtered-r5.57.gff')
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'fly_atlas')
 -- order by gene_short_name)
 -- ;
 
+-- CREATE OR REPLACE VIEW brain_aut_will_r550 AS (
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'dmel-all-r5.50.gff', 'williams')
+-- UNION
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'dmel-all-r5.50.gff', 'sfari')
+-- UNION
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'dmel-all-r5.50.gff', 'autkb')
+-- UNION
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'dmel-all-r5.50.gff', 'fly_atlas')
+-- order by gene_short_name)
+-- ;
+
+----------- OLD ------------
 -- CREATE VIEW brain_aut_will_r550 AS (
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'flyatlasbrain_pfbgns', 'dmel-all-r5.50.gff')
 -- UNION
@@ -768,7 +802,7 @@
 -- order by gene_short_name)
 -- ;
 
--- -- -- -- Comparing my r5.50 bwa list with Sarah's r5.50 bwa list -- -- --
+-- -- -- -- -- Comparing my r5.50 bwa list with Sarah's r5.50 bwa list -- -- --
 -- select name_name from sarah_bwa
 -- -- select gene_short_name from brain_aut_will_r550
 -- EXCEPT
@@ -782,17 +816,3 @@
     -- ;
 
 
--- -- -- One homolog/gene view with pfbgns of homologs -- -- --
-create or replace view homolog_pfbgns as 
-    select distinct all_fbgns.pfbgn, all_fbgns.gene_sym, homologs.gene_source
-    from homologs
-    inner join
-    all_fbgns
-    on (fbgn = psfbgn)
-    UNION
-    select distinct all_fbgns.pfbgn, all_fbgns.gene_sym, flyatlas_brain.gene_source
-    from flyatlas_brain 
-    inner join
-    all_fbgns
-    on (fbgn = psfbgn)
-    where upordown = 'Up';
