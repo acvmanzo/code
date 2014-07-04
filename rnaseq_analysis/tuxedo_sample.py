@@ -2,6 +2,7 @@
 
 #Runs tophat and cufflinks on a fixed set of samples.
 
+import shutil
 import libs.tuxedolib as tl
 import logging 
 import datetime
@@ -19,6 +20,7 @@ TUXLOG_PATH = os.path.join(RNASEQDICT['th_resdirpath'], '{}_tux.log'.format(curt
 COLQUERY = ['genotype', 'tube', 'sex', 'frozend', 'rnad', 'rnaconc', 
             'mrnad', 'cdnad', 'indexnum', 'sample', 'seqd', 'thawed',
             'toseq', 'samplenum', 'sentd', 'qbitngul', 'qbitd', 'seq_received']
+RUNCUFFLINKS = 'no'
 
 def main():
     cmn.makenewdir(RNASEQDICT['th_resdirpath'])
@@ -37,8 +39,8 @@ def main():
     berkid_params = zip(BERKIDLIST, seqpaths, respaths) 
     for berkid, sample_seqdir, sample_resdir in berkid_params:
         tl.run_tophat_cufflinks(berkid, sample_seqdir, sample_resdir, 
-            RNASEQDICT, REFSEQDICT)
-    shutil.copy(SETTINGS_FILE, NEW_SETTINGS_FILE)
+            RNASEQDICT, REFSEQDICT, RUNCUFFLINKS)
+    shutil.copy(RNASEQDICT['th_set_path_orig'], RNASEQDICT['th_set_path_copy'])
 
 if __name__ == '__main__':
     main()

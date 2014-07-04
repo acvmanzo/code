@@ -26,24 +26,27 @@ import os
     #results_tophat/
         #RGAM009A/
             #cufflinks_out/
+                #genes.fpkm_tracking
+                #isoforms.fpkm_tracking
+                #skipped.gtf
+                #transcripts.gtf
             #htseq_out/
                 #htseqcount
                 #htseqcount_berkid
                 #htseqcount.info
                 #htseqcount_prot_coding_genes
-            #tophat_out
+            #tophat_out/
+                #logs/
+                #accepted_hits.bam
+                #align_summary.txt
+                #deletions.bed
+                #insertions.bed
+                #junctions.bed
+                #prep_reads.info
+                #unmapped.bam
             #cufflinks.info
             #tophat.info
         #RGAM009B/
-            #cufflinks_out/
-            #htseq_out/
-                #htseqcount
-                #htseqcount_berkid
-                #htseqcount.info
-                #htseqcount_prot_coding_genes
-            #tophat_out
-            #cufflinks.info
-            #tophat.info
         #tophat_all_align_summary.txt
         #tuxedo_settings.py
 
@@ -57,7 +60,7 @@ COMBINED_FASTQ_SUFFIX = 'combined.fastq.gz'
 
 ANALYSIS_PATH = '/home/andrea/Documents/lab/RNAseq/analysis'
 
-TH_RESDIR = 'results_tophat_test'
+TH_RESDIR = 'results_tophat_secondstrand'
 TH_DIR = 'tophat_out'
 THCMD_FILE = 'tophatcmd.txt'
 BAM_FILE = 'accepted_hits.bam'
@@ -65,9 +68,16 @@ TH_LOG_FILE = 'tophat.log'
 TH_SET_PATH_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
 TH_SET_FILE = 'tuxedo_settings.py'
 
-CUFFLINKS_DIR = 'cufflinks_out'
-CUFFLINKSLOG_FILE = 'cufflinks.log'
-CUFFLINKSCMD_FILE = 'cufflinkscmd.txt'
+CUFF_DIR = 'cufflinks_out'
+CUFFLOG_FILE = 'cufflinks.log'
+CUFFCMD_FILE = 'cufflinkscmd.txt'
+CUFF_GFPKM = 'genes.fpkm_tracking'
+
+HTSEQ_DIR = 'htseq_out'
+HTSEQ_CMD_FILE = 'htseq.info'
+HTSEQ_FILE = 'htseqcount'
+
+EDGER_DIR = 'edgeR'
 
 SAMPLEINFO_TABLE = 'autin'
 
@@ -84,13 +94,38 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'th_log_file': os.path.join(TH_RESDIRPATH, TH_LOG_FILE),
                 'th_dir': TH_DIR,
                 'th_cmd_file': THCMD_FILE,
-                'bam_file': '{}/{}'.format(TH_DIR, BAM_FILE),
+                'bam_file': BAM_FILE,
                 'th_set_path_orig': os.path.join(TH_SET_PATH_ORIG, TH_SET_FILE),
                 'th_set_path_copy': os.path.join(TH_RESDIRPATH, TH_SET_FILE),
-                'cufflinks_dir': CUFFLINKS_DIR,
-                'cufflinkslog_file': CUFFLINKSLOG_FILE,
-                'cufflinkscmd_file': CUFFLINKSCMD_FILE
+                'cuff_dir': CUFF_DIR,
+                'cufflog_file': CUFFLOG_FILE,
+                'cuffcmd_file': CUFFCMD_FILE,
+                'htseq_dir': HTSEQ_DIR,
+                'htseq_cmd_file': HTSEQ_CMD_FILE,
+                'htseq_file': HTSEQ_FILE
+                'edger_dir': os.path.join(ANALYSIS_PATH, EDGER_DIR),
                 }
+
+def get_results_files(berkid):
+
+    sample_dir = os.path.join(TH_RESDIRPATH, berkid)
+    sample_th_dir = os.path.join(sample_dir, TH_DIR)
+    sample_cuff_dir = os.path.join(sample_dir, CUFF_DIR)
+    sample_htseq_dir = os.path.join(sample_dir, HTSEQ_DIR)
+
+    d =     {'sample_dir': sample_dir,
+             'sample_th_dir': sample_th_dir,
+             'bam_path': os.path.join(sample_th_dir, BAM_FILE),
+             'sample_cuff_dir': sample_cuff_dir,
+             'cuff_gfpkm_path': os.path.join(sample_cuff_dir,
+                 CUFF_GFPKM)
+             'sample_htseq_dir': sample_htseq_dir,
+             'htseq_count_path': os.path.join(sample_htseq_dir, HTSEQ_FILE)
+             }
+    return(d)
+
+
+
 #print(RNASEQDICT)
 #SEQDICT = {'seq_dir': SEQ_PATH,
             #'seq_subdir': SEQ_SUBDIR,
@@ -112,9 +147,9 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                     #TH_SET_FILE)
                 #}
 
-#CUFFLINKDICT = {'cufflinks_dir': CUFFLINKS_DIR,
-                #'cufflinkslog_file': CUFFLINKSLOG_FILE,
-                #'cufflinkscmd_file': CUFFLINKSCMD_FILE
+#CUFFLINKDICT = {'cufflinks_dir': CUFF_DIR,
+                #'cufflinkslog_file': CUFFLOG_FILE,
+                #'cufflinkscmd_file': CUFFCMD_FILE
                 #}
 
 
