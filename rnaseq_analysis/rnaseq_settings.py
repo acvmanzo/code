@@ -57,16 +57,12 @@ COMBINED_FASTQ_SUFFIX = 'combined.fastq.gz'
 
 ANALYSIS_PATH = '/home/andrea/Documents/lab/RNAseq/analysis'
 
-REFSEQ_PATH = '/home/andrea/rnaseqanalyze/references/dmel-r5.57' 
-GFF_FILE = 'dmel-all-filtered-r5.57.gff'
-MITOGFF_FILE = 'dmel-dmel_mitochondrion_genome-r5.57.gff'
-BTINDEX = 'dmel-all-chromosome-r5.57'
-
-TH_RESDIR = 'results_tophat'
+TH_RESDIR = 'results_tophat_test'
 TH_DIR = 'tophat_out'
 THCMD_FILE = 'tophatcmd.txt'
 BAM_FILE = 'accepted_hits.bam'
 TH_LOG_FILE = 'tophat.log'
+TH_SET_PATH_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
 TH_SET_FILE = 'tuxedo_settings.py'
 
 CUFFLINKS_DIR = 'cufflinks_out'
@@ -77,36 +73,49 @@ SAMPLEINFO_TABLE = 'autin'
 
 BERKIDLEN = 8
 
-    
-seqdict = {'seq_dir': SEQ_PATH,
-            'seq_subdir': SEQ_SUBDIR,
-            'seqbatchglob': SEQBATCHGLOB,
-            'sampleseqglob': SAMPLESEQGLOB,
-            'combined_fastq_suffix': COMBINED_FASTQ_SUFFIX
-            }
-analysisdict = {'analysis_path': ANALYSIS_PATH}
-
-refseqdict =    {'refseq_path': REFSEQ_PATH,
-                 'gff_path': os.path.join(REFSEQ_PATH, GFF_FILE),
-                 'mitogff_path': os.path.join(REFSEQ_PATH, MITOGFF_FILE),
-                 'btindex_path': os.path.join(REFSEQ_PATH, BTINDEX)
-                }
-
-th_resdir = os.path.join(d['analysis_path'], 'TH_RESDIR')
-
-tophatdict = {'th_resdir': th_resdir,
-                'th_log_file': th_resdir, TH_LOG_FILE),
+TH_RESDIRPATH = os.path.join(ANALYSIS_PATH, TH_RESDIR)
+RNASEQDICT =    {'seq_dir': SEQ_PATH,
+                'seq_subdir': SEQ_SUBDIR,
+                'seqbatchglob': SEQBATCHGLOB,
+                'sampleseqglob': SAMPLESEQGLOB,
+                'combined_fastq_suffix': COMBINED_FASTQ_SUFFIX,
+                'analysis_path': ANALYSIS_PATH,
+                'th_resdirpath': TH_RESDIRPATH,
+                'th_log_file': os.path.join(TH_RESDIRPATH, TH_LOG_FILE),
                 'th_dir': TH_DIR,
-                'th_cmd': THCMD_FILE,
-                'bam_file': '{}/{}'.format(th_resdir, BAM_FILE),
-                'th_settings_path': os.path.join(th_resdir,
-                    TH_SET_FILE)
-                }
-
-cufflinkdict = {'cufflinks_dir': CUFFLINKS_DIR,
+                'th_cmd_file': THCMD_FILE,
+                'bam_file': '{}/{}'.format(TH_DIR, BAM_FILE),
+                'th_set_path_orig': os.path.join(TH_SET_PATH_ORIG, TH_SET_FILE),
+                'th_set_path_copy': os.path.join(TH_RESDIRPATH, TH_SET_FILE),
+                'cufflinks_dir': CUFFLINKS_DIR,
                 'cufflinkslog_file': CUFFLINKSLOG_FILE,
                 'cufflinkscmd_file': CUFFLINKSCMD_FILE
                 }
+#print(RNASEQDICT)
+#SEQDICT = {'seq_dir': SEQ_PATH,
+            #'seq_subdir': SEQ_SUBDIR,
+            #'seqbatchglob': SEQBATCHGLOB,
+            #'sampleseqglob': SAMPLESEQGLOB,
+            #'combined_fastq_suffix': COMBINED_FASTQ_SUFFIX
+            #}
+#ANALYSISDICT = {'analysis_path': ANALYSIS_PATH}
+
+#TH_RESDIR = os.path.join(d['analysis_path'], TH_RESDIR)
+
+#TOPHATDICT = {'th_resdir': th_resdir,
+                #'th_log_file': th_resdir, TH_LOG_FILE),
+                #'th_dir': TH_DIR,
+                #'th_cmd': THCMD_FILE,
+                #'bam_file': '{}/{}'.format(th_resdir, BAM_FILE),
+                #'th_set_path_orig': os.path.join(TH_SET_PATH_ORIG,
+                #'th_set_path_copy': os.path.join(th_resdir,
+                    #TH_SET_FILE)
+                #}
+
+#CUFFLINKDICT = {'cufflinks_dir': CUFFLINKS_DIR,
+                #'cufflinkslog_file': CUFFLINKSLOG_FILE,
+                #'cufflinkscmd_file': CUFFLINKSCMD_FILE
+                #}
 
 
 

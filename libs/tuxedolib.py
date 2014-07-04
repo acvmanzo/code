@@ -158,31 +158,34 @@ def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinks
         f.write(cufflinkscmd)
     os.system(cufflinkscmd)
 
-def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_info):
+def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict, 
+        th_cuff_dict):
     '''
     Runs tophat and cufflinks on one sample.
     Inputs:
     sample = berkid for the sample
     sample_seqdir = directory containing the sequence files for each sample
     results_dir = main results directory
-    tophat_cufflinks_info: dictionary containing the following keys/values:
+    rnaseqdict = dictionary containing the following keys/values:
         combined_fastq_suffix = suffix for the combined fastq file
         tophat_dir = directory for tophat results
         tophatcmd_file = file containing the tophat command used
-        bam_file = name of bamfile output by the tophat program
         cufflinks_dir = directory for cufflinks results
         cufflinkslog_file = file containing info about cufflinks program (writes stdout to this 
         file)
         cufflinkscmd_file = file containing the cufflinks command used
+    th_cuff_dict_info: dictionary containing the following keys/values:
+        bam_file = name of bamfile output by the tophat program
         gff_file = name of genome gff file for use wtih tophat and cufflinks 
         mitogff_file = name of mitochondriol gff file for use in masking during cufflinks
         btindex = name of bowtie index files used for tophat
     '''
-    d = tophat_cufflinks_info
+    d = th_cuff_dict
+    rd = rnaseqdict
     os.chdir(sample_seqdir)
     # Concatenate the sequence files into one file.
-    combined_gzpath = get_combined_gzpath(sample_resdir, sample, d['combined_fastq_suffix'])
-
+    combined_gzpath = get_combined_gzpath(sample_resdir, sample, rd['combined_fastq_suffix'])
+    cmn.makenewdir(os.path.join(rd['th_resdirpath'], sample))
     gen_combined_gzfile(sample_seqdir, combined_gzpath) 
     # Unzip the combined sequence file.
     unzip_gzfile(combined_gzpath)
@@ -192,26 +195,26 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, tophat_cufflinks_
     fastafile = os.path.basename(combined_gzpath).strip('.gz')
     logging.info('%s', fastafile)    
 
-    if os.path.exists(d['tophat_dir']):
+    if os.path.exists(rd['th_dir']):
         logging.warning('%s', 'tophat directory exists')
     else:
-        run_tophat(d['tophat_dir'], d['gff_file'], d['btindex'], fastafile, d['tophatcmd_file'])
+        run_tophat(rd['th_dir'], d['gff_path'], d['btindex'], fastafile, rd['th_cmd_file'])
         os.remove(fastafile)
    
     # Run cufflinks.
     if os.path.exists(d['cufflinks_dir']):
         logging.warning('cufflinks directory exists')
     else:
-        run_cufflinks(d['mitogff_file'], d['gff_file'], d['bam_file'], d['cufflinkslog_file'], 
-                d['cufflinkscmd_file']) 
+        run_cufflinks(d['mitogff_file'], d['gff_path'], d['bam_file'], rd['cufflinkslog_file'], 
+                rd['cufflinkscmd_file']) 
     
 
-def seqdir_run_tophat_cufflinks(dir_info, tophat_cufflinks_info):
+def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict):
     '''Runs tophat and cufflinks on multiple samples organized in the following manner:
     main seqdir > sequence batch folder (date) > sequence subdirectory (sequences/) > sample 
     folder
     Inputs:
-    dir_info: List containing the following variables:
+    rnaseqdict: Dictionary containing the following variables:
         seqdir = directory that contains all the sequence files; I have divided the 
         sequence files into 'sequence batch' folders based on the date that they were sent to be 
         sequenced. Each 'sequence batch' folder contains multiple 'sample folders' that contains 
@@ -223,13 +226,14 @@ def seqdir_run_tophat_cufflinks(dir_info, tophat_cufflinks_info):
         sampleglob = string that is unique to names of sample folders
     tophat_cufflinks_info: List containing the variables needed for the run_tophat_cufflinks()
     '''
-    d = dir_info
-    seqbatchdirs = get_dirs(d['seq_dir'], d['seqbatchglob']) # Finds all the sequence batch 
+    rd = rnaseqdict
+    d = th_cuff_dict
+    seqbatchdirs = get_dirs(rd['seq_dir'], rd['seqbatchglob']) # Finds all the sequence batch 
     # folders.
     logging.info('Sequence batch directories %s', seqbatchdirs)
     for sbd in seqbatchdirs:
         try:
-            sample_seqdirs = get_dirs(os.path.join(sbd, d['seq_subdir']), d['sampleseqglob'])
+            sample_seqdirs = get_dirs(os.path.join(sbd, rd['seq_subdir']), rd['sampleseqglob'])
             logging.info('Sample directories %s', [os.path.basename(x) for x in sample_seqdirs])
         except FileNotFoundError:
             logging.warning('Sequence folder does not exist')
@@ -238,11 +242,12 @@ def seqdir_run_tophat_cufflinks(dir_info, tophat_cufflinks_info):
         for sample_seqdir in sample_seqdirs:
             sample = os.path.basename(sample_seqdir).split('_')[1]
             logging.info('%s', sample)
-            sample_resdir = os.path.join(d['results_dir'], sample) 
-            if not os.path.exists(os.path.join(sample_resdir, tophat_cufflinks_info['tophat_dir'])):
+            sample_resdir = os.path.join(rd['th_resdirpath'], sample) 
+            if not os.path.exists(os.path.join(sample_resdir, d['tophat_dir'])):
                 cmn.makenewdir(sample_resdir)
                 logging.info('Running tophat and cufflinks')
-                run_tophat_cufflinks(sample, sample_seqdir, sample_resdir , tophat_cufflinks_info)
+                run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, 
+                        rd, d)
             else:
                 logging.warning('Tophat and cufflinks output exists')
 
