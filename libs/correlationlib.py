@@ -12,31 +12,33 @@ from scipy import stats
 import itertools
 import logging
 import cmn.cmn as cmn
+import libs.rnaseqlib as rl
 
 BERKIDLEN = 8
 
+#### Removed to rnaseqlib.py
+#def add_berkid(berkid, fpkm_path, berkid_fpkm_path):
+    #'''adds the berkid to the last columns of an
+    #fpkm file output by cufflinks.
+    #'''
+    #with open(berkid_fpkm_path, 'w') as g:
+        #with open(fpkm_path, 'r') as f:
+            #next(f)
+            #for l in f:
+                #newline = l.strip('\n') + '\t{0}\n'.format(berkid)
+                #g.write(newline) 
 
-def add_berkid(berkid, fpkm_path, berkid_fpkm_path):
-    '''adds the berkid to the last columns of an
-    fpkm file output by cufflinks.
-    '''
-    with open(berkid_fpkm_path, 'w') as g:
-        with open(fpkm_path, 'r') as f:
-            next(f)
-            for l in f:
-                newline = l.strip('\n') + '\t{0}\n'.format(berkid)
-                g.write(newline) 
 
-
-def madd_berkid(cufflink_fpkm_path_tuples):
-    '''Input is list of tuples of the following form:
-    (berkid, fpkm path, berkid_fpkm_path)
-    '''
-    for berkid, cf, bcf in cufflink_fpkm_path_tuples:
-        if not os.path.exists(cf):
-            logging.info('%s does not exist', cf)
-            continue
-        add_berkid(berkid, cf, bcf)
+#### Removed to rnaseqlib.py
+#def madd_berkid(cufflink_fpkm_path_tuples):
+    #'''Input is list of tuples of the following form:
+    #(berkid, fpkm path, berkid_fpkm_path)
+    #'''
+    #for berkid, cf, bcf in cufflink_fpkm_path_tuples:
+        #if not os.path.exists(cf):
+            #logging.info('%s does not exist', cf)
+            #continue
+        #add_berkid(berkid, cf, bcf)
 
 def find_num_genes(dbtable, berkid, cur):
     checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
@@ -46,7 +48,7 @@ def find_num_genes(dbtable, berkid, cur):
 
 def copy_to_dbtable(berkid_fpkm_path, dbtable, cur):
     '''copies data from the modfied gene fpkm tracking file output
-    by add_berkid() into the sql table dbtable using the cursor cur.
+    by rl.add_berkid() into the sql table dbtable using the cursor cur.
     '''
     #print(berkid_fpkm_p_ath)
     print(os.getcwd())
@@ -316,7 +318,7 @@ def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
     berkid_cufflink_fpkm_paths = [get_cufflink_berkid_fpkm_path(cf,
             berkid_fpkm_file) for cf in cufflink_fpkm_paths]
     berkids = [get_berkid(cf) for cf in cufflink_fpkm_paths]
-    madd_berkid(zip(berkids, cufflink_fpkm_paths, 
+    rl.madd_berkid(zip(berkids, cufflink_fpkm_paths, 
         berkid_cufflink_fpkm_paths))
     mcopy_to_dbtable(berkid_cufflink_fpkm_paths, cuff_table, cur)
     conn.commit()
