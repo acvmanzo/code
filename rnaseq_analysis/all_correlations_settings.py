@@ -1,6 +1,6 @@
 # Settings for all_correlations.py
 
-from tuxedo_settings import *
+from rnaseq_settings import *
 import os
 import cmn.cmn as cmn
 import datetime
@@ -31,7 +31,6 @@ PC_LOG = True # If set to 'True', adds 1 to each value in the list of
 
 # Directories used.
 CORR_DIR_BASE = 'correl_tophat'
-ANALYSIS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis'
 CORRELATION_DIR = os.path.join(ANALYSIS_DIR, CORR_DIR_BASE)
 if GENE_SUBSET_TABLE != False:
     CORRELATION_DIR = CORRELATION_DIR + '_{}'.format(GENE_SUBSET_TABLE)

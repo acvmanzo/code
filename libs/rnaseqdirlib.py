@@ -3,7 +3,6 @@ import logging
 import psycopg2
 
 
-BERKIDLEN = 8
 
 def get_replicate_berkid_dict(cur, condition, sampleinfo_table):
 

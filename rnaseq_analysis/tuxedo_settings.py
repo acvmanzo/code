@@ -3,12 +3,11 @@
 import os
 
 SEQ_DIR = '/home/andrea/Documents/lab/RNAseq/sequences'
-RESULTS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
+ANALYSIS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/'
+RESULTS_DIR = os.path.join(ANALYSIS_DIR, 'results_tophat')
 LOG_FILE = os.path.join(RESULTS_DIR, 'mrun.log')
 SETTINGS_FILE = '/home/andrea/Documents/lab/code/rnaseq_analysis/tuxedo_settings.py'
 NEW_SETTINGS_FILE = os.path.join(RESULTS_DIR, 'tuxedo_settings.py')
-#SEQ_DIR = '/home/andrea/rnaseqanalyze/sequences'
-#RESULTS_DIR = '/home/andrea/rnaseqanalyze/results'
 
 SEQ_SUBDIR = 'sequences'
 SEQBATCHGLOB = '2014-*/'

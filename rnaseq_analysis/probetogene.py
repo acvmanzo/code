@@ -16,8 +16,7 @@ def probe_to_fbgn_gene():
     (PGFILE) so that each row in the NEWFILE contains the probe and gene/fbgn
     number. If a probe matches multiple genes/fbgns, one row is written for 
     each match. Also adds a column called 'Gene Source' for compatibility
-    with SQL datbases. Only copies data from genes that are upregulated in 
-    brain into the NEWFILE.
+    with SQL datbases. 
     '''
     d = {}
     with open(PGFILE, 'r') as f:
