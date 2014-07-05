@@ -120,6 +120,7 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'cuffcmd_file': CUFFCMD_FILE,
                 'htseq_dir': HTSEQ_DIR,
                 'htseq_cmd_file': HTSEQ_CMD_FILE,
+                'htseq_log_file': HTSEQ_LOG_FILE,
                 'htseq_file': HTSEQ_FILE,
                 'edger_dirpath': os.path.join(ANALYSIS_PATH, EDGER_DIR),
                 }
