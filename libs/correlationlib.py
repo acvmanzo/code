@@ -40,10 +40,6 @@ BERKIDLEN = 8
             #continue
         #add_berkid(berkid, cf, bcf)
 
-def find_num_genes(dbtable, berkid, cur):
-    checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
-    cur.execute(checkrowscmd)
-    return(cur.fetchone()[0])
 
 
 def gen_joincmd(selectlist, berkids, dbtable, maxfpkm, gene_subset_table):

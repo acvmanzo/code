@@ -36,8 +36,13 @@ def add_berkid(berkid, file_path):
     berkid_file_path = file_path + '_berkid'
     with open(berkid_file_path, 'w') as g:
         with open(file_path, 'r') as f:
-            next(f)
+            #print(file_path)
+            #print('current working dir', os.getcwd())
+            if file_path == 'genes.fpkm_tracking':
+                next(f)
             for l in f:
+                if '__' in l.split('\t')[0]:
+                    continue
                 newline = l.strip('\n') + '\t{0}\n'.format(berkid)
                 g.write(newline) 
 
@@ -53,17 +58,27 @@ def madd_berkid(berkid_filepath_tuples):
         add_berkid(berkid, fp)
 
 
+
+def find_num_genes(dbtable, berkid, cur):
+    checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
+    cur.execute(checkrowscmd)
+    return(cur.fetchone()[0])
+
+
 def copy_to_dbtable(berkid_file_path, dbtable, cur):
     '''copies data from the modfied file output by rl.add_berkid() into the sql
     table dbtable using the cursor cur.
     '''
     #print(berkid_fpkm_p_ath)
-    print(os.getcwd())
+    print('cwd', os.getcwd())
     with open(berkid_file_path, 'r') as f:
         info = next(f)
     berkid = info.strip('\n').split('\t')[-1]
     print(berkid)
     checkrows = int(find_num_genes(dbtable, berkid, cur))
+    print(checkrows, 'checkrows')
+    print(berkid_file_path)
+    print(dbtable)
     if checkrows != 0:
         delcmd = "delete from {} where berkid = '{}';".format(dbtable, berkid)
         cur.execute(delcmd)
