@@ -248,3 +248,15 @@ def check_table_exists(table, cur):
     cur.execute(cmd)
     result = cur.fetchone()[0]
     return(result)
+
+
+def logginginfo(logpath):
+    logging.basicConfig(filename=logpath, 
+            format='%(asctime)s %(levelname)s %(message)s', 
+            datefmt='%m/%d/%Y_%I-%M-%S %p', 
+            filemode='w', 
+            level=logging.DEBUG)
+    console = logging.StreamHandler() # Displays output to screen.
+    console.setLevel(logging.INFO)
+    logging.getLogger('').addHandler(console)
+

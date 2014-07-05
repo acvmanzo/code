@@ -768,7 +768,7 @@
 
 
 -- ---Putting all the lists together ------
--- CREATE OR REPLACE VIEW brain_aut_will_r557 AS (
+-- CREATE OR REPLACE VIEW bwa_r557 AS (
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'williams')
 -- UNION
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'sfari')
@@ -779,7 +779,7 @@
 -- order by gene_short_name)
 -- ;
 
--- CREATE OR REPLACE VIEW brain_aut_will_r550 AS (
+-- CREATE OR REPLACE VIEW bwa_r550 AS (
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'dmel-all-r5.50.gff', 'williams')
 -- UNION
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'dmel-all-r5.50.gff', 'sfari')
@@ -791,7 +791,7 @@
 -- ;
 
 ----------- OLD ------------
--- CREATE VIEW brain_aut_will_r550 AS (
+-- CREATE VIEW bwa_r550 AS (
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'flyatlasbrain_pfbgns', 'dmel-all-r5.50.gff')
 -- UNION
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r550_id_index', 'autkb_pfbgns', 'dmel-all-r5.50.gff')
@@ -808,7 +808,7 @@
 -- select name_name from sarah_bwa
 -- EXCEPT
 -- select sarah.name_name
-    -- from brain_aut_will_r550 as mine
+    -- from bwa_r550 as mine
     -- inner join
     -- sarah_bwa as sarah
     -- on (sarah.name_name = mine.gene_short_name)
@@ -817,10 +817,10 @@
     -- ;
 
 -- -- -- Genes in My list that aren't in Sarah's -- --
--- select gene_short_name from brain_aut_will_r550
+-- select gene_short_name from bwa_r550
 -- EXCEPT
 -- select sarah.name_name
-    -- from brain_aut_will_r550 as mine
+    -- from bwa_r550 as mine
     -- inner join
     -- sarah_bwa as sarah
     -- on (sarah.name_name = mine.gene_short_name)
@@ -828,27 +828,27 @@
     -- ;
 
 ---- Incorporating Ralph's list of gene he is not interested in ----
--- create table ralph_excluded_genes(
+-- create table ralph_ex_genes(
     -- gene_name varchar(100)
 -- );
 
--- \copy ralph_excluded_genes from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/ralph_genes_exclude.txt';
+-- \copy ralph_ex_genes from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/ralph_genes_exclude.txt';
 
 -- -- -- Lists genes that are in my list excluding Ralph's
--- create or replace view brain_aut_will_r557_ralph_mt_excluded as (
-    -- select gene_short_name from brain_aut_will_r557
+-- create or replace view bwa_r557_ralph_mt_ex as (
+    -- select gene_short_name from bwa_r557
     -- except
-    -- select gene_name from ralph_excluded_genes
+    -- select gene_name from ralph_ex_genes
     -- except 
-    -- select gene_name from mt_excluded_genes
+    -- select gene_name from mt_ex_genes
     -- order by gene_short_name);
 
 
 -- -- List of genes encoding mitochondrial proteins that I am excluding
--- create table mt_excluded_genes(
+-- create table mt_ex_genes(
     -- gene_name varchar(100)
 -- );
--- \copy mt_excluded_genes from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/mt_genes_exclude.txt'SELECT EXISTS(
+-- \copy mt_ex_genes from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/mt_genes_exclude.txt'SELECT EXISTS(
 
 ---- Code for checking if a table exists (c.relname)
 -- SELECT EXISTS(
@@ -859,4 +859,7 @@
 -- AND    c.relname = 'htseq_prot_coding_genes'
 -- );;
 
--- -- Renaming the brain_aut_will tables to 'baw_'
+-- -- Renaming the brain_aut_will tables to 'baw'
+-- alter table brain_aut_will_r550 rename to bwa_r550;
+-- alter table brain_aut_will_r557 rename to bwa_r557;
+-- alter table brain_aut_will_r557_ralph_mt_excluded rename to bwa_r557_ralph_mt_ex;

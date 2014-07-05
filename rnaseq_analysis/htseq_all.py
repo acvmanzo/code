@@ -5,9 +5,11 @@
 #Settings and file structure are in rnaseq_settings.
 
 import libs.htseqlib as hl
+import libs.rnaseqlib as rl
 import psycopg2
 import argparse
 import logging
+import datetime
 from rnaseq_analysis.rnaseq_settings import *
 
 parser = argparse.ArgumentParser()
@@ -39,14 +41,9 @@ def batch_ht_gene_subset(conn, gene_subset_table):
     hl.batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
 
 def main():
-    logging.basicConfig(filename=RNASEQDICT['htseq_log_file'], 
-            format='%(asctime)s %(levelname)s %(message)s', 
-            datefmt='%m/%d/%Y_%I-%M-%S %p', 
-            filemode='w', 
-            level=logging.DEBUG)
-    console = logging.StreamHandler() # Displays output to screen.
-    console.setLevel(logging.INFO)
-    logging.getLogger('').addHandler(console)
+    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logpath = '{}_'.format(curtime) + RNASEQDICT['htseq_log_file']
+    rl.logginginfo(logpath)
 
     if args.htseqcount:
         conn = False

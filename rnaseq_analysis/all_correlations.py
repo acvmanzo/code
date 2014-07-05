@@ -66,10 +66,9 @@ def prune_cufflink_path(cufflink_fpkm_paths):
 
 def main():
     # Settings for logging.
-    logging.basicConfig(filename=CORRLOGPATH,
-                        format='%(asctime)s %(levelname)s %(message)s',
-                        datefmt='%m/%d/%Y %I:%M:%S %p', filemode='w',
-                        level=logging.DEBUG)
+    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logpath = CORRLOGPATH
+    rl.logginginfo(logpath)
     console = logging.StreamHandler()  # Displays output to screen.
     console.setLevel(logging.INFO)
     logging.getLogger('').addHandler(console)
