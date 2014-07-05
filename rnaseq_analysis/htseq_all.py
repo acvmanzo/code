@@ -1,10 +1,13 @@
 import libs.htseqlib as hl
+import psycopg2
 
-#conn = psycopg2.connect("dbname=rnaseq user=andrea")
-##batch_copy_to_dbtable(cur)
-#batch_get_select_genes(conn)
+conn = psycopg2.connect("dbname=rnaseq user=andrea")
+hl.batch_run_htseq(conn)
 #conn.commit()
-#conn.close()
+#hl.batch_ht_copy_to_dbtable(conn)
+#hl.batch_get_select_genes(conn, 'prot_coding_genes')
+conn.commit()
+conn.close()
 
 #batch_edger_pairwise_DE(EXPTLIST, CTRL)
 #groups_edger_DE()

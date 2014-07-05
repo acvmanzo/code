@@ -1,13 +1,12 @@
 import logging
 import libs.rnaseqlib as rl
-import correlationlib as cl
 import cmn.cmn as cmn
-#import rnaseqdirlib as rdl
+import libs.rnaseqlib as rl
 import os
 import psycopg2
 import glob
 import sys
-import de_settings
+from rnaseq_analysis.rnaseq_settings import *
 
 
 "htseq-count -f bam -s no -t gene -i Name accepted_hits.bam /home/andrea/rnaseqanalyze/references/dmel-all-filtered-r5.57-nofa.gff > htseq_count_results_bam2"
@@ -15,21 +14,22 @@ import de_settings
 
 #samtools view -o accepted_hits.sam accepted_hits.bam
 
-ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
-TOPHAT_DIR = 'tophat_out'
-EDGER_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/edgeR'
+#ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
+#TH_DIR = 'tophat_out'
+#EDGER_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/edgeR'
 
-GFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-filtered-r5.57-nofa.gff'
-ALIGN_FILE_BAM = 'accepted_hits.bam'
-INFOFILE = 'htseq.info'
+#GFF_FILE = '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-filtered-r5.57-nofa.gff'
+#ALIGN_FILE_BAM = 'accepted_hits.bam'
+#INFOFILE = 'htseq.info'
 
-INFODBTABLE = 'autin'
+#INFODBTABLE = 'autin'
 
-SAMPLE_GLOB = 'RG*'
+#SAMPLE_GLOB = 'RG*'
 
 
-def batch_fn_thdir(analysis_dir, tophat_dir, globstring, conn, fn):
-    os.chdir(analysis_dir)
+def batch_fn_thdir(th_resdirpath, tophat_dir, globstring, conn, fn):
+    print('running batch')
+    os.chdir(th_resdirpath)
     resdirs = sorted([os.path.abspath(x) for x in glob.glob(globstring)])
     for resdir in resdirs:
         cur = conn.cursor()
@@ -40,6 +40,18 @@ def batch_fn_thdir(analysis_dir, tophat_dir, globstring, conn, fn):
         eval(fn)
         cur.close()
 
+#def batch_fn(conn, fn):
+    #os.chdir(ALIGN_DIR)
+    #resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
+    #for resdir in resdirs:
+        #cur = conn.cursor()
+        #print(resdir)
+        #os.chdir(os.path.join(resdir, TH_DIR))
+        #berkid = os.path.basename(resdir)
+        #print(berkid)
+        #eval(fn)
+        #cur.close()
+
 def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
     '''Runs htseq-count from inside the tophat_out directory.
     htseq_dir = directory with results of htseq-count
@@ -48,26 +60,34 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
     gff_file = gff file used for counts
     htseq_cmd_file = file with htseq command used
     '''
-        htseq_path = os.path.join(os.path.dirname(os.getcwd()), htseq_dir
-        if os.path.exists(htseq_file):
-            print('file exists')
-            os.remove(htseq_dir)
-        else:
-            print('no file')
+    htseq_dirpath = os.path.join(os.path.dirname(os.getcwd()), htseq_dir)
+    cmn.makenewdir(htseq_dirpath)
+    htseq_path = os.path.join(htseq_dirpath, htseq_file)
 
-        cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_file)
+    if os.path.exists(htseq_path):
+        print('Removing existing file')
+        os.remove(htseq_path)
+    else:
+        print('Creating new file')
 
-        os.system(cmd)
-        with open(htseq_cmd_file, 'w') as f:
-            f.write(cmd)
+    cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
+
+    os.system(cmd)
+    with open(htseq_cmd_file, 'w') as f:
+        f.write(cmd)
 
 
-#def batch_run_htseq():
+def batch_run_htseq(conn):
+    fn = "run_htseq('{}', '{}', '{}', '{}', '{}')".format(HTSEQ_DIR, HTSEQ_FILE, BAM_FILE, GFF_PATH_NOFA, HTSEQ_CMD_FILE)
+    print(fn)
+    batch_fn_thdir(TH_RESDIRPATH, TH_DIR, RES_SAMPLE_GLOB, conn, fn)
+
+#def batch_run_htseq(conn):
     #os.chdir(ALIGN_DIR)
     #resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
 
     #for resdir in resdirs:
-        #os.chdir(os.path.join(resdir, TOPHAT_DIR))
+        #os.chdir(os.path.join(resdir, TH_DIR))
         #if os.path.exists(COUNTFILE):
             #print('file exists')
             #os.remove(COUNTFILE)
@@ -98,58 +118,52 @@ def htseq_add_berkid(htseq_path):
     if os.path.exists(htseq_path):
         rl.add_berkid(berkid, htseq_path)
 
-#def batch_fn(conn, fn):
+
+#def batch_get_select_genes(conn):
     #os.chdir(ALIGN_DIR)
     #resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
     #for resdir in resdirs:
         #cur = conn.cursor()
-        #print(resdir)
-        #os.chdir(os.path.join(resdir, TOPHAT_DIR))
+        #os.chdir(os.path.join(resdir, TH_DIR))
         #berkid = os.path.basename(resdir)
         #print(berkid)
-        #eval(fn)
+        #join_table(cur, berkid, 'htseq', 'prot_coding_genes', 'htseqtemp')
         #cur.close()
 
-def batch_get_select_genes(conn):
-    os.chdir(ALIGN_DIR)
-    resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
-    for resdir in resdirs:
-        cur = conn.cursor()
-        os.chdir(os.path.join(resdir, TOPHAT_DIR))
-        berkid = os.path.basename(resdir)
-        print(berkid)
-        join_table(cur, berkid, 'htseq', 'prot_coding_genes', 'htseqtemp')
-        cur.close()
+def ht_copy_to_dbtable(htseqfile, htseqdbtable, cur):
+    '''Copies the results of htseqcount from the file htseqpath into the table
+    htseqdbtable using the cursor cur'''
+    rl.copy_to_dbtable(htseqfile+'_berkid', htseqdbtable, cur)
 
-def batch_copy_to_dbtable(conn):
-    os.chdir(ALIGN_DIR)
-    resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
-    for resdir in resdirs:
-        cur = conn.cursor()
-        os.chdir(os.path.join(resdir, TOPHAT_DIR))
-        berkid = os.path.basename(resdir)
-        print(berkid)
-        cl.copy_to_dbtable(COUNTFILE+'_berkid', 'htseq', cur)
-        cur.close()
+def batch_ht_copy_to_dbtable(conn):
+    fn = "ht_copy_to_dbtable('{}', '{}', {})".format(HTSEQ_FILE, HTSEQ_TABLE,
+            cur)
+    batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
 
 
-def gen_joincmd(berkid, dbtable, gene_subset_table, view):
-    '''returns a string with a command for joining tables.
-    the joined table contains htseq values from the table dbtable for genes 
-    specified in the gene_subset_table 
+def gen_joincmd(berkid, dbtable, gene_subset_table):
+    '''Returns a string with a command for joining tables.
+    The joined table newtable contains htseq values from sample berkid
+    from the table dbtable containing htseq data for genes specified in the 
+    gene_subset_table.
     '''
     
     if gene_subset_table:
         gsstring = 'inner join {} as t2 on t0.gene_name = t2.gene_short_name'.format(gene_subset_table)
     else:
         gsstring = ''
-
-    joinandcopycmd = "drop table {3}; create table {3} as select gene_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, view)
+    
+    newtable = dbtable + gsstring
+    joinandcopycmd = "drop table {3}; create table {3} as select gene_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, newtable)
     logging.debug('%s', joinandcopycmd)
-    return(joinandcopycmd)
+    return(joinandcopycmd, newtable)
 
-def join_table(cur, berkid, dbtable, gene_subset_table, newtable):
-    cmd = gen_joincmd(berkid, dbtable, gene_subset_table, newtable)
+
+def join_table(cur, berkid, dbtable, gene_subset_table):
+    '''Executes the join command given by gen_joincmd, and writes table to 
+    file.
+    '''
+    cmd, newtable = gen_joincmd(berkid, dbtable, gene_subset_table, newtable)
     print(cmd)
     cur.execute(cmd)
     newfile = 'htseqcount_{}'.format(gene_subset_table)
@@ -157,15 +171,8 @@ def join_table(cur, berkid, dbtable, gene_subset_table, newtable):
         cur.copy_to(f, newtable)
     
 
-
-
-#conn = psycopg2.connect("dbname=rnaseq user=andrea")
-##batch_copy_to_dbtable(cur)
-#batch_get_select_genes(conn)
-#conn.commit()
-#conn.close()
-
-#batch_edger_pairwise_DE(EXPTLIST, CTRL)
-#groups_edger_DE()
-#add_htseq_counts('htseq_count_results_bam2')
+def batch_ht_gene_subset(conn, gene_subset_table):
+    fn = "join_table({}, {}, '{}', {})".format(cur, berkid, HTSEQ_TABLE,
+        gene_subset_table)
+    batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
 

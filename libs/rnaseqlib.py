@@ -17,6 +17,19 @@ import psycopg2
         #cur.close()
 
 
+def batch_fn(pardir, globstring, subdir, conn, fn):
+    os.chdir(pardir)
+    resdirs = sorted([os.path.abspath(x) for x in glob.glob(globstring)])
+    for resdir in resdirs:
+        cur = conn.cursor()
+        print(resdir)
+        os.chdir(os.path.join(resdir, subdir))
+        berkid = os.path.basename(resdir)
+        print(berkid)
+        eval(fn)
+        cur.close()
+
+
 def add_berkid(berkid, file_path):
     '''adds the berkid to the last columns of a file
     '''
@@ -40,6 +53,30 @@ def madd_berkid(berkid_filepath_tuples):
         add_berkid(berkid, fp)
 
 
+def copy_to_dbtable(berkid_file_path, dbtable, cur):
+    '''copies data from the modfied file output by rl.add_berkid() into the sql
+    table dbtable using the cursor cur.
+    '''
+    #print(berkid_fpkm_p_ath)
+    print(os.getcwd())
+    with open(berkid_file_path, 'r') as f:
+        info = next(f)
+    berkid = info.strip('\n').split('\t')[-1]
+    print(berkid)
+    checkrows = int(find_num_genes(dbtable, berkid, cur))
+    if checkrows != 0:
+        delcmd = "delete from {} where berkid = '{}';".format(dbtable, berkid)
+        cur.execute(delcmd)
+    cur.copy_from(open(berkid_file_path), dbtable)
+
+
+def mcopy_to_dbtable(sample_fpkm_paths, dbtable, cur):
+    '''applies copy_to_dbtable() to multiple fpkm files.
+    '''
+    logging.info('copying data to table')
+    for sample_fpkm_path in sample_fpkm_paths:
+        copy_to_dbtable(sample_fpkm_path, dbtable, cur)
+
 def get_replicate_berkid_dict(cur, condition, sampleinfo_table):
 
     '''Queries the database to identify the biological replicates for the
@@ -59,6 +96,7 @@ def get_replicate_berkid_dict(cur, condition, sampleinfo_table):
     berkids = [x[0] for x in cur.fetchall()]
     logging.debug('berkids for condition %s: %s', condition, berkids) 
     return(berkids)
+
 
 def get_all_replicate_berkid_dict(cur, sampleinfo_table):
     '''Queries the database to identify all the biological replicates for all 
@@ -81,7 +119,7 @@ def get_all_replicate_berkid_dict(cur, sampleinfo_table):
 
 
 
-def get_sample_results_files(berkid, exp_results_dir):
+#def get_sample_results_files(berkid, exp_results_dir):
 
 def get_sample_results_dir(berkid, exp_results_dir):
     '''Returns the path to a sample results directory by joining the berkid
@@ -98,24 +136,48 @@ def get_fpkm_path(berkid, exp_results_dir, exp_dir, berkid_fpkm_file):
         exp_dir, berkid_fpkm_file))
 
 
-def get_replicate_cufflink_paths(condition_berkid_dict, exp_results_dir,
-        exp_dir, berkid_fpkm_file):
+
+def get_replicate_cufflink_paths(condition_berkid_dict):
     '''Returns a dictionary of paths to the cufflink output FPKM files for
-    every condition in condition_berkid_dict. This dictionary has keywords
-    that are conditions and values that are berkids.
+    every condition in condition_berkid_dict.
+    Input:
+    condition_berkid_dict: keywords are conditions and values are lists of 
+    berkids. Output by the functions get_replicate_berkid_dict or 
+    get_all_replicate_berkid_dict). 
+    Output:
+    Dictionary of paths; keywords are conditions and values are lists of
+    output FPKM file paths.
     '''
     replicate_path_dict = {} 
     for condition, berkids in condition_berkid_dict.items():
-        replicate_path_dict[condition] = [get_cufflink_path(b, 
-            exp_results_dir, exp_dir, berkid_fpkm_file) for b in berkids]
+        replicate_path_dict[condition] = \
+                [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]
     return(replicate_path_dict)
 
-def get_some_cufflink_paths(berkidlist, exp_results_dir, exp_dir,
-    berkid_fpkm_file, key):
+def get_some_cufflink_paths(berkidlist, key):
     '''Returns a dictionary of paths to the cufflink output FPKM files for 
     the berkids in the berkidlist; key is given by key'''
-    return({key: [get_cufflink_path(berkid, exp_results_dir, exp_dir,
-        berkid_fpkm_file) for berkid in berkidlist]})
+    return({key: [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]})
+
+### OLD VERSIONS
+#def get_replicate_cufflink_paths(condition_berkid_dict, exp_results_dir,
+        #exp_dir, berkid_fpkm_file):
+    #'''Returns a dictionary of paths to the cufflink output FPKM files for
+    #every condition in condition_berkid_dict. This dictionary has keywords
+    #that are conditions and values that are berkids.
+    #'''
+    #replicate_path_dict = {} 
+    #for condition, berkids in condition_berkid_dict.items():
+        #replicate_path_dict[condition] = [get_cufflink_path(b, 
+            #exp_results_dir, exp_dir, berkid_fpkm_file) for b in berkids]
+    #return(replicate_path_dict)
+
+#def get_some_cufflink_paths(berkidlist, exp_results_dir, exp_dir,
+    #berkid_fpkm_file, key):
+    #'''Returns a dictionary of paths to the cufflink output FPKM files for 
+    #the berkids in the berkidlist; key is given by key'''
+    #return({key: [get_cufflink_path(berkid, exp_results_dir, exp_dir,
+        #berkid_fpkm_file) for berkid in berkidlist]})
 
 
 def get_all_replicate_cufflink_paths(cur, sampleinfo_table, exp_results_dir, 
@@ -154,7 +216,7 @@ def get_samplename(berkid, cur):
     return(sample)
 
 
-def get_berkid(cufflink_fpkm_path, berkidlen=BERKIDLEN):
+def get_berkid(cufflink_fpkm_path, berkidlen):
     '''return a berkid extracted from a cufflink_fpkm_path'''
     cf = exp_results_path
     return(cf[cf.find('RG'):cf.find('RG')+berkidlen])

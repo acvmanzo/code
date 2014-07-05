@@ -4,17 +4,8 @@ import psycopg2
 from rnaseq_settings import *
 
 
-def batch_fn(conn, fn):
-    os.chdir(ALIGN_DIR)
-    resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
-    for resdir in resdirs:
-        cur = conn.cursor()
-        print(resdir)
-        os.chdir(os.path.join(resdir, TOPHAT_DIR))
-        berkid = os.path.basename(resdir)
-        print(berkid)
-        eval(fn)
-        cur.close()
+
+
 
 
 def get_replicate_berkid_dict(cur, condition, sampleinfo_table):
@@ -68,28 +59,8 @@ def get_all_replicate_berkid_dict(cur, sampleinfo_table):
         #exp_dir, berkid_fpkm_file))
 
 
-def get_replicate_cufflink_paths(condition_berkid_dict):
-    '''Returns a dictionary of paths to the cufflink output FPKM files for
-    every condition in condition_berkid_dict.
-    Input:
-    condition_berkid_dict: keywords are conditions and values are lists of 
-    berkids. Output by the functions get_replicate_berkid_dict or 
-    get_all_replicate_berkid_dict). 
-    Output:
-    Dictionary of paths; keywords are conditions and values are lists of
-    output FPKM file paths.
-    '''
-    replicate_path_dict = {} 
-    for condition, berkids in condition_berkid_dict.items():
-        replicate_path_dict[condition] = 
-                [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]
-    return(replicate_path_dict)
 
 
-def get_some_cufflink_paths(berkidlist, key):
-    '''Returns a dictionary of paths to the cufflink output FPKM files for 
-    the berkids in the berkidlist; key is given by key'''
-    return({key: [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]})
 
 
 def get_all_replicate_cufflink_paths(cur, sampleinfo_table, exp_results_dir, 

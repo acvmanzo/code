@@ -46,30 +46,6 @@ def find_num_genes(dbtable, berkid, cur):
     return(cur.fetchone()[0])
 
 
-def copy_to_dbtable(berkid_fpkm_path, dbtable, cur):
-    '''copies data from the modfied gene fpkm tracking file output
-    by rl.add_berkid() into the sql table dbtable using the cursor cur.
-    '''
-    #print(berkid_fpkm_p_ath)
-    print(os.getcwd())
-    with open(berkid_fpkm_path, 'r') as f:
-        info = next(f)
-    berkid = info.strip('\n').split('\t')[-1]
-    print(berkid)
-    checkrows = int(find_num_genes(dbtable, berkid, cur))
-    if checkrows != 0:
-        delcmd = "delete from {} where berkid = '{}';".format(dbtable, berkid)
-        cur.execute(delcmd)
-    cur.copy_from(open(berkid_fpkm_path), dbtable)
-
-
-def mcopy_to_dbtable(sample_fpkm_paths, dbtable, cur):
-    '''applies copy_to_dbtable() to multiple fpkm files.
-    '''
-    logging.info('copying data to table')
-    for sample_fpkm_path in sample_fpkm_paths:
-        copy_to_dbtable(sample_fpkm_path, dbtable, cur)
-
 def gen_joincmd(selectlist, berkids, dbtable, maxfpkm, gene_subset_table):
     '''returns a string with a command for joining tables.
     the joined table contains fpkm values for two samples, and
