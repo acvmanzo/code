@@ -1,8 +1,14 @@
+#!/usr/bin/python
+
+#Code for running htseq-count, loading htseq-count results into a database,
+#generating files with htseq-count data of different subsets of genes. 
+#Settings and file structure are in rnaseq_settings.
+
 import libs.htseqlib as hl
 import psycopg2
 import argparse
 import logging
-from rnaseq_analysis/rnaseq_settings import *
+from rnaseq_analysis.rnaseq_settings import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-ht', '--htseqcount', action='store_true', 
@@ -29,6 +35,7 @@ def batch_ht_copy_to_dbtable(conn):
 def batch_ht_gene_subset(conn, gene_subset_table):
     fn = "join_table(cur, berkid, '{}', '{}')".format(HTSEQ_TABLE,
         gene_subset_table)
+    print(fn)
     hl.batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
 
 def main():
@@ -44,20 +51,20 @@ def main():
     if args.htseqcount:
         conn = False
         logging.info('Running htseq-count')
-        hl.batch_run_htseq(conn)
+        batch_run_htseq(conn)
 
     if args.copytodb:
         logging.info('Copying to database')
         conn = psycopg2.connect("dbname=rnaseq user=andrea")
-        hl.batch_ht_add_berkid(conn)
-        hl.batch_ht_copy_to_dbtable(conn)
+        batch_ht_add_berkid(conn)
+        batch_ht_copy_to_dbtable(conn)
         conn.commit()
         conn.close()
 
     if args.genesubset:
         logging.info('Generating htseq-count file for {}'.format(args.genesubset))
         conn = psycopg2.connect("dbname=rnaseq user=andrea")
-        hl.batch_ht_gene_subset(conn, args.genesubset)
+        batch_ht_gene_subset(conn, args.genesubset)
         conn.commit()
         conn.close()
 

@@ -70,15 +70,15 @@ def copy_to_dbtable(berkid_file_path, dbtable, cur):
     table dbtable using the cursor cur.
     '''
     #print(berkid_fpkm_p_ath)
-    print('cwd', os.getcwd())
+    logging.debug('cwd', os.getcwd())
     with open(berkid_file_path, 'r') as f:
         info = next(f)
     berkid = info.strip('\n').split('\t')[-1]
-    print(berkid)
+    logging.debug('copy_to_db', berkid)
     checkrows = int(find_num_genes(dbtable, berkid, cur))
-    print(checkrows, 'checkrows')
-    print(berkid_file_path)
-    print(dbtable)
+    logging.debug(checkrows, 'checkrows')
+    logging.debug(berkid_file_path)
+    logging.debug(dbtable)
     if checkrows != 0:
         delcmd = "delete from {} where berkid = '{}';".format(dbtable, berkid)
         cur.execute(delcmd)
@@ -239,3 +239,12 @@ def get_berkid(cufflink_fpkm_path, berkidlen):
 def get_berkidlist(cufflink_fpkm_paths):
     '''returns a list of berkids extracted from a list of cufflink output paths'''
     return([get_berkid(cf) for cf in cufflink_fpkm_paths])
+
+
+def check_table_exists(table, cur):
+
+    cmd = "SELECT EXISTS( SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname = '{}');;".format(table)
+
+    cur.execute(cmd)
+    result = cur.fetchone()[0]
+    return(result)

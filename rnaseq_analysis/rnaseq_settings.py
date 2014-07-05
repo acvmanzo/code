@@ -70,8 +70,8 @@ COMBINED_FASTQ_SUFFIX = 'combined.fastq.gz'
 
 ANALYSIS_PATH = '/home/andrea/Documents/lab/RNAseq/analysis'
 
-TH_RESDIR = 'results_tophat_secondstrand'
-#TH_RESDIR = 'results_tophat'
+#TH_RESDIR = 'results_tophat_secondstrand'
+TH_RESDIR = 'results_tophat'
 TH_RESDIRPATH = os.path.join(ANALYSIS_PATH, TH_RESDIR)
 TH_DIR = 'tophat_out'
 THCMD_FILE = 'tophatcmd.txt'
@@ -97,8 +97,8 @@ RES_SAMPLE_GLOB = 'RG*'
 EDGER_DIR = 'edgeR'
 
 SAMPLEINFO_TABLE = 'autin'
-#HTSEQ_TABLE = 'htseq'
-HTSEQ_TABLE = 'htseq_test'
+HTSEQ_TABLE = 'htseq'
+#HTSEQ_TABLE = 'htseq_test'
 
 BERKIDLEN = 8
 

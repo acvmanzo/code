@@ -803,8 +803,9 @@
 -- ;
 
 -- -- -- -- -- Comparing my r5.50 bwa list with Sarah's r5.50 bwa list -- -- --
+
+-- -- Genes in Sarah's list that aren't in mine -- --
 -- select name_name from sarah_bwa
--- -- select gene_short_name from brain_aut_will_r550
 -- EXCEPT
 -- select sarah.name_name
     -- from brain_aut_will_r550 as mine
@@ -815,4 +816,47 @@
 -- order by name_name
     -- ;
 
+-- -- -- Genes in My list that aren't in Sarah's -- --
+-- select gene_short_name from brain_aut_will_r550
+-- EXCEPT
+-- select sarah.name_name
+    -- from brain_aut_will_r550 as mine
+    -- inner join
+    -- sarah_bwa as sarah
+    -- on (sarah.name_name = mine.gene_short_name)
+-- order by gene_short_name
+    -- ;
 
+---- Incorporating Ralph's list of gene he is not interested in ----
+-- create table ralph_excluded_genes(
+    -- gene_name varchar(100)
+-- );
+
+-- \copy ralph_excluded_genes from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/ralph_genes_exclude.txt';
+
+-- -- -- Lists genes that are in my list excluding Ralph's
+-- create or replace view brain_aut_will_r557_ralph_mt_excluded as (
+    -- select gene_short_name from brain_aut_will_r557
+    -- except
+    -- select gene_name from ralph_excluded_genes
+    -- except 
+    -- select gene_name from mt_excluded_genes
+    -- order by gene_short_name);
+
+
+-- -- List of genes encoding mitochondrial proteins that I am excluding
+-- create table mt_excluded_genes(
+    -- gene_name varchar(100)
+-- );
+-- \copy mt_excluded_genes from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/mt_genes_exclude.txt'SELECT EXISTS(
+
+---- Code for checking if a table exists (c.relname)
+-- SELECT EXISTS(
+-- SELECT 1 
+-- FROM   pg_catalog.pg_class c
+-- JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+-- WHERE  n.nspname = 'public'
+-- AND    c.relname = 'htseq_prot_coding_genes'
+-- );;
+
+-- -- Renaming the brain_aut_will tables to 'baw_'

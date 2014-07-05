@@ -90,7 +90,9 @@ def gen_joincmd(berkid, dbtable, gene_subset_table):
         gsstring = ''
     
     newtable = dbtable + '_' + gene_subset_table
-    joinandcopycmd = "drop table {3}; create table {3} as select gene_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, newtable)
+
+
+    joinandcopycmd = "create table {3} as select gene_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, newtable)
     logging.debug('%s', joinandcopycmd)
     return(joinandcopycmd, newtable)
 
@@ -100,7 +102,10 @@ def join_table(cur, berkid, dbtable, gene_subset_table):
     file.
     '''
     cmd, newtable = gen_joincmd(berkid, dbtable, gene_subset_table)
-    logging.info(cmd)
+    if rl.check_table_exists(newtable, cur):
+        cmd = "drop table {};".format(newtable) + cmd
+
+    logging.debug(cmd)
     cur.execute(cmd)
     newfile = 'htseqcount_{}'.format(gene_subset_table)
     with open(newfile, 'w') as f:
@@ -115,11 +120,10 @@ def move_htseq_files(htseq_dir, htseq_file):
     htseq_dirpath = os.path.join(os.path.dirname(os.getcwd()), htseq_dir)
     cmn.makenewdir(htseq_dirpath)
     htseq_path = os.path.join(htseq_dirpath, htseq_file)
+    print(htseq_dirpath)
     
     htfiles = glob.glob('htseq*')
+    print(htfiles)
     for ht in htfiles:
         shutil.move(ht, htseq_dirpath)
 
-def batch_move_htseq_files():
-    fn = "move_htseq_files('{}', '{}')".format(HTSEQ_DIR, HTSEQ_FILE)
-    batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
