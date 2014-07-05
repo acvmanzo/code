@@ -6,7 +6,6 @@ import tuxedolib as tl
 import logging
 import shutil
 import sys
-from tuxedo_settings import *
 from rnaseq_settings import *
 
 print('Write yes to run Cufflinks or no otherwise')

@@ -10,7 +10,7 @@ parser.add_argument('-ht', '--htseqcount', action='store_true',
 parser.add_argument('-c', '--copytodb', action='store_true', 
         help='copy htseq-count results to database')
 parser.add_argument('-s', '--genesubset', 
-        help='make new file of htseq-count results for a subset of genes')
+        help='make new file of htseq-count results for the given subset of genes')
 args = parser.parse_args()
 
 

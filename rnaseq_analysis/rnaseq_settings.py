@@ -79,7 +79,7 @@ BAM_FILE = 'accepted_hits.bam'
 TH_LOG_FILE = 'tophat.log'
 TH_LOG_PATH = os.path.join(TH_RESDIRPATH, TH_LOG_FILE)
 TH_SET_DIR_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
-TH_SET_FILE = 'tuxedo_settings.py'
+TH_SET_FILE = 'rnaseq_settings.py'
 TH_SET_PATH_ORIG = os.path.join(TH_SET_DIR_ORIG, TH_SET_FILE)
 TH_SET_PATH_COPY = os.path.join(TH_RESDIRPATH, TH_SET_FILE)
 
