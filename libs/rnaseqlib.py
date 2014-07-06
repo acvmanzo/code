@@ -60,6 +60,7 @@ def madd_berkid(berkid_filepath_tuples):
 
 
 def find_num_genes(dbtable, berkid, cur):
+    '''Finds the number of genes in dbtable with berkid berkid'''
     checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
     cur.execute(checkrowscmd)
     return(cur.fetchone()[0])
@@ -85,51 +86,51 @@ def copy_to_dbtable(berkid_file_path, dbtable, cur):
     cur.copy_from(open(berkid_file_path), dbtable)
 
 
-def mcopy_to_dbtable(sample_fpkm_paths, dbtable, cur):
-    '''applies copy_to_dbtable() to multiple fpkm files.
+def mcopy_to_dbtable(sample_file_paths, dbtable, cur):
+    '''applies copy_to_dbtable() to multiple files.
     '''
     logging.info('copying data to table')
-    for sample_fpkm_path in sample_fpkm_paths:
-        copy_to_dbtable(sample_fpkm_path, dbtable, cur)
+    for sample_file_path in sample_file_paths:
+        copy_to_dbtable(sample_file_path, dbtable, cur)
 
-def get_replicate_berkid_dict(cur, condition, sampleinfo_table):
+def get_replicate_berkid_dict(cur, genotype, sampleinfo_table):
 
     '''Queries the database to identify the biological replicates for the
-    condition.
+    given genotype.
     Inputs:
     cur = cursor for querying using psycopg2
-    condition = e.g., CS_M or CS_F
+    genotype = e.g., CS_M or CS_F
     sampleinfo_table = name of table being queries
     Outputs:
-    A dictionary in which the keys are the conditions and the values are the
+    A dictionary in which the keys are the genotypes and the values are the
     berkids
     '''
-    genotype, sex = condition.split('_')
-    selcmd = "SELECT berkid FROM {} WHERE genotype = '{}' AND sex = '{}' AND seq_received = true ORDER BY berkid;".format(sampleinfo_table, genotype, sex)
+    genotype, sex = genotype.split('_')
+    selcmd = "SELECT berkid FROM {} WHERE genotype = '{}' AND sex = '{}' AND use_seq = true ORDER BY berkid;".format(sampleinfo_table, genotype, sex)
     logging.debug('%s', selcmd)
     cur.execute(selcmd)
     berkids = [x[0] for x in cur.fetchall()]
-    logging.debug('berkids for condition %s: %s', condition, berkids) 
+    logging.debug('berkids for genotype %s: %s', genotype, berkids) 
     return(berkids)
 
 
 def get_all_replicate_berkid_dict(cur, sampleinfo_table):
     '''Queries the database to identify all the biological replicates for all 
-    conditions (e.g., CS_M or en_F).
+    genotypes (e.g., CS_M or en_F).
     Inputs:
     cur = cursor for querying using psycopg2
     sampleinfo_table = name of table being queries
     Outputs:
-    A dictionary in which the keys are the conditions and the values are the
+    A dictionary in which the keys are the genotypes and the values are the
     berkids
     '''
     cur.execute("SELECT DISTINCT genotype, sex FROM {} ORDER BY genotype, sex;".format( sampleinfo_table))
-    condition_lists = cur.fetchall()
+    genotype_lists = cur.fetchall()
     all_berkid_dict = {}
-    for cl in condition_lists:
-        condition = '_'.join(cl)
-        berkids = get_replicate_berkid_dict(cur, condition, sampleinfo_table)
-        all_berkid_dict[condition] = berkids
+    for cl in genotype_lists:
+        genotype = '_'.join(cl)
+        berkids = get_replicate_berkid_dict(cur, genotype, sampleinfo_table)
+        all_berkid_dict[genotype] = berkids
     return(all_berkid_dict)
 
 
@@ -242,13 +243,11 @@ def get_berkidlist(cufflink_fpkm_paths):
 
 
 def check_table_exists(table, cur):
-
     cmd = "SELECT EXISTS( SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relname = '{}');;".format(table)
 
     cur.execute(cmd)
     result = cur.fetchone()[0]
     return(result)
-
 
 def logginginfo(logpath):
     logging.basicConfig(filename=logpath, 

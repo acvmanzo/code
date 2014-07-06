@@ -26,9 +26,14 @@
     -- berkid character varying(10),
     -- sentd date,
     -- qbitngul real,
-    -- qbitd date
+    -- qbitd date,
+    -- seq_received boolean,
+    -- use_seq boolean
 -- )
 -- SERVER andreaserver;
+
+
+-- ALTER FOREIGN TABLE autin ADD COLUMN use_seq boolean;
 
 -- -- To count the number of rows in a select query:
 

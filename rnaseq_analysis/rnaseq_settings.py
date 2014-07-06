@@ -95,6 +95,8 @@ HTSEQ_FILE = 'htseqcount'
 RES_SAMPLE_GLOB = 'RG*'
 
 EDGER_DIR = 'edgeR'
+EDGER_DIRPATH = os.path.join(ANALYSIS_PATH, EDGER_DIR)
+EDGER_METADATA_FILE = 'metadata.txt'
 
 SAMPLEINFO_TABLE = 'autin'
 HTSEQ_TABLE = 'htseq'
@@ -122,7 +124,8 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'htseq_cmd_file': HTSEQ_CMD_FILE,
                 'htseq_log_file': HTSEQ_LOG_FILE,
                 'htseq_file': HTSEQ_FILE,
-                'edger_dirpath': os.path.join(ANALYSIS_PATH, EDGER_DIR),
+                'edger_dirpath': EDGER_DIRPATH,
+                'edger_metadata_file': EDGER_METADATA_FILE
                 }
 
 def get_results_files(berkid):

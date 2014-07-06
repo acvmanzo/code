@@ -21,6 +21,7 @@ def add_samplenum(tabledata, outfile):
             for l in f:
                 g.write(l.strip('\n') + ',{0}\n'.format(n))
                 n = n+1
-                
-update_seq_date('2014-05-13_RGAM_samples_for_seq.csv', '2014-0513_sql_code.sql')
+               
+#update_seq_date('2014-05-13_RGAM_samples_for_seq.csv', '2014-0513_sql_code.sql')
+update_seq_date('2014-06-25_andrea_seq.csv', '2014-0625_sql_code.sql')
 #add_samplenum('2014-0403_autindb_copy_nosn.csv', '2014-0403_autindb_copy_newsn.csv')

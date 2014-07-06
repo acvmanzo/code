@@ -2,35 +2,73 @@ import sys
 import glob
 import numpy as np
 import os
-#import htseqlib as hl
-import de_settings
 import psycopg2
+import cmn.cmn as cmn
+import libs.rnaseqlib as rl
+#import htseqlib as hl
+#import de_settings
+import rnaseq_settings as rs
+#from edger_settings import *
 
-def get_count_paths(berkids):
+def get_count_paths(berkids, gene_subset):
+    '''Returns a list of paths to the extant htseqcount files for each berkid
+    in berkids. If gene_subset is given, the gene_subset is appended to the
+    htseqcount file name.
+    '''
     paths = []
     for berkid in berkids:
-        paths.append(rdl.get_cufflink_path(berkid, ALIGN_DIR, TOPHAT_DIR,
-            COUNTFILE))
+        countpath = rs.get_results_files(berkid)['htseq_count_path']
+        if gene_subset:
+            countpath = countpath+'_{}'.format(gene_subset)
+        if os.path.exists(countpath):
+            paths.append(countpath)
     return(paths)
 
-def get_metadata(conn, condlist, sample_infotable):
+def get_metadata(conn, allgenlist, sample_infotable, gene_subset):
+    '''Gets metadata for use in writing a metadata file with write_metadata().
+    Inputs:
+    conn = connection to database using psycopg2
+    allgenlist = list of all genotypes (e.g., CS_F), experimental and controls
+    sample_infotable = table in the database that contains info about the 
+    genotypes (usually autin)
+    gene_subset = string specifying the subset of genes that will be analyzed
+        (e.g., prot_coding_genes, bwa_r557)
+    Output:
+    zip object with (berkid, sample, path) tuples for each sample with the
+    genotype in allgenlist.
+    '''
     cur = conn.cursor()
     berkids = []
     samples = []
-    for cond in condlist:
-        berkids.extend(rdl.get_replicate_berkid_dict(cur, cond, sample_infotable))
+    for gen in allgenlist:
+        berkids.extend(rl.get_replicate_berkid_dict(cur, gen, sample_infotable))
     cur.close()
     cur = conn.cursor()
     for b in berkids:
-        samples.append(rdl.get_samplename(b, cur))
+        samples.append(rl.get_samplename(b, cur))
     cur.close()
-    paths = get_count_paths(berkids)
+    paths = get_count_paths(berkids, gene_subset)
     return(zip(berkids, samples, paths))
-    
-def write_metadata(metadatafile, condlist, sample_infotable, controllist):
+   
 
+def write_metadata(metadatafile, allgenlist, sample_infotable, controllist,
+        gene_subset):
+    '''Writes a file called metadatafile that contains information for edgeR
+    analysis. The metadata file has 4 columns: Sample, Berkid, CorE (control or 
+    experimental sample), and HTSeqPath (path to htseqfile)
+
+    Input:
+    metadatafile = name of the metadata file that will be written
+    allgenlist = list of all genotypes (e.g., CS_F), experimental and
+    controls. 
+    sample_infotable = table in the database that contains info about the 
+    genotypes (usually autin)
+    controllist = list of the samples that will be used as controls
+    gene_subset = string specifying the subset of genes that will be analyzed
+        (e.g., prot_coding_genes, bwa_r557)
+    ''' 
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
-    items = get_metadata(conn, condlist, sample_infotable) 
+    items = get_metadata(conn, allgenlist, sample_infotable, gene_subset) 
     with open(metadatafile, 'w') as f:
         f.write('Sample\tBerkid\tCorE\tHTSeqPath\n')
         for berkid, sample, path in items:
@@ -41,15 +79,32 @@ def write_metadata(metadatafile, condlist, sample_infotable, controllist):
             f.write('{}\t{}\t{}\t{}\n'.format(sample, berkid, core, path))
     conn.close()
 
-def batch_edger_pairwise_DE(exptlist, ctrl):
+def batch_edger_pairwise_DE(exptlist, ctrl, edger_dirpath, metadatafile, 
+        sample_infotable, gene_subset):
+    '''Runs edgeR for each genotype given in exptlist against the control
+    given in ctrl. Writes a metadata file and calls the edgeR.R script.
+    Input:
+
+    exptlist = list of genotypes that will be compared against control
+    ctrl = length-1 list containing control genotype
+    edger_dirpath = path to edger directory
+    metadatafile = name of the metadata file that will be written
+    sample_infotable = string specifying table in the database that contains
+        info about the genotypes (usually autin)
+    gene_subset = string specifying the subset of genes that will be analyzed
+        (e.g., prot_coding_genes, bwa_r557)
+    '''
+    edgerresdir = os.path.join(edger_dirpath, gene_subset)
+    cmn.makenewdir(edgerresdir)
     for cond in exptlist:
-        os.chdir(EDGER_DIR)
-        condlist = [ctrl, cond]
+        os.chdir(edgerresdir)
+        condlist = ctrl + [cond]
         print(condlist)
         cmn.makenewdir(cond)
         os.chdir(cond)
-        write_metadata(METADATAFILE, condlist, INFODBTABLE, [ctrl])
-        run_edger()
+        write_metadata(metadatafile, condlist, sample_infotable, ctrl, 
+                gene_subset)
+        #run_edger()
 
 
 def run_edger():
@@ -131,7 +186,6 @@ def batch_copy_dbgenes_to_db(degenedir, conn, db_degenefile, table):
             print('No dbgene file')
 
 
-
 def gen_dbgene_copyfrom_cmd(table, group1, group2, fdr_th):
     cmd =  "COPY (select * from {} where group1 = '{}' and group2 = '{}' and fdr < {}) to STDOUT;".format(table, group1, group2, fdr_th)
     return(cmd)
@@ -167,28 +221,6 @@ def batch_copy_dbgenes_from_db(conn, degenedir, db_degenefile, out_degenefile, t
 
      
 
-
-MALES = ['Betaintnu_M', 'CG34127_M', 'en_M', 'Nhe3_M', 'NrxI_M', 'NrxIV_M', 'pten_M']
-MALES_CTRL = ['CS_M']
-dirmales = MALES
-male_params = (dirmales, MALES, MALES_CTRL)
-
-FEMALES = ['Betaintnu_F', 'CG34127_F', 'en_F', 'Nhe3_F', 'NrxI_F', 'NrxIV_F', 'pten_F']
-FEMALES_CTRL = ['CS_F']
-dirfemales = FEMALES
-female_params = (dirfemales, FEMALES, FEMALES_CTRL)
-
-LOWAGG = ['lowagg', 'lowagg']
-NORMAGG = ['CS', 'normagg']
-diraggs = ['lowagg_vs_CS', 'lowagg_vs_normagg_CS']
-agg_params = (diraggs, LOWAGG, NORMAGG)
-
-DEGENETABLE = 'degenes'
-DEGENEDIR = '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes'
-DEGENEFILE = 'toptags_edgeR.csv'
-DB_DEGENEFILE = 'db_toptags_edgeR.csv'
-FDR_TH = 0.05
-FDR_DEGENEFILE = 'toptags_edgeR_fdr{}.csv'.format(FDR_TH)
 
 #degenefile_for_db(DEGENEFILE, 'db_'+DEGENEFILE, 'edgeR', 'Betaintnu_F', 'CS_F')
 

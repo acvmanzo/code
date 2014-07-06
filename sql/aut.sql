@@ -42,6 +42,8 @@
   --sentd date,
   --qbitngul real,
   --qbitd date,
+  --seq_received boolean,
+  --use_seq boolean
   --UNIQUE (genotype, tube, sex, frozend)
 --);
 
@@ -232,7 +234,7 @@
 
 -- TO COPY BERKELEY ORDER FILES TO THE autberkeley TABLE
 -- delete from autberkeley;
--- \copy autberkeley from '/home/andrea/Documents/lab/RNAseq/berkeley_samples_sent/2014-0602/2014-06-02_RGAM_samples.csv' with csv header delimiter as ',';
+-- \copy autberkeley from '/home/andrea/Documents/lab/RNAseq/berkeley_samples_sent/2014-0619/2014-06-19_RGAM_samples.csv' with csv header delimiter as ',';
 
 
 -- TO ADD INFO FROM BERKELEY ORDER FILES TO AUTIN
@@ -241,9 +243,8 @@
 
 
 -- TO ADD INFO FROM BERKELEY QUBIT FILES TO AUTIN
--- \copy autqubit from '/home/andrea/Documents/lab/RNAseq/qubit/2014-0409_qubit_date.csv' with csv header delimiter as ',';
--- \copy autqubit from '/home/andrea/Documents/lab/RNAseq/qubit/2014-0425_qubit_date.csv' with csv header delimiter as ',';
 -- \copy autqubit from '/home/andrea/Documents/lab/RNAseq/qubit/2014-0602_qubit_date.csv' with csv header delimiter as ',';
+-- \copy autqubit from '/home/andrea/Documents/lab/RNAseq/qubit/2014-0624_qubit_date.csv' with csv header delimiter as ',';
 
 -- UPDATE autin SET qbitngul = autqubit.qubit FROM autqubit WHERE autqubit.berkid = autin.berkid;
 -- UPDATE autin SET qbitd = qubitd FROM autqubit WHERE autqubit.berkid = autin.berkid;
@@ -254,7 +255,7 @@
 -- UPDATE autin SET toseq = True WHERE qbitd = '2014-04-09' or qbitd = '2014-04-25';
 -- UPDATE autin SET toseq = True WHERE qbitd = '2014-06-02' AND qbitngul > 2;
 -- UPDATE autin SET toseq = False WHERE qbitd = '2014-06-02' AND qbitngul < 2;
-
+-- UPDATE autin SET toseq = True WHERE qbitd = '2014-06-24' AND qbitngul > 2;
 
 
 -- TO ASSIST IN LABELING TUBES FOR BERKELEY:
@@ -270,12 +271,23 @@
 --- TO SET SEQUENCE DATE
 -- see ~/Documents/lab/code/autsql.py
 
+---- TO UPDATE SEQ_RECEIVED WHEN SEQUENCES ARE RECEIVED ----
+-- UPDATE autin SET seq_received = True where berkid = 'RGAM014F';
+-- UPDATE autin SET seq_received = True where berkid = 'RGAM014A';
+-- UPDATE autin SET seq_received = True where berkid = 'RGAM014C';
 
 -- RANDOM COMMANDS
-
 ----SELECT genotype, sex,  sample, frozend, rnad, mrnad from autdbwiki where rnad = '2014-03-25'
 ----EXCEPT 
 ----SELECT genotype, sex,  sample, frozend, rnad, mrnad from autdbwiki where rnad = '2014-03-25' AND genotype = 'Betaintnu';
 
+-- ADD A COLUMN TO SPECIFY IF I WANT TO USE THE DATA FOR ANALYSIS
+-- alter table autin add column use_seq boolean;
+
+-- select sample, berkid, toseq, seqd from autin where seq_received is True order by seqd;
+-- update autin set use_seq = True where seq_received = True;
+-- update autin set use_seq = False where sample = 'NrxIV_MB';
+-- update autin set use_seq = False where sample = 'NrxI_MD';
+-- update autin set use_seq = False where sample = 'Nhe3_MC';
 
 
