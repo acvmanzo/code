@@ -81,6 +81,27 @@ def write_metadata(allgenlist, controllist, metadatafile, sampleinfo_table,
                 f.write('{}\t{}\t{}\t{}\n'.format(sample, berkid, core, path))
     conn.close()
 
+def write_groups(groups, groupinfofile):
+    '''Writes a file (groupinfofile) that lists the groups being compared; the
+    experimental group is on the first line and the control group is on the
+    second line.
+    Input:
+    groups = list or dictionary specifying groups
+    groupinfofile = output file name
+    '''
+
+    if type(groups) == list:
+        group1 = groups[0]
+        group2 = groups[1]
+    elif type(groups) == dict:
+        for k in groups.keys():
+            if 'ctrl' in k:
+                group2 = k
+            else:
+                group1 = k
+
+    with open(groupinfofile, 'w') as g:
+        g.write('{}\n{}'.format(group1, group2))
 
 def edger_pairwise_DE(expt, ctrl, gene_subset, edger_file_dict):
     '''Runs edgeR comparing expt and control genotypes. Writes a metadata file
@@ -100,16 +121,18 @@ def edger_pairwise_DE(expt, ctrl, gene_subset, edger_file_dict):
     edger_dirpath = edger_file_dict['edger_dirpath'] 
     metadatafile = edger_file_dict['edger_metadata_file']
     sampleinfo_table = edger_file_dict['sampleinfo_table']
+    groupinfofile = edger_file_dict['edger_group_file']
 
     edgerresdir = os.path.join(edger_dirpath, gene_subset)
     cmn.makenewdir(edgerresdir)
     os.chdir(edgerresdir)
-    condlist = [ctrl, expt]
+    condlist = [expt, ctrl]
     print(condlist)
     cmn.makenewdir(expt)
     os.chdir(expt)
     write_metadata(condlist, ctrl, metadatafile, sampleinfo_table, 
             gene_subset)
+    write_groups(condlist, groupinfofile)
     run_edger(edger_file_dict)
 
 
@@ -145,15 +168,11 @@ def edger_2groups_DE(exptdict, gene_subset, edger_file_dict):
         data output by edgeR.R
     '''
 
-    #condstotest = ['CG34127_M', 'en_M', 'NrxI_M']
-    #controls = ['Betaintnu_M', 'Nhe3_M', 'NrxIV_M', 'pten_M', 'CS_M']
-    #controls = ['CS_M'] 
-    
-    ctrlname = 'ctrl' 
     for k,v in exptdict.items():
         print(k,v)
-        if k == 'ctrl':
+        if 'ctrl' in k:
             ctrllist = v
+            ctrlname = k
         else:
             exptlist = v
             exptname = k
@@ -164,6 +183,7 @@ def edger_2groups_DE(exptdict, gene_subset, edger_file_dict):
     edger_dirpath = edger_file_dict['edger_dirpath'] 
     metadatafile = edger_file_dict['edger_metadata_file']
     sampleinfo_table = edger_file_dict['sampleinfo_table']
+    groupinfofile = edger_file_dict['edger_group_file']
 
     edgerresdir = os.path.join(edger_dirpath, gene_subset)
     cmn.makenewdir(edgerresdir)
@@ -173,6 +193,7 @@ def edger_2groups_DE(exptdict, gene_subset, edger_file_dict):
 
     write_metadata(allgenlist, ctrllist, metadatafile, sampleinfo_table, 
             gene_subset)
+    write_groups(exptdict, groupinfofile)
     run_edger(edger_file_dict)
 
 
@@ -222,10 +243,10 @@ def gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset, group1,
                 g.write('{},{},{},{},{}\n'.format(l.rstrip('\n'), tool, 
                     gene_subset, group1, group2))
 
-def batch_db_degenefile(degenedir, degenefile, db_degenefile, gendirs, group1list, group2list, tool):
+def batch_db_degenefile(edger_file_dict, tool):
     '''Batch function for rewriting DE analysis output files for inclusion
     in the database.
-
+    Input:
     degenedir = main directory containing the results of DE analysis (e.g., 
         analysis/edgeR)
     degenefile = name of file with the DE analysis results (e.g., 

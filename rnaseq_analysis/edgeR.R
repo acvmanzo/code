@@ -30,9 +30,12 @@ cpms = cpm(counts)
 # groups.  cpms >1 is a Boolean array. rowSums(cpms>1) is the sum of Booleans
 # across each row of cpms>1. keep is a Boolean vector that has the value 'True'
 # if rowSums(cpms>1) is at least min_reps.
+noint = rownames(counts) %in% c("no_feature", "too_low_aQual", "not_aligned", "alignment_not_unique")
 min_reps = min(table(samples$CorE))
 print(paste("min_reps", min_reps))
-keep = rowSums(cpms >1) >= min_reps
+keep = rowSums(cpms >1) >= min_reps & !noint
+#keep = rowSums(cpms >1) >= 3 & !noint
+
 counts = counts[keep,]
 print(paste("length-keep", length(keep), "first entry in keep", keep[1]))
 print(paste("dim-counts", dim(counts)))

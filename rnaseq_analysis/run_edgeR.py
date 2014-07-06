@@ -34,9 +34,10 @@ else:
 
 #Runs edgeR analysis on the indicated groups.
 #el.batch_edger_pairwise_DE(MALES, MALES_CTRL, gene_subset, RNASEQDICT)
-#el.batch_edger_pairwise_DE(FEMALES, FEMALES_CTRL, EDGER_DIRPATH, 
-        #EDGER_METADATA_FILE, SAMPLEINFO_TABLE, gene_subset, RNASEQDICT)
+#el.batch_edger_pairwise_DE(FEMALES, FEMALES_CTRL, gene_subset, RNASEQDICT)
 #el.edger_2groups_DE(AGG_DICT_ALL, gene_subset, RNASEQDICT)
+#el.edger_2groups_DE(AGG_DICT_CS, gene_subset, RNASEQDICT)
+
 #Generates files formatted so they can be copied to the database.
 #for params in [male_params, female_params, agg_params]:
     #dirs, group1list, group2list = params
