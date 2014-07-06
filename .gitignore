@@ -2,6 +2,7 @@
 *~
 *.lyx#
 *.swp
+*.swo
 *.png
 *.jpg
 *.backup

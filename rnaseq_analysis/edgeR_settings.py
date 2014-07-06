@@ -14,9 +14,3 @@ AGG_DICT_CS = {'lowagg_CS': ['CG34127_M', 'en_M', 'NrxI_M'],
              'ctrl_CS': ['CS_M']
              }
 
-#DEGENETABLE = 'degenes'
-#DEGENEDIR = '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes'
-#DEGENEFILE = 'toptags_edgeR.csv'
-#DB_DEGENEFILE = 'db_toptags_edgeR.csv'
-#FDR_TH = 0.05
-#FDR_DEGENEFILE = 'toptags_edgeR_fdr{}.csv'.format(FDR_TH)

@@ -766,6 +766,10 @@
 
 -- select count(*) from (select distinct gff_fbgn_id from get_homolog_gff_names('r557_id_index', 'flyatlasbrain_pfbgns', 'dmel-all-filtered-r5.57.gff')) as foo;
 
+-- -- SFARI list only -- --
+-- CREATE OR REPLACE VIEW sfari_r557 AS (
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'sfari'))
+-- ;
 
 -- ---Putting all the lists together ------
 -- CREATE OR REPLACE VIEW bwa_r557 AS (

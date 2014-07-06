@@ -11,18 +11,14 @@ import psycopg2
 import os
 import argparse 
 import datetime
+import cmn.cmn as cmn
 
 
-def remove_htseqcount_files(conn):
-    'Removes old htseqcount files.'''
-    fn = "print(os.getcwd()), os.remove('htseqcount_brain_aut_will_r557_ralph_mt_excluded')"
-    hl.batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
-    conn.close()
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--genesubset', choices=['prot_coding_genes', 
-        'bwa_r557', 'bwa_r557_ralph_mt_ex'], 
+        'bwa_r557', 'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
         help='run edgeR analysis on subset of genes')
 args = parser.parse_args()
 
@@ -33,21 +29,22 @@ else:
     gene_subset = '' 
 
 curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-logpath = os.path.join(RNASEQDICT['edger_dirpath'], gene_subset, '{}_{}'.format(curtime, RNASEQDICT['edger_log_file']))
-#logpath = 'testr.log'
-print(logpath)
-#rl.logginginfo(logpath)
+exptdir = os.path.join(RNASEQDICT['edger_dirpath'], gene_subset)
+cmn.makenewdir(exptdir)
+logpath = os.path.join(exptdir, '{}_{}'.format(curtime, 
+    RNASEQDICT['edger_log_file']))
+rl.logginginfo(logpath)
 
 
-##Runs edgeR analysis on the indicated groups.
-#el.batch_edger_pairwise_DE(MALES, MALES_CTRL, gene_subset, RNASEQDICT)
-#el.batch_edger_pairwise_DE(FEMALES, FEMALES_CTRL, gene_subset, RNASEQDICT)
-#el.edger_2groups_DE(AGG_DICT_ALL, gene_subset, RNASEQDICT)
-#el.edger_2groups_DE(AGG_DICT_CS, gene_subset, RNASEQDICT)
+#Runs edgeR analysis on the indicated groups.
+el.batch_edger_pairwise_DE(MALES, MALES_CTRL, gene_subset, RNASEQDICT)
+el.batch_edger_pairwise_DE(FEMALES, FEMALES_CTRL, gene_subset, RNASEQDICT)
+el.edger_2groups_DE(AGG_DICT_ALL, gene_subset, RNASEQDICT)
+el.edger_2groups_DE(AGG_DICT_CS, gene_subset, RNASEQDICT)
 
-##Generates files formatted for database and copies data from that file into 
-##the database. 
-#conn = psycopg2.connect("dbname=rnaseq user=andrea")
-#el.batch_makecopy_db_degenefile(RNASEQDICT, tool, gene_subset, conn)
-#conn.commit()
-#conn.close()
+#Generates files formatted for database and copies data from that file into 
+#the database. 
+conn = psycopg2.connect("dbname=rnaseq user=andrea")
+el.batch_makecopy_db_degenefile(RNASEQDICT, tool, gene_subset, conn)
+conn.commit()
+conn.close()

@@ -65,6 +65,7 @@ def main():
         conn.commit()
         conn.close()
 
+print('Type -h for help')
 if __name__ == '__main__':
     main()
 

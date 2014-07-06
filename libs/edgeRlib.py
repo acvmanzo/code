@@ -5,11 +5,14 @@ import os
 import psycopg2
 import cmn.cmn as cmn
 import libs.rnaseqlib as rl
-#import htseqlib as hl
-#import de_settings
 import rnaseq_settings as rs
 import logging
-#from edger_settings import *
+
+def remove_htseqcount_files(conn):
+    'Removes old htseqcount files.'''
+    fn = "print(os.getcwd()), os.remove('htseqcount_brain_aut_will_r557_ralph_mt_excluded')"
+    hl.batch_fn_thdir(rs.TH_RESDIRPATH, rs.HTSEQ_DIR, rs.RES_SAMPLE_GLOB, conn, fn)
+    conn.close()
 
 def get_count_paths(berkids, gene_subset):
     '''Returns a list of paths to the extant htseqcount files for each berkid
