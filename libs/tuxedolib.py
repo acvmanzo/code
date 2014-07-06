@@ -130,8 +130,9 @@ def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
     fastafile = name of the combined, unzipped fasta file containing reads
     tophatcmd_file = name of the file where the tophat command is written
     '''
-    tophatcmd = 'tophat -o {} -p 8 --no-coverage-search --library-type fr-secondstrand -G {} {} {}'.format(tophatdir, gff_file, 
-            btindex, fastafile)
+    tophatcmd = 'tophat -o {} -p 8 --no-coverage-search --library-type fr-secondstrand -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
+    #tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir,
+    #gff_file, btindex, fastafile)
     logging.info('%s', tophatcmd)
     os.system(tophatcmd)
     with open(tophatcmd_file, 'w') as f:
@@ -245,7 +246,7 @@ def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks):
             sample = os.path.basename(sample_seqdir).split('_')[1]
             logging.info('%s', sample)
             sample_resdir = os.path.join(rd['th_resdirpath'], sample) 
-            if not os.path.exists(os.path.join(sample_resdir, d['tophat_dir'])):
+            if not os.path.exists(os.path.join(sample_resdir, rd['th_dir'])):
                 cmn.makenewdir(sample_resdir)
                 logging.info('Running tophat and cufflinks')
                 run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, 

@@ -71,13 +71,13 @@ COMBINED_FASTQ_SUFFIX = 'combined.fastq.gz'
 ANALYSIS_PATH = '/home/andrea/Documents/lab/RNAseq/analysis'
 
 #TH_RESDIR = 'results_tophat_secondstrand'
+#TH_RESDIR = 'results_tophat_2str'
 TH_RESDIR = 'results_tophat'
 TH_RESDIRPATH = os.path.join(ANALYSIS_PATH, TH_RESDIR)
 TH_DIR = 'tophat_out'
 THCMD_FILE = 'tophatcmd.txt'
 BAM_FILE = 'accepted_hits.bam'
 TH_LOG_FILE = 'tophat.log'
-TH_LOG_PATH = os.path.join(TH_RESDIRPATH, TH_LOG_FILE)
 TH_SET_DIR_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
 TH_SET_FILE = 'rnaseq_settings.py'
 TH_SET_PATH_ORIG = os.path.join(TH_SET_DIR_ORIG, TH_SET_FILE)
@@ -97,6 +97,12 @@ RES_SAMPLE_GLOB = 'RG*'
 EDGER_DIR = 'edgeR'
 EDGER_DIRPATH = os.path.join(ANALYSIS_PATH, EDGER_DIR)
 EDGER_METADATA_FILE = 'metadata.txt'
+EDGER_MDSPLOT_FILE = 'mds_plot.png'
+EDGER_MVPLOT_FILE = 'mean_var_plot.png'
+EDGER_BCVPLOT_FILE = 'biol_cv_plot.png'
+EDGER_MAPLOT_FILE = 'masmear_plot_'
+EDGER_TOPTAGS_FILE = 'toptags_edgeR.csv'
+EDGER_TOPTAGS_FDR_FILE = 'toptags_edgeR_'
 
 SAMPLEINFO_TABLE = 'autin'
 HTSEQ_TABLE = 'htseq'
@@ -109,9 +115,10 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'seqbatchglob': SEQBATCHGLOB,
                 'sampleseqglob': SAMPLESEQGLOB,
                 'combined_fastq_suffix': COMBINED_FASTQ_SUFFIX,
+                'sampleinfo_table': SAMPLEINFO_TABLE,
                 'analysis_path': ANALYSIS_PATH,
                 'th_resdirpath': TH_RESDIRPATH,
-                'th_log_path': TH_LOG_PATH,
+                'th_log_file': TH_LOG_FILE,
                 'th_dir': TH_DIR,
                 'th_cmd_file': THCMD_FILE,
                 'bam_file': BAM_FILE,
@@ -125,7 +132,13 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'htseq_log_file': HTSEQ_LOG_FILE,
                 'htseq_file': HTSEQ_FILE,
                 'edger_dirpath': EDGER_DIRPATH,
-                'edger_metadata_file': EDGER_METADATA_FILE
+                'edger_metadata_file': EDGER_METADATA_FILE,
+                'edger_mdsplot_file': EDGER_MDSPLOT_FILE,
+                'edger_mvplot_file': EDGER_MVPLOT_FILE,
+                'edger_bcvplot_file': EDGER_BCVPLOT_FILE,
+                'edger_maplot_file': EDGER_MAPLOT_FILE,
+                'edger_toptags_file': EDGER_TOPTAGS_FILE,
+                'edger_toptags_fdr_file': EDGER_TOPTAGS_FDR_FILE,
                 }
 
 def get_results_files(berkid):

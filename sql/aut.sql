@@ -284,10 +284,30 @@
 -- ADD A COLUMN TO SPECIFY IF I WANT TO USE THE DATA FOR ANALYSIS
 -- alter table autin add column use_seq boolean;
 
+-- SELECTING SAMPLES THAT I WILL USE FOR ANALYSIS
 -- select sample, berkid, toseq, seqd from autin where seq_received is True order by seqd;
 -- update autin set use_seq = True where seq_received = True;
 -- update autin set use_seq = False where sample = 'NrxIV_MB';
 -- update autin set use_seq = False where sample = 'NrxI_MD';
 -- update autin set use_seq = False where sample = 'Nhe3_MC';
+-- update autin set use_seq = False where sample = 'pten_MA';
+
+-- -- CHANGING BINTNU_M SAMPLE NAMES TO BETAINTNU_M
+-- select sample, genotype, tube, sex, samplenum, berkid 
+-- from autin 
+-- where 
+    -- sample = 'Bintnu_MA' or 
+    -- sample = 'Bintnu_MB' or 
+    -- sample = 'Bintnu_MC' or 
+    -- sample = 'Bintnu_MD' or
+    -- sample = 'Betaintnu_MA' or
+    -- sample = 'Betaintnu_MB' or
+    -- sample = 'Betaintnu_MC' or
+    -- sample = 'Betaintnu_MD' 
+-- order by sample;
+-- update autin set sample = 'Betaintnu_MA' where samplenum = 1000 and sample = 'Bintnu_MA';
+-- update autin set sample = 'Betaintnu_MB' where samplenum = 1001 and sample = 'Bintnu_MB';
+-- update autin set sample = 'Betaintnu_MC' where samplenum = 1003 and sample = 'Bintnu_MC';
+-- update autin set sample = 'Betaintnu_MD' where samplenum = 1015 and sample = 'Bintnu_MD';
 
 

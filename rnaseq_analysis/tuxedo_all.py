@@ -2,27 +2,27 @@
 
 # Runs tophat and cufflinks on all sequence files.
 
-import tuxedolib as tl
+import libs.tuxedolib as tl
+import libs.rnaseqlib as rl
 import logging
 import shutil
 import sys
+import datetime
 from rnaseq_settings import *
 
 print('Write yes to run Cufflinks or no otherwise')
 RUNCUFFLINKS = sys.argv[1] 
 
 def main():
+
+    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logpath = os.path.join(TH_RESDIRPATH, '{}_'.format(curtime) + RNASEQDICT['th_log_file'])
+    rl.logginginfo(logpath)
+
     # Writes output to mrun.log and specifies format of logging output.
-    logging.basicConfig(filename=RNASEQDICT['th_log_file'], 
-            format='%(asctime)s %(levelname)s %(message)s', 
-            datefmt='%m/%d/%Y_%I-%M-%S %p', 
-            filemode='w', 
-            level=logging.INFO)
-    console = logging.StreamHandler() # Displays output to screen.
-    logging.getLogger('').addHandler(console)
 
     tl.seqdir_run_tophat_cufflinks(RNASEQDICT, REFSEQDICT, RUNCUFFLINKS)
-    shutil.copy(RNASEQDICT['th_set_path_orig'], RNASEQDICT['th_set_path_copy'])
+    shutil.copy(RNASEQDICT['th_set_path_orig'], '{}_{}'.format(curtime, RNASEQDICT['th_set_path_copy']))
 
 if __name__ == '__main__':
     main()

@@ -1,6 +1,17 @@
 
 # Copied from Anders et al 2013, Nat Protocols
 
+#options(echo=TRUE) # if you want see commands in output file
+args <- commandArgs(trailingOnly = TRUE)
+print(args)
+
+mds_plot_file <- args[1]
+meanvar_plot_file <- args[2]
+biolcv_plot_file <- args[3]
+masmear_plot_file <- args[4]
+toptags_file <- args[5]
+toptags_fdr_file <- args[6]
+
 library("edgeR")
 # Loads sample info and counts into R.
 samples = read.table('metadata.txt', header = TRUE)
@@ -20,6 +31,7 @@ cpms = cpm(counts)
 # across each row of cpms>1. keep is a Boolean vector that has the value 'True'
 # if rowSums(cpms>1) is at least min_reps.
 min_reps = min(table(samples$CorE))
+print(paste("min_reps", min_reps))
 keep = rowSums(cpms >1) >= min_reps
 counts = counts[keep,]
 print(paste("length-keep", length(keep), "first entry in keep", keep[1]))
@@ -59,7 +71,7 @@ d = calcNormFactors(d)
 # standard deviations. For each of these genes, finds the log2-fold-change,
 # then calculates the distance between samples as the root-mean-square 
 # log2-fold-change. I think it applies the classical MDS to produce the plot.
-png('mds_plot.png')
+png(mds_plot_file)
 plotMDS(d, labels = samples$Sample, col = c("darkgreen","blue")[factor(samples$CorE)])
 dev.off()
 
@@ -98,7 +110,7 @@ d = estimateTagwiseDisp(d)
 #conditional inference estimates (CRDisp). A log- log scale is used for the plot.
 #NB line: shows the mean-variance relationship for a NB model with common
 #dispersion 
-png('mean_var_plot.png')
+png(meanvar_plot_file)
 plotMeanVar(d, show.tagwise.vars = TRUE, NBline = TRUE)
 legend(20,10000000000, c("Ave raw var", "Tag var", "NB line"), 
        pch=c('X','o','-'), col=c("darkred", "lightskyblue", "dodgerblue2")) 
@@ -107,7 +119,7 @@ dev.off()
 
 #From the manual: Plot genewise biological coefficient of variation (BCV)
 #against gene abundance (in log2 counts per million).
-png('biol_cv_plot.png')
+png(biolcv_plot_file)
 plotBCV(d)
 title('Disperions vs. abundance')
 dev.off()
@@ -124,7 +136,8 @@ tt = topTags(de, n = nrow(d))
 print(head(tt))
 #print(nrow(d))
 #Writes the output of toptags into a file.
-write.csv(tt$table, file = "toptags_edgeR.csv")
+#write.csv(tt$table, file = "toptags_edgeR.csv")
+write.csv(tt$table, file = toptags_file)
 
 #From the paper:Inspect the depth-adjusted reads per million for some of the differentially expressed genes
 nc = cpm(d, normalized.lib.sizes = TRUE) 
@@ -142,7 +155,7 @@ for (i in c(.01, .05)) {
     #From the manual: To represent counts that were low (e.g. zero in 1 library and
     #non-zero in the other) in one of the two conditions, a ’smear’ of points at low
     #A value is presented in plotSmear.
-    png(paste("masmear_plot",i,".png",sep=""))
+    png(paste(masmear_plot_file, i, ".png",sep=""))
     plotSmear(d, de.tags = deg)
     legend(10,3, c("DE genes"), pch=c(19), col=c("darkred")) 
     title('Log fold change vs abundance')
@@ -151,6 +164,9 @@ for (i in c(.01, .05)) {
     #Writes the output of toptags for the statistically significant genes when 
     #controlling for the FDR at the given level. 
     fdr = tt$table$FDR < i
-    write.table(deg, file = paste("toptags_edgeR_",i,"gene", sep=""), 
+
+    write.table(deg, file = paste(toptags_fdr_file, i, "gene", sep=""), 
                 row.names = FALSE, col.names = FALSE, quote=FALSE)
+    #write.table(deg, file = paste("toptags_edgeR_",i,"gene", sep=""), 
+                #row.names = FALSE, col.names = FALSE, quote=FALSE)
 }
