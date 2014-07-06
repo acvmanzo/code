@@ -19,8 +19,12 @@ def remove_htseqcount_files(conn):
 
 #print(list(el.get_metadata(conn, FEMALES, SAMPLEINFO_TABLE, 'prot_coding_genes')))
 
-gene_subset = 'prot_coding_genes'
+#gene_subset = 'prot_coding_genes'
+#gene_subset = 'bwa_r557'
+gene_subset = 'bwa_r557_ralph_mt_ex'
 el.batch_edger_pairwise_DE(MALES, MALES_CTRL, EDGER_DIRPATH, EDGER_METADATA_FILE, 
         SAMPLEINFO_TABLE, gene_subset)
+el.batch_edger_pairwise_DE(FEMALES, FEMALES_CTRL, EDGER_DIRPATH, 
+        EDGER_METADATA_FILE, SAMPLEINFO_TABLE, gene_subset)
 #conn.commit()
 conn.close()

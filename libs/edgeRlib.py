@@ -104,11 +104,11 @@ def batch_edger_pairwise_DE(exptlist, ctrl, edger_dirpath, metadatafile,
         os.chdir(cond)
         write_metadata(metadatafile, condlist, sample_infotable, ctrl, 
                 gene_subset)
-        #run_edger()
+        run_edger()
 
 
 def run_edger():
-        cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R'
+        cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R > edgeR.log'
         os.system(cmd)
 
 
