@@ -22,11 +22,16 @@ parser.add_argument('-s', '--genesubset',
 args = parser.parse_args()
 
 
+#curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+#logpath = '{}_'.format(curtime) + RNASEQDICT['htseq_log_file']
+logpath = 'testr.log'
+rl.logginginfo(logpath)
+
 #gene_subset = 'prot_coding_genes'
 #gene_subset = 'bwa_r557'
 #gene_subset = 'bwa_r557_ralph_mt_ex'
 
-# Runs edgeR.
+tool = 'edger'
 if args.genesubset:
     gene_subset = args.genesubset
 else:
@@ -39,11 +44,11 @@ else:
 #el.edger_2groups_DE(AGG_DICT_CS, gene_subset, RNASEQDICT)
 
 #Generates files formatted so they can be copied to the database.
-#for params in [male_params, female_params, agg_params]:
-    #dirs, group1list, group2list = params
-    #batch_db_degenefile(DEGENEDIR, DEGENEFILE, DB_DEGENEFILE, dirs, 
-    #group1list, group2list, 'edgeR')
-
+#el.batch_db_degenefile(RNASEQDICT, tool, gene_subset)
+conn = psycopg2.connect("dbname=rnaseq user=andrea")
+el.batch_makecopy_db_degenefile(RNASEQDICT, tool, gene_subset, conn)
+conn.commit()
+conn.close()
 #Copies DE gene data to the database.
 #conn = psycopg2.connect("dbname=rnaseq user=andrea")
 #batch_copy_dbgenes_to_db(DEGENEDIR, conn, DB_DEGENEFILE, 'degenes')

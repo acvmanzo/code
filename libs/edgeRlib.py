@@ -8,6 +8,7 @@ import libs.rnaseqlib as rl
 #import htseqlib as hl
 #import de_settings
 import rnaseq_settings as rs
+import logging
 #from edger_settings import *
 
 def get_count_paths(berkids, gene_subset):
@@ -103,7 +104,7 @@ def write_groups(groups, groupinfofile):
     with open(groupinfofile, 'w') as g:
         g.write('{}\n{}'.format(group1, group2))
 
-def edger_pairwise_DE(expt, ctrl, gene_subset, edger_file_dict):
+def edger_pairwise_DE(expt, ctrl, gene_subset, de_file_dict):
     '''Runs edgeR comparing expt and control genotypes. Writes a metadata file
     and calls the edgeR.R script.  
     Input:
@@ -115,28 +116,28 @@ def edger_pairwise_DE(expt, ctrl, gene_subset, edger_file_dict):
         info about the genotypes (usually autin)
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
-    edger_file_dict = dictionary containing the file names for the plots and 
+    de_file_dict = dictionary containing the file names for the plots and 
         data output by edgeR.R
     '''
-    edger_dirpath = edger_file_dict['edger_dirpath'] 
-    metadatafile = edger_file_dict['edger_metadata_file']
-    sampleinfo_table = edger_file_dict['sampleinfo_table']
-    groupinfofile = edger_file_dict['edger_group_file']
+    edger_dirpath = de_file_dict['edger_dirpath'] 
+    metadatafile = de_file_dict['edger_metadata_file']
+    sampleinfo_table = de_file_dict['sampleinfo_table']
+    groupinfofile = de_file_dict['edger_group_file']
 
     edgerresdir = os.path.join(edger_dirpath, gene_subset)
     cmn.makenewdir(edgerresdir)
     os.chdir(edgerresdir)
     condlist = [expt, ctrl]
-    print(condlist)
+    logging.info(condlist)
     cmn.makenewdir(expt)
     os.chdir(expt)
     write_metadata(condlist, ctrl, metadatafile, sampleinfo_table, 
             gene_subset)
     write_groups(condlist, groupinfofile)
-    run_edger(edger_file_dict)
+    run_edger(de_file_dict)
 
 
-def batch_edger_pairwise_DE(exptlist, ctrl, gene_subset, edger_file_dict):
+def batch_edger_pairwise_DE(exptlist, ctrl, gene_subset, de_file_dict):
     '''Runs edgeR for each genotype given in exptlist against the control
     given in ctrl. Writes a metadata file and calls the edgeR.R script.
     Input:
@@ -148,15 +149,15 @@ def batch_edger_pairwise_DE(exptlist, ctrl, gene_subset, edger_file_dict):
         info about the genotypes (usually autin)
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
-    edger_file_dict = dictionary containing the file names for the plots and 
+    de_file_dict = dictionary containing the file names for the plots and 
         data output by edgeR.R
     '''
     for cond in exptlist:
-        edger_pairwise_DE(cond, ctrl, gene_subset, edger_file_dict)
+        edger_pairwise_DE(cond, ctrl, gene_subset, de_file_dict)
 
 
 
-def edger_2groups_DE(exptdict, gene_subset, edger_file_dict):
+def edger_2groups_DE(exptdict, gene_subset, de_file_dict):
     '''Runs edgeR to find DE genes between two groups of samples.
     Input:
     exptdict = dictionary where the keys are the groups to be compared
@@ -164,12 +165,12 @@ def edger_2groups_DE(exptdict, gene_subset, edger_file_dict):
         'ctrl' and specifies the control genotypes. 
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
-    edger_file_dict = dictionary containing the file names for the plots and 
+    de_file_dict = dictionary containing the file names for the plots and 
         data output by edgeR.R
     '''
 
     for k,v in exptdict.items():
-        print(k,v)
+        logging.info(k,v)
         if 'ctrl' in k:
             ctrllist = v
             ctrlname = k
@@ -180,10 +181,10 @@ def edger_2groups_DE(exptdict, gene_subset, edger_file_dict):
     #print('allgenlist', allgenlist)
     #print('ctrllist', ctrllist)
     
-    edger_dirpath = edger_file_dict['edger_dirpath'] 
-    metadatafile = edger_file_dict['edger_metadata_file']
-    sampleinfo_table = edger_file_dict['sampleinfo_table']
-    groupinfofile = edger_file_dict['edger_group_file']
+    edger_dirpath = de_file_dict['edger_dirpath'] 
+    metadatafile = de_file_dict['edger_metadata_file']
+    sampleinfo_table = de_file_dict['sampleinfo_table']
+    groupinfofile = de_file_dict['edger_group_file']
 
     edgerresdir = os.path.join(edger_dirpath, gene_subset)
     cmn.makenewdir(edgerresdir)
@@ -194,19 +195,19 @@ def edger_2groups_DE(exptdict, gene_subset, edger_file_dict):
     write_metadata(allgenlist, ctrllist, metadatafile, sampleinfo_table, 
             gene_subset)
     write_groups(exptdict, groupinfofile)
-    run_edger(edger_file_dict)
+    run_edger(de_file_dict)
 
 
-def run_edger(edger_file_dict):
+def run_edger(de_file_dict):
     '''Runs edgeR using the script edgeR.R. Input is a dictionary containing
     the file names for the plots and data output by edgeR.R
     '''
-    d = edger_file_dict 
+    d = de_file_dict 
     cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R {0} {1} {2} {3} {4} {5} > edgeR.log 2>&1'.format(d['edger_mdsplot_file'], 
             d['edger_mvplot_file'], d['edger_bcvplot_file'], 
             d['edger_maplot_file'], d['edger_toptags_file'],
             d['edger_toptags_fdr_file'])
-    print(cmd)
+    logging.debug(cmd)
     os.system(cmd)
 
 def gen_de_dict(sample_list, degenedir, degenefile):
@@ -243,33 +244,51 @@ def gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset, group1,
                 g.write('{},{},{},{},{}\n'.format(l.rstrip('\n'), tool, 
                     gene_subset, group1, group2))
 
-def batch_db_degenefile(edger_file_dict, tool):
+def batch_makecopy_db_degenefile(de_file_dict, tool, gene_subset, conn):
     '''Batch function for rewriting DE analysis output files for inclusion
     in the database.
     Input:
-    degenedir = main directory containing the results of DE analysis (e.g., 
-        analysis/edgeR)
-    degenefile = name of file with the DE analysis results (e.g., 
-        toptags_edgeR.csv)
-    db_degenefile = name of output file
-    gendirs = list of directories with genotypes/condition
-    group1list = 
+    de_file_dict = dictionary containing the file names for the DE directories
+    tool = software used for analaysis (e.g., 'edger' or 'deseq')
+    gene_subset = subset of genes analyzed
+    conn = open connection to database using psycopg2
+    degenetable = name of table in the database that will hold de gene data
     '''
-    degenepaths = [os.path.join(degenedir, d, degenefile) for d in dirs]
-    db_degenepaths = [os.path.join(degenedir, d, db_degenefile) for d in dirs]
+    
+    de_resdir = os.path.join(de_file_dict['{}_dirpath'.format(tool)], gene_subset)
+    groupfile = de_file_dict['{}_group_file'.format(tool)]
+    degenefile = de_file_dict['{}_toptags_file'.format(tool)]
+    db_degenefile = de_file_dict['{}_dbtoptags_file'.format(tool)]
+    degenetable = de_file_dict['degene_table']
 
-    if len(group2list) == 1:
-        group2list = np.tile(group2list[0], len(group1list))
+    os.chdir(de_resdir)
+    logging.info('Copying DE files for database')
+    for rd in [os.path.abspath(x) for x in sorted(glob.glob('*/'))]:
+        logging.info(os.path.basename(rd))
+        os.chdir(rd)
+        if os.path.exists(groupfile):
+            with open(groupfile, 'r') as f:
+                group1 = next(f).rstrip('\n')
+                group2 = next(f).rstrip('\n')
+            gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset,
+                    group1, group2)
+            cur = conn.cursor()
+            copy_de_dbtable(db_degenefile, degenetable, cur)
+            cur.close()
+            conn.commit()
 
-    groups = list(zip(group1list, group2list, degenepaths, db_degenepaths))
-    print(groups)
-    for i, group in enumerate(groups):
-        #print(i, group)
-        gen_db_degenefile(degenefile=group[2], db_degenefile=group[3], 
-                tool=tool, group1=group[0], group2=group[1])
-   
+        else:
+            logging.info('No groups file')
 
+def get_num_degenes(dbtable, tool, gene_subset, group1, group2):
+    '''Checks if the table already contains data from a DE analysis experiment
+    with the given tool, gene_subset, group1, and group2.
+    '''
+    checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
+    cur.execute(checkrowscmd)
+    return(cur.fetchone()[0])
 def copy_dbgenes_to_db(cur, db_degenefile, table):
+    '''Copies data from db_degenefile into database table table'''
     with open(db_degenefile, 'r') as f:
         cur.copy_from(f, table, sep=',')
 
@@ -290,7 +309,7 @@ def batch_copy_dbgenes_to_db(degenedir, conn, db_degenefile, table):
     resdirs = sorted([os.path.abspath(x) for x in glob.glob('*/')])
     for resdir in resdirs:
         os.chdir(resdir)
-        print(os.path.basename(resdir))
+        logging.info(os.path.basename(resdir))
         cur = conn.cursor()
         if os.path.exists(db_degenefile):
             try:
@@ -300,7 +319,7 @@ def batch_copy_dbgenes_to_db(degenedir, conn, db_degenefile, table):
                 conn.commit()
                 continue
         else:
-            print('No dbgene file')
+            logging.info('No dbgene file')
 
 
 def gen_dbgene_copyfrom_cmd(table, group1, group2, fdr_th):
@@ -319,13 +338,13 @@ def batch_copy_dbgenes_from_db(conn, degenedir, db_degenefile, out_degenefile, t
     resdirs = sorted([os.path.abspath(x) for x in glob.glob('*/')])
     for resdir in resdirs:
         os.chdir(resdir)
-        print(os.path.basename(resdir))
+        logging.info(os.path.basename(resdir))
         cur = conn.cursor()
         if os.path.exists(db_degenefile):
             with open(db_degenefile, 'r') as f:
                 group1, group2 = next(f).rstrip('\n').split(',')[-2:]
             cmd = gen_dbgene_copyfrom_cmd(table, group1, group2, fdr_th)
-            print(cmd)
+            logging.info(cmd)
             copy_dbgenes_from_db(cur, out_degenefile, cmd)
             with open(out_degenefile, 'r') as f:
                 if not list(f):

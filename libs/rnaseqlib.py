@@ -59,12 +59,19 @@ def madd_berkid(berkid_filepath_tuples):
 
 
 
-def find_num_genes(dbtable, berkid, cur):
+def get_num_genes(dbtable, berkid, cur):
     '''Finds the number of genes in dbtable with berkid berkid'''
     checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
     cur.execute(checkrowscmd)
     return(cur.fetchone()[0])
 
+def get_num_degenes(dbtable, tool, gene_subset, group1, group2):
+    '''Checks if the table already contains data from a DE analysis experiment
+    with the given tool, gene_subset, group1, and group2.
+    '''
+    checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
+    cur.execute(checkrowscmd)
+    return(cur.fetchone()[0])
 
 def copy_to_dbtable(berkid_file_path, dbtable, cur):
     '''copies data from the modfied file output by rl.add_berkid() into the sql
@@ -76,7 +83,7 @@ def copy_to_dbtable(berkid_file_path, dbtable, cur):
         info = next(f)
     berkid = info.strip('\n').split('\t')[-1]
     logging.debug('copy_to_db', berkid)
-    checkrows = int(find_num_genes(dbtable, berkid, cur))
+    checkrows = int(get_num_genes(dbtable, berkid, cur))
     logging.debug(checkrows, 'checkrows')
     logging.debug(berkid_file_path)
     logging.debug(dbtable)

@@ -103,10 +103,13 @@ EDGER_MVPLOT_FILE = 'mean_var_plot.png'
 EDGER_BCVPLOT_FILE = 'biol_cv_plot.png'
 EDGER_MAPLOT_FILE = 'masmear_plot_'
 EDGER_TOPTAGS_FILE = 'toptags_edgeR.csv'
+EDGER_DBTOPTAGS_FILE = 'db_toptags_edgeR.csv'
 EDGER_TOPTAGS_FDR_FILE = 'toptags_edgeR_'
+
 
 SAMPLEINFO_TABLE = 'autin'
 HTSEQ_TABLE = 'htseq'
+DEGENE_TABLE = 'degenes'
 #HTSEQ_TABLE = 'htseq_test'
 
 BERKIDLEN = 8
@@ -132,6 +135,7 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'htseq_cmd_file': HTSEQ_CMD_FILE,
                 'htseq_log_file': HTSEQ_LOG_FILE,
                 'htseq_file': HTSEQ_FILE,
+                'htseq_table': HTSEQ_TABLE,
                 'edger_dirpath': EDGER_DIRPATH,
                 'edger_metadata_file': EDGER_METADATA_FILE,
                 'edger_group_file': EDGER_GROUP_FILE,
@@ -140,7 +144,9 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'edger_bcvplot_file': EDGER_BCVPLOT_FILE,
                 'edger_maplot_file': EDGER_MAPLOT_FILE,
                 'edger_toptags_file': EDGER_TOPTAGS_FILE,
+                'edger_dbtoptags_file': EDGER_DBTOPTAGS_FILE,
                 'edger_toptags_fdr_file': EDGER_TOPTAGS_FDR_FILE,
+                'degene_table': DEGENE_TABLE
                 }
 
 def get_results_files(berkid):

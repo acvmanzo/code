@@ -243,9 +243,10 @@
     -- pvalue double precision, 
     -- fdr double precision,
     -- tool varchar(40),
+    -- gene_subset varchar(50),
     -- group1 varchar(50),
     -- group2 varchar(50),
-    -- UNIQUE (gene, group1, group2)
+    -- UNIQUE (gene, tool, gene_subset, group1, group2)
 -- );
 
 -- \copy (select * from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05.csv' csv header;
@@ -277,3 +278,4 @@
 -- \copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05_fc.csv' csv header ;
 
 
+-- -- 
