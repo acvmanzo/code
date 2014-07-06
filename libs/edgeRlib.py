@@ -128,7 +128,7 @@ def edger_pairwise_DE(expt, ctrl, gene_subset, de_file_dict):
     cmn.makenewdir(edgerresdir)
     os.chdir(edgerresdir)
     condlist = [expt, ctrl]
-    logging.info(condlist)
+    logging.info("%s", condlist)
     cmn.makenewdir(expt)
     os.chdir(expt)
     write_metadata(condlist, ctrl, metadatafile, sampleinfo_table, 
@@ -170,7 +170,7 @@ def edger_2groups_DE(exptdict, gene_subset, de_file_dict):
     '''
 
     for k,v in exptdict.items():
-        logging.info(k,v)
+        logging.info("%s,%s", k,v)
         if 'ctrl' in k:
             ctrllist = v
             ctrlname = k
@@ -273,53 +273,30 @@ def batch_makecopy_db_degenefile(de_file_dict, tool, gene_subset, conn):
             gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset,
                     group1, group2)
             cur = conn.cursor()
-            copy_de_dbtable(db_degenefile, degenetable, cur)
+            rl.copy_degenes_dbtable(db_degenefile, degenetable, cur) 
             cur.close()
             conn.commit()
 
         else:
             logging.info('No groups file')
 
-def get_num_degenes(dbtable, tool, gene_subset, group1, group2):
-    '''Checks if the table already contains data from a DE analysis experiment
-    with the given tool, gene_subset, group1, and group2.
-    '''
-    checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
-    cur.execute(checkrowscmd)
-    return(cur.fetchone()[0])
-def copy_dbgenes_to_db(cur, db_degenefile, table):
-    '''Copies data from db_degenefile into database table table'''
-    with open(db_degenefile, 'r') as f:
-        cur.copy_from(f, table, sep=',')
 
-def batch_fn(conn, fn):
-    os.chdir(ALIGN_DIR)
-    resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
-    for resdir in resdirs:
-        cur = conn.cursor()
-        print(resdir)
-        os.chdir(os.path.join(resdir, TOPHAT_DIR))
-        berkid = os.path.basename(resdir)
-        print(berkid)
-        eval(fn)
-        cur.close()
-
-def batch_copy_dbgenes_to_db(degenedir, conn, db_degenefile, table):
-    os.chdir(degenedir)
-    resdirs = sorted([os.path.abspath(x) for x in glob.glob('*/')])
-    for resdir in resdirs:
-        os.chdir(resdir)
-        logging.info(os.path.basename(resdir))
-        cur = conn.cursor()
-        if os.path.exists(db_degenefile):
-            try:
-                copy_dbgenes_to_db(cur, db_degenefile, table)
-            except psycopg2.IntegrityError:
-                cur.close()
-                conn.commit()
-                continue
-        else:
-            logging.info('No dbgene file')
+#def batch_copy_dbgenes_to_db(degenedir, conn, db_degenefile, table):
+    #os.chdir(degenedir)
+    #resdirs = sorted([os.path.abspath(x) for x in glob.glob('*/')])
+    #for resdir in resdirs:
+        #os.chdir(resdir)
+        #logging.info(os.path.basename(resdir))
+        #cur = conn.cursor()
+        #if os.path.exists(db_degenefile):
+            #try:
+                #copy_dbgenes_to_db(cur, db_degenefile, table)
+            #except psycopg2.IntegrityError:
+                #cur.close()
+                #conn.commit()
+                #continue
+        #else:
+            #logging.info('No dbgene file')
 
 
 def gen_dbgene_copyfrom_cmd(table, group1, group2, fdr_th):
@@ -338,7 +315,7 @@ def batch_copy_dbgenes_from_db(conn, degenedir, db_degenefile, out_degenefile, t
     resdirs = sorted([os.path.abspath(x) for x in glob.glob('*/')])
     for resdir in resdirs:
         os.chdir(resdir)
-        logging.info(os.path.basename(resdir))
+        logging.info("%s", os.path.basename(resdir))
         cur = conn.cursor()
         if os.path.exists(db_degenefile):
             with open(db_degenefile, 'r') as f:

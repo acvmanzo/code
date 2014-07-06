@@ -17,7 +17,7 @@ library("edgeR")
 samples = read.table('metadata.txt', header = TRUE)
 #print(samples)
 counts = readDGE(samples$HTSeqPath)$counts
-print(paste("dim-counts", dim(counts)))
+print(paste("dim-counts(rows,cols) =", dim(counts)))
 
 # Comment from paper - In edgeR, it is recommended to remove features without
 # at least 1 read per million in n of the samples, where n is the size of the
@@ -37,8 +37,8 @@ keep = rowSums(cpms >1) >= min_reps & !noint
 #keep = rowSums(cpms >1) >= 3 & !noint
 
 counts = counts[keep,]
-print(paste("length-keep", length(keep), "first entry in keep", keep[1]))
-print(paste("dim-counts", dim(counts)))
+print(paste("length-keep=", length(keep), "first entry in keep =", keep[1]))
+print(paste("dim-counts(rows,cols) =", dim(counts)))
 
 colnames(counts) = samples$Sample
 # argument after the comma refers to columns

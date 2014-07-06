@@ -96,6 +96,7 @@ RES_SAMPLE_GLOB = 'RG*'
 
 EDGER_DIR = 'edgeR'
 EDGER_DIRPATH = os.path.join(ANALYSIS_PATH, EDGER_DIR)
+EDGER_LOG_FILE = 'edger.log'
 EDGER_METADATA_FILE = 'metadata.txt'
 EDGER_GROUP_FILE = 'groups'
 EDGER_MDSPLOT_FILE = 'mds_plot.png'
@@ -138,6 +139,7 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'htseq_table': HTSEQ_TABLE,
                 'edger_dirpath': EDGER_DIRPATH,
                 'edger_metadata_file': EDGER_METADATA_FILE,
+                'edger_log_file': EDGER_LOG_FILE,
                 'edger_group_file': EDGER_GROUP_FILE,
                 'edger_mdsplot_file': EDGER_MDSPLOT_FILE,
                 'edger_mvplot_file': EDGER_MVPLOT_FILE,

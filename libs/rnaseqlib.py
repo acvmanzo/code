@@ -59,19 +59,12 @@ def madd_berkid(berkid_filepath_tuples):
 
 
 
-def get_num_genes(dbtable, berkid, cur):
+def get_num_genes(dbtable, checktype, berkid, cur):
     '''Finds the number of genes in dbtable with berkid berkid'''
     checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
     cur.execute(checkrowscmd)
     return(cur.fetchone()[0])
 
-def get_num_degenes(dbtable, tool, gene_subset, group1, group2):
-    '''Checks if the table already contains data from a DE analysis experiment
-    with the given tool, gene_subset, group1, and group2.
-    '''
-    checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
-    cur.execute(checkrowscmd)
-    return(cur.fetchone()[0])
 
 def copy_to_dbtable(berkid_file_path, dbtable, cur):
     '''copies data from the modfied file output by rl.add_berkid() into the sql
@@ -92,13 +85,40 @@ def copy_to_dbtable(berkid_file_path, dbtable, cur):
         cur.execute(delcmd)
     cur.copy_from(open(berkid_file_path), dbtable)
 
-
 def mcopy_to_dbtable(sample_file_paths, dbtable, cur):
     '''applies copy_to_dbtable() to multiple files.
     '''
     logging.info('copying data to table')
     for sample_file_path in sample_file_paths:
         copy_to_dbtable(sample_file_path, dbtable, cur)
+
+
+def get_num_degenes(dbtable, tool, gene_subset, group1, group2, cur):
+    '''Checks if the dbtable already contains data from a DE analysis
+    experiment with the given tool, gene_subset, group1, and group2.
+    '''
+    checkrowscmd = "select count (*) from (select * from {} where tool = '{}' and gene_subset = '{}' and group1 = '{}' and group2 = '{}') as foo;".format(dbtable,
+            tool, gene_subset, group1, group2)
+    cur.execute(checkrowscmd)
+    return(cur.fetchone()[0])
+
+def copy_degenes_dbtable(db_degenefile, dbtable, cur): 
+    '''Copies data from db_degenefile into table dbtable.
+    '''
+    logging.debug('cwd=%s', os.getcwd())
+    with open(db_degenefile, 'r') as f:
+        info = next(f)
+    tool, gene_subset, group1, group2 = info.rstrip('\n').split(',')[5:]
+    logging.debug('copy_to_db')
+    checkrows = int(get_num_degenes(dbtable, tool, gene_subset, group1, group2,
+        cur))
+    logging.debug('checkrows=%s', checkrows)
+    if checkrows != 0:
+        delcmd = "delete from {} where tool = '{}' and gene_subset = '{}' and group1 = '{}' and group2 = '{}';".format(dbtable, tool, gene_subset, group1, 
+                group2)
+        cur.execute(delcmd)
+    cur.copy_from(open(db_degenefile), dbtable, sep=',')
+
 
 def get_replicate_berkid_dict(cur, genotype, sampleinfo_table):
 
