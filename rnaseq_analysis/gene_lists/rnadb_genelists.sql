@@ -658,13 +658,13 @@
 
 -- -- -- One homolog/gene view with pfbgns of homologs -- -- --
 -- create or replace view homolog_pfbgns as 
-    -- select distinct all_fbgns.pfbgn, all_fbgns.gene_sym, homologs.gene_source
+    -- select distinct all_fbgns.pfbgn, homologs.fly_sym, homologs.gene_source
     -- from homologs
     -- inner join
     -- all_fbgns
     -- on (fbgn = psfbgn)
     -- UNION
-    -- select distinct all_fbgns.pfbgn, all_fbgns.gene_sym, flyatlas_brain.gene_source
+    -- select distinct all_fbgns.pfbgn, flyatlas_brain.gene_sym, flyatlas_brain.gene_source
     -- from flyatlas_brain 
     -- inner join
     -- all_fbgns

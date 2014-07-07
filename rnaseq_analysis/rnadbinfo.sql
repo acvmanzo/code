@@ -278,4 +278,45 @@
 -- \copy (select gene, 2^logfc as foldchange, fdr as adjusted_pvalue from degenes where group1 = 'lowagg' and group2 = 'normagg' and fdr < 0.05 order by fdr) to '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/prot_coding_genes/lowagg_vs_normagg_CS/toptags_edgeR_fdr05_fc.csv' csv header ;
 
 
--- -- 
+-- -- Finds the primary fbgn IDs of DE genes.
+-- select de.gene as gene, gff.fbgn_id as fbgn_id from
+-- degenes as de
+-- inner join
+-- gff_genes as gff
+    -- on (de.gene = gff.name_name)
+    -- where de.fdr < 0.05 
+    -- and de.gene_subset = 'sfari_r557' 
+    -- and de.group1 = 'lowagg_CS'
+    -- and de.group2 = 'ctrlagg_CS'
+    -- and gff.gff_file = 'dmel-all-filtered-r5.57.gff'
+    -- order by gene;
+
+-- -- Finds the human homologs of DE genes.
+-- -- 1. First, finds the primary fbgns of the DE genes.
+-- -- 2. Next, finds the homolog-specific fly symbol of the DE genes using 
+-- --    the pfbgns.
+-- -- 3. Next, finds the the human homolog, the weighted score, and the 
+-- --    databases used for homolog prediction using the homolog-specific 
+-- --    fly_sym.
+select distinct hom.fly_sym, hom.human_sym, hom.fly_sym, hom.weighted_score, 
+    hom.prediction_db from 
+( select hp.fly_sym from 
+    (select de.gene as gene, gff.fbgn_id as fbgn_id from
+    degenes as de
+    inner join
+    gff_genes as gff
+        on (de.gene = gff.name_name)
+        where de.fdr < 0.05 
+        and de.gene_subset = 'sfari_r557' 
+        and de.group1 = 'lowagg_CS'
+        and de.group2 = 'ctrlagg_CS' 
+        and gff.gff_file = 'dmel-all-filtered-r5.57.gff'
+    ) as hid
+    inner join 
+    homolog_pfbgns as hp
+        on (hp.pfbgn = hid.fbgn_id)
+    ) as final
+    inner join
+    homologs as hom
+    on (final.fly_sym = hom.fly_sym)
+    ;

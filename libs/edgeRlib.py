@@ -284,24 +284,6 @@ def batch_makecopy_db_degenefile(de_file_dict, tool, gene_subset, conn):
             logging.info('No groups file')
 
 
-#def batch_copy_dbgenes_to_db(degenedir, conn, db_degenefile, table):
-    #os.chdir(degenedir)
-    #resdirs = sorted([os.path.abspath(x) for x in glob.glob('*/')])
-    #for resdir in resdirs:
-        #os.chdir(resdir)
-        #logging.info(os.path.basename(resdir))
-        #cur = conn.cursor()
-        #if os.path.exists(db_degenefile):
-            #try:
-                #copy_dbgenes_to_db(cur, db_degenefile, table)
-            #except psycopg2.IntegrityError:
-                #cur.close()
-                #conn.commit()
-                #continue
-        #else:
-            #logging.info('No dbgene file')
-
-
 def gen_dbgene_copyfrom_cmd(table, group1, group2, fdr_th):
     cmd =  "COPY (select * from {} where group1 = '{}' and group2 = '{}' and fdr < {}) to STDOUT;".format(table, group1, group2, fdr_th)
     return(cmd)
@@ -335,24 +317,60 @@ def batch_copy_dbgenes_from_db(conn, degenedir, db_degenefile, out_degenefile, t
             conn.commit()
             print('No db_degenfile exists')
 
-     
+
+def gen_hh_cmd(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file):
+    cmd = "select distinct hom.fly_sym, hom.human_sym, hom.weighted_score, hom.prediction_db from ( select hp.fly_sym from (select de.gene as gene, gff.fbgn_id as fbgn_id from {0} as de inner join gff_genes as gff on (de.gene = gff.name_name) where de.fdr < {1} and de.gene_subset = '{2}' and de.group1 = '{3}' and de.group2 = '{4}' and de.tool = '{5}' and gff.gff_file = '{6}') as hid inner join homolog_pfbgns as hp on (hp.pfbgn = hid.fbgn_id)) as final inner join homologs as hom on (final.fly_sym = hom.fly_sym) order by hom.human_sym".format(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file)
+    return(cmd)
 
 
-#degenefile_for_db(DEGENEFILE, 'db_'+DEGENEFILE, 'edgeR', 'Betaintnu_F', 'CS_F')
+def get_human_homologs(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file, cur):
+    selcmd = gen_hh_cmd(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file, cur)
+    cur.execute(selcmd + ';')
+    human_homs = cur.fetchall()
+    return(human_homs)
 
-#Generates files formatted so they can be copied to the database.
-#for params in [male_params, female_params, agg_params]:
-    #dirs, group1list, group2list = params
-    #batch_db_degenefile(DEGENEDIR, DEGENEFILE, DB_DEGENEFILE, dirs, 
-    #group1list, group2list, 'edgeR')
+def write_human_homologs(hhfile, degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file, cur):
 
-#Copies DE gene data to the database.
-#conn = psycopg2.connect("dbname=rnaseq user=andrea")
-#batch_copy_dbgenes_to_db(DEGENEDIR, conn, DB_DEGENEFILE, 'degenes')
-#conn.commit()
-#conn.close()
+    selcmd = gen_hh_cmd(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file)
+    copycmd = "COPY ({0}) to STDOUT;".format(selcmd)
+    
+    with open(hhfile, 'w') as f:
+        cur.copy_expert(copycmd, f)
 
 
+def batch_write_human_homologs(de_file_dict, fdr_th, tool, gene_subset, gff_file, conn):
+    '''Batch function for rewriting DE analysis output files for inclusion
+    in the database.
+    Input:
+    de_file_dict = dictionary containing the file names for the DE directories
+    tool = software used for analaysis (e.g., 'edger' or 'deseq')
+    gene_subset = subset of genes analyzed
+    conn = open connection to database using psycopg2
+    degenetable = name of table in the database that will hold de gene data
+    '''
+    
+    de_resdir = os.path.join(de_file_dict['analysis_path'], tool, gene_subset)
+    groupfile = de_file_dict['{}_group_file'.format(tool)]
+    degenetable = de_file_dict['degene_table']
+    hhfile = "{}{}_{}.txt".format(de_file_dict['de_hh_file'], tool, fdr_th)
+
+    os.chdir(de_resdir)
+    logging.info('Writing human homologs')
+    for rd in [os.path.abspath(x) for x in sorted(glob.glob('*/'))]:
+        #logging.info(os.path.basename(rd))
+        print(os.path.basename(rd))
+        os.chdir(rd)
+        if os.path.exists(groupfile):
+            with open(groupfile, 'r') as f:
+                group1 = next(f).rstrip('\n')
+                group2 = next(f).rstrip('\n')
+            cur = conn.cursor()
+            write_human_homologs(hhfile, degenetable, fdr_th, gene_subset,
+                    group1, group2, tool, gff_file, cur) 
+            cur.close()
+            conn.commit()
+        else:
+            print('No group file exists')
 
 # Copies DE gene data from the database into a file.
 #conn = psycopg2.connect("dbname=rnaseq user=andrea")
@@ -366,16 +384,3 @@ def batch_copy_dbgenes_from_db(conn, degenedir, db_degenefile, out_degenefile, t
 #conn.close()
 
 
-############UNUSED##############
-#ded = gen_de_dict(SAMPLE_LIST, DEGENEDIR, DEGENEFILE)
-
-#npded = np.array(ded.items())
-#print(npded)
-#print(npded.shape)
-#print(len(npded))
-##np.savetxt('test.txt', npded)
-
-#def write_de_dict(degene_dict, all_degene_file):
-    #for sample, genes in degene_dict.items():
-
-#def add_degenes_db():

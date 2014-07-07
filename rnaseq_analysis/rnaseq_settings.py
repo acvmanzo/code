@@ -94,7 +94,7 @@ HTSEQ_LOG_FILE = 'htseq.log'
 HTSEQ_FILE = 'htseqcount'
 RES_SAMPLE_GLOB = 'RG*'
 
-EDGER_DIR = 'edgeR'
+EDGER_DIR = 'edger'
 EDGER_DIRPATH = os.path.join(ANALYSIS_PATH, EDGER_DIR)
 EDGER_LOG_FILE = 'edger.log'
 EDGER_METADATA_FILE = 'metadata.txt'
@@ -106,7 +106,7 @@ EDGER_MAPLOT_FILE = 'masmear_plot_'
 EDGER_TOPTAGS_FILE = 'toptags_edgeR.csv'
 EDGER_DBTOPTAGS_FILE = 'db_toptags_edgeR.csv'
 EDGER_TOPTAGS_FDR_FILE = 'toptags_edgeR_'
-
+DE_HH_FILE = 'human_hom_'
 
 SAMPLEINFO_TABLE = 'autin'
 HTSEQ_TABLE = 'htseq'
@@ -148,7 +148,8 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'edger_toptags_file': EDGER_TOPTAGS_FILE,
                 'edger_dbtoptags_file': EDGER_DBTOPTAGS_FILE,
                 'edger_toptags_fdr_file': EDGER_TOPTAGS_FDR_FILE,
-                'degene_table': DEGENE_TABLE
+                'degene_table': DEGENE_TABLE,
+                'de_hh_file': DE_HH_FILE
                 }
 
 def get_results_files(berkid):

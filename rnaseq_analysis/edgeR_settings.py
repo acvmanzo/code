@@ -8,9 +8,9 @@ FEMALES = ['Betaintnu_F', 'CG34127_F', 'en_F', 'Nhe3_F', 'NrxI_F', 'NrxIV_F',
 FEMALES_CTRL = 'CS_F'
 
 AGG_DICT_ALL = {'lowagg_all': ['CG34127_M', 'en_M', 'NrxI_M'],
-             'ctrl_all': ['Nhe3_M', 'NrxIV_M', 'pten_M', 'CS_M', 'Betaintnu_M']
+             'ctrlagg_all': ['Nhe3_M', 'NrxIV_M', 'pten_M', 'CS_M', 'Betaintnu_M']
              }
 AGG_DICT_CS = {'lowagg_CS': ['CG34127_M', 'en_M', 'NrxI_M'],
-             'ctrl_CS': ['CS_M']
+             'ctrlagg_CS': ['CS_M']
              }
 

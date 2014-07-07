@@ -140,7 +140,7 @@ print(head(tt))
 #print(nrow(d))
 #Writes the output of toptags into a file.
 #write.csv(tt$table, file = "toptags_edgeR.csv")
-write.csv(tt$table, file = toptags_file)
+write.csv(tt$table, file = toptags_file, quote=FALSE)
 
 #From the paper:Inspect the depth-adjusted reads per million for some of the differentially expressed genes
 nc = cpm(d, normalized.lib.sizes = TRUE) 

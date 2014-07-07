@@ -6,25 +6,23 @@ from edgeR_settings import *
 import psycopg2
 import os
 
-table = 'htseq_prot_coding_genes'
-
 conn = psycopg2.connect("dbname=rnaseq user=andrea")
-#cur = conn.cursor()
-#cur.close()
 
-def remove_htseqcount_files(conn):
-    fn = "print(os.getcwd()), os.remove('htseqcount_brain_aut_will_r557_ralph_mt_excluded')"
-    hl.batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
-    conn.close()
+genefile = '/home/andrea/Documents/lab/RNAseq/analysis/edgeR/sfari_r557/lowagg_CS/toptags_edgeR.csv'
 
-#print(list(el.get_metadata(conn, FEMALES, SAMPLEINFO_TABLE, 'prot_coding_genes')))
+fdr_th = 0.05
+gene_subset = 'sfari_r557'
+group1 = 'lowagg_CS'
+group2 = 'ctrlagg_CS'
+gff_file = 'dmel-all-filtered-r5.57.gff'
+hhfile = 'human_hom_edgeR_{}.csv'.format(fdr_th)
 
-#gene_subset = 'prot_coding_genes'
-#gene_subset = 'bwa_r557'
-gene_subset = 'bwa_r557_ralph_mt_ex'
-el.batch_edger_pairwise_DE(MALES, MALES_CTRL, EDGER_DIRPATH, EDGER_METADATA_FILE, 
-        SAMPLEINFO_TABLE, gene_subset)
-el.batch_edger_pairwise_DE(FEMALES, FEMALES_CTRL, EDGER_DIRPATH, 
-        EDGER_METADATA_FILE, SAMPLEINFO_TABLE, gene_subset)
+cur = conn.cursor()
+el.write_human_homologs(hhfile, fdr_th, gene_subset, group1, group2, gff_file, cur)
+#print(len(hh))
+#for i in hh:
+    #with open('human_hom_edgeR_{}.csv'.format(fdr_th), 'w') as g:
+        #g.write('\t'.join(i) + '\n')
+cur.close()
 #conn.commit()
 conn.close()
