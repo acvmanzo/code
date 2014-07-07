@@ -298,18 +298,18 @@
 -- -- 3. Next, finds the the human homolog, the weighted score, and the 
 -- --    databases used for homolog prediction using the homolog-specific 
 -- --    fly_sym.
-select distinct hom.fly_sym, hom.human_sym, hom.fly_sym, hom.weighted_score, 
+select distinct hom.fly_sym, hom.human_sym, final.logfc, hom.weighted_score, 
     hom.prediction_db from 
-( select hp.fly_sym from 
-    (select de.gene as gene, gff.fbgn_id as fbgn_id from
+( select hp.fly_sym, hid.logfc from 
+    (select de.gene as gene, gff.fbgn_id as fbgn_id, de.logfc as logfc from
     degenes as de
     inner join
     gff_genes as gff
         on (de.gene = gff.name_name)
         where de.fdr < 0.05 
         and de.gene_subset = 'sfari_r557' 
-        and de.group1 = 'lowagg_CS'
-        and de.group2 = 'ctrlagg_CS' 
+        and de.group1 = 'CG34127_M'
+        and de.group2 = 'CS_M' 
         and gff.gff_file = 'dmel-all-filtered-r5.57.gff'
     ) as hid
     inner join 
@@ -319,4 +319,5 @@ select distinct hom.fly_sym, hom.human_sym, hom.fly_sym, hom.weighted_score,
     inner join
     homologs as hom
     on (final.fly_sym = hom.fly_sym)
+    order by final.logfc desc
     ;

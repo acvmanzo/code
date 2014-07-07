@@ -21,7 +21,10 @@ parser.add_argument('-t', '--tool', default='edger', help='DE analysis tool')
 args = parser.parse_args()
 
 fdr_th = args.fdr_threshold
-gene_subset = args.genesubset
+if args.genesubset:
+    gene_subset = args.genesubset
+else:
+    gene_subset = ''
 gff_file = args.gff_file
 tool = args.tool
 

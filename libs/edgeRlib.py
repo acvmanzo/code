@@ -319,7 +319,7 @@ def batch_copy_dbgenes_from_db(conn, degenedir, db_degenefile, out_degenefile, t
 
 
 def gen_hh_cmd(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file):
-    cmd = "select distinct hom.fly_sym, hom.human_sym, hom.weighted_score, hom.prediction_db from ( select hp.fly_sym from (select de.gene as gene, gff.fbgn_id as fbgn_id from {0} as de inner join gff_genes as gff on (de.gene = gff.name_name) where de.fdr < {1} and de.gene_subset = '{2}' and de.group1 = '{3}' and de.group2 = '{4}' and de.tool = '{5}' and gff.gff_file = '{6}') as hid inner join homolog_pfbgns as hp on (hp.pfbgn = hid.fbgn_id)) as final inner join homologs as hom on (final.fly_sym = hom.fly_sym) order by hom.human_sym".format(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file)
+    cmd = "select distinct hom.fly_sym, hom.human_sym, final.logfc, hom.weighted_score, hom.prediction_db from ( select hp.fly_sym, hid.logfc from (select de.gene as gene, gff.fbgn_id as fbgn_id, de.logfc as logfc from {0} as de inner join gff_genes as gff on (de.gene = gff.name_name) where de.fdr < {1} and de.gene_subset = '{2}' and de.group1 = '{3}' and de.group2 = '{4}' and de.tool = '{5}' and gff.gff_file = '{6}') as hid inner join homolog_pfbgns as hp on (hp.pfbgn = hid.fbgn_id)) as final inner join homologs as hom on (final.fly_sym = hom.fly_sym) order by final.logfc desc".format(degenetable, fdr_th, gene_subset, group1, group2, tool, gff_file)
     return(cmd)
 
 
