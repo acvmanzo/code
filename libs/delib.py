@@ -1,3 +1,5 @@
+#Functions for differential expression analysis using edgeR and DESeq.
+
 import sys
 import glob
 import numpy as np
@@ -22,8 +24,10 @@ def get_count_paths(berkids, gene_subset):
     paths = []
     for berkid in berkids:
         countpath = rs.get_results_files(berkid)['htseq_count_path']
-        if gene_subset:
+        if gene_subset != 'all':
             countpath = countpath+'_{}'.format(gene_subset)
+        else:
+            countpath = countpath
         paths.append(countpath)
     return(paths)
 
@@ -57,7 +61,7 @@ def get_metadata(conn, allgenlist, sampleinfo_table, gene_subset):
    
 
 def write_metadata(allgenlist, controllist, metadatafile, sampleinfo_table, 
-        gene_subset):
+        gene_subset, tool):
     '''Writes a file called metadatafile that contains information for edgeR
     analysis. The metadata file has 4 columns: Sample, Berkid, CorE (control or 
     experimental sample), and HTSeqPath (path to htseqfile)
@@ -75,15 +79,23 @@ def write_metadata(allgenlist, controllist, metadatafile, sampleinfo_table,
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     items = get_metadata(conn, allgenlist, sampleinfo_table, gene_subset) 
     with open(metadatafile, 'w') as f:
-        f.write('Sample\tBerkid\tCorE\tHTSeqPath\n')
+        if tool == 'edger':
+            f.write('Sample\tBerkid\tCorE\tHTSeqPath\n')
+        elif tool == 'deseq':
+            f.write('Sample\tHTSeqPath\tCorE\n')
         for berkid, sample, path in items:
             if os.path.exists(path):
                 if sample[:-1] in controllist:
                     core = 'ctrl'
                 else:
                     core = 'expt'
-                f.write('{}\t{}\t{}\t{}\n'.format(sample, berkid, core, path))
+                if tool == 'edger':
+                    f.write('{}\t{}\t{}\t{}\n'.format(sample, berkid, core, path))
+                elif tool == 'deseq':
+                    f.write('{}\t{}\t{}\n'.format(sample, path, core))
     conn.close()
+
+
 
 def write_groups(groups, groupinfofile):
     '''Writes a file (groupinfofile) that lists the groups being compared; the
@@ -107,7 +119,7 @@ def write_groups(groups, groupinfofile):
     with open(groupinfofile, 'w') as g:
         g.write('{}\n{}'.format(group1, group2))
 
-def edger_pairwise_DE(expt, ctrl, gene_subset, de_file_dict):
+def pairwise_DE(expt, ctrl, gene_subset, de_file_dict, tool):
     '''Runs edgeR comparing expt and control genotypes. Writes a metadata file
     and calls the edgeR.R script.  
     Input:
@@ -120,27 +132,29 @@ def edger_pairwise_DE(expt, ctrl, gene_subset, de_file_dict):
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
     de_file_dict = dictionary containing the file names for the plots and 
+    tool = software used for analaysis (e.g., 'edger' or 'deseq')
         data output by edgeR.R
     '''
-    edger_dirpath = de_file_dict['edger_dirpath'] 
-    metadatafile = de_file_dict['edger_metadata_file']
+    
+    de_dirpath = de_file_dict['{}_dirpath'.format(tool)] 
+    metadatafile = de_file_dict['{}_metadata_file'.format(tool)]
     sampleinfo_table = de_file_dict['sampleinfo_table']
-    groupinfofile = de_file_dict['edger_group_file']
+    groupinfofile = de_file_dict['{}_group_file'.format(tool)]
 
-    edgerresdir = os.path.join(edger_dirpath, gene_subset)
-    cmn.makenewdir(edgerresdir)
-    os.chdir(edgerresdir)
+    deresdir = os.path.join(de_dirpath, gene_subset)
+    cmn.makenewdir(deresdir)
+    os.chdir(deresdir)
     condlist = [expt, ctrl]
     logging.info("%s", condlist)
     cmn.makenewdir(expt)
     os.chdir(expt)
     write_metadata(condlist, ctrl, metadatafile, sampleinfo_table, 
-            gene_subset)
+            gene_subset, tool)
     write_groups(condlist, groupinfofile)
-    run_edger(de_file_dict)
+    run_descript(de_file_dict, tool)
 
 
-def batch_edger_pairwise_DE(exptlist, ctrl, gene_subset, de_file_dict):
+def batch_pairwise_DE(exptlist, ctrl, gene_subset, de_file_dict, tool):
     '''Runs edgeR for each genotype given in exptlist against the control
     given in ctrl. Writes a metadata file and calls the edgeR.R script.
     Input:
@@ -153,14 +167,15 @@ def batch_edger_pairwise_DE(exptlist, ctrl, gene_subset, de_file_dict):
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
     de_file_dict = dictionary containing the file names for the plots and 
+    tool = software used for analaysis (e.g., 'edger' or 'deseq')
         data output by edgeR.R
     '''
     for cond in exptlist:
-        edger_pairwise_DE(cond, ctrl, gene_subset, de_file_dict)
+        pairwise_DE(cond, ctrl, gene_subset, de_file_dict, tool)
 
 
 
-def edger_2groups_DE(exptdict, gene_subset, de_file_dict):
+def run2groups_DE(exptdict, gene_subset, de_file_dict, tool):
     '''Runs edgeR to find DE genes between two groups of samples.
     Input:
     exptdict = dictionary where the keys are the groups to be compared
@@ -170,6 +185,7 @@ def edger_2groups_DE(exptdict, gene_subset, de_file_dict):
         (e.g., prot_coding_genes, bwa_r557)
     de_file_dict = dictionary containing the file names for the plots and 
         data output by edgeR.R
+    tool = software used for analaysis (e.g., 'edger' or 'deseq')
     '''
 
     for k,v in exptdict.items():
@@ -184,32 +200,37 @@ def edger_2groups_DE(exptdict, gene_subset, de_file_dict):
     #print('allgenlist', allgenlist)
     #print('ctrllist', ctrllist)
     
-    edger_dirpath = de_file_dict['edger_dirpath'] 
-    metadatafile = de_file_dict['edger_metadata_file']
+    de_dirpath = de_file_dict['{}_dirpath'.format(tool)] 
+    metadatafile = de_file_dict['{}_metadata_file'.format(tool)]
     sampleinfo_table = de_file_dict['sampleinfo_table']
-    groupinfofile = de_file_dict['edger_group_file']
+    groupinfofile = de_file_dict['{}_group_file'.format(tool)]
 
-    edgerresdir = os.path.join(edger_dirpath, gene_subset)
-    cmn.makenewdir(edgerresdir)
-    os.chdir(edgerresdir)
+    deresdir = os.path.join(de_dirpath, gene_subset)
+    cmn.makenewdir(deresdir)
+    os.chdir(deresdir)
     cmn.makenewdir(exptname)
     os.chdir(exptname)
 
     write_metadata(allgenlist, ctrllist, metadatafile, sampleinfo_table, 
-            gene_subset)
+            gene_subset, tool)
     write_groups(exptdict, groupinfofile)
-    run_edger(de_file_dict)
+    run_descript(de_file_dict, tool)
 
 
-def run_edger(de_file_dict):
-    '''Runs edgeR using the script edgeR.R. Input is a dictionary containing
+def run_descript(de_file_dict, tool):
+    '''Runs edgeR using the script edgeR.R or deseq using the script deseq.R. 
+    Input is a dictionary containing
     the file names for the plots and data output by edgeR.R
+    tool = software used for analaysis (e.g., 'edger' or 'deseq')
     '''
-    d = de_file_dict 
-    cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R {0} {1} {2} {3} {4} {5} > edgeR.log 2>&1'.format(d['edger_mdsplot_file'], 
-            d['edger_mvplot_file'], d['edger_bcvplot_file'], 
-            d['edger_maplot_file'], d['edger_toptags_file'],
-            d['edger_toptags_fdr_file'])
+    d = de_file_dict
+    if tool == 'edger':
+        cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R {0} {1} {2} {3} {4} {5} > edgeR.log 2>&1'.format(d['edger_mdsplot_file'], 
+                d['edger_mvplot_file'], d['edger_bcvplot_file'], 
+                d['edger_maplot_file'], d['edger_toptags_file'],
+                d['edger_toptags_fdr_file'])
+    elif tool == 'deseq':
+        cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/deseq.R > deseq.log 2>&1'
     logging.debug(cmd)
     os.system(cmd)
 
@@ -384,3 +405,12 @@ def batch_write_human_homologs(de_file_dict, fdr_th, tool, gene_subset, gff_file
 #conn.close()
 
 
+def custom_DE(de_file_dict, tool):
+    '''Runs analysis to find DE genes between two groups of samples. Metadata
+    file and groups file are manually created.
+    Input:
+    tool = software used (e.g., edger or deseq)
+    de_file_dict = dictionary containing the file names for the plots and 
+        data output by edgeR.R
+    '''
+    run_descript(de_file_dict, tool)

@@ -108,6 +108,10 @@ EDGER_DBTOPTAGS_FILE = 'db_toptags_edgeR.csv'
 EDGER_TOPTAGS_FDR_FILE = 'toptags_edgeR_'
 DE_HH_FILE = 'human_hom_'
 
+DESEQ_DIR = 'deseq'
+DESEQ_DIRPATH = os.path.join(ANALYSIS_PATH, DESEQ_DIR)
+DESEQ_LOG_FILE = 'deseq.log'
+
 SAMPLEINFO_TABLE = 'autin'
 HTSEQ_TABLE = 'htseq'
 DEGENE_TABLE = 'degenes'
@@ -148,6 +152,11 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'edger_toptags_file': EDGER_TOPTAGS_FILE,
                 'edger_dbtoptags_file': EDGER_DBTOPTAGS_FILE,
                 'edger_toptags_fdr_file': EDGER_TOPTAGS_FDR_FILE,
+                'deseq_dir': DESEQ_DIR,
+                'deseq_dirpath': DESEQ_DIRPATH,
+                'deseq_log_file': DESEQ_LOG_FILE,
+                'deseq_metadata_file': EDGER_METADATA_FILE,
+                'deseq_group_file': EDGER_GROUP_FILE,
                 'degene_table': DEGENE_TABLE,
                 'de_hh_file': DE_HH_FILE
                 }
