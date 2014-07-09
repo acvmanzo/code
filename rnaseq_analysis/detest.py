@@ -16,16 +16,19 @@ import cmn.cmn as cmn
 
 parser = argparse.ArgumentParser()
 parser.add_argument('tool', choices=['edger', 'deseq'],
-        help='selects de analysis tool')
-parser.add_argument('-s', '--genesubset', choices=['prot_coding_genes', 
-        'bwa_r557', 'bwa_r557_ralph_mt_ex', 'sfari_r557', 'all'], 
-        help='set of genes on which to run analysis')
+        help='selects DE analysis tool')
+parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes', 
+        'brain_r557'],
+        help='set of genes on which to run DE analysis')
+#parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes', 
+        #'brain_r557', 'bwa_r557', 'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        #help='set of genes on which to run DE analysis')
 parser.add_argument('-r', '--run', action="store_true", 
-        help='runs de analysis')
+        help='runs DE analysis')
 parser.add_argument('-c', '--copytodb', action="store_true", 
-        help='copies de gene list to database')
+        help='copies DE gene list to database')
 parser.add_argument('-m', '--custom', action="store_true", 
-        help='runs de analysis with custom metadata.txt')
+        help='runs DE analysis with custom metadata.txt')
 args = parser.parse_args()
 
 tool = args.tool

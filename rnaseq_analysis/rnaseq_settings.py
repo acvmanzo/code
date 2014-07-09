@@ -23,6 +23,11 @@ import os
             #Betaintnu_F/
                 #Betaintnu_FA-RGAM011D_vs_Betaintnu_FB-RGAM012F_correlation.png
             #Betaintnu_M/
+    #edger/
+        #date_time_edger.log
+        #prot_coding_genes/
+            #Betaintnu_F/
+            #Betaintnu_M/
     #results_tophat/
         #RGAM009A/
             #cufflinks_out/
@@ -48,7 +53,13 @@ import os
             #tophat.info
         #RGAM009B/
         #tophat_all_align_summary.txt
-        #tuxedo_settings.py
+        #date_time_rnaseq_settings.py
+
+
+
+TH_RESDIR = 'results_tophat'
+#TH_RESDIR = 'results_tophat_2str'
+#TH_RESDIR = 'results_tophat_secondstrand'
 
 REFSEQ_PATH = '/home/andrea/rnaseqanalyze/references/dmel-r5.57' 
 GFF_PATH = os.path.join(REFSEQ_PATH, 'dmel-all-filtered-r5.57.gff')
@@ -70,9 +81,6 @@ COMBINED_FASTQ_SUFFIX = 'combined.fastq.gz'
 
 ANALYSIS_PATH = '/home/andrea/Documents/lab/RNAseq/analysis'
 
-#TH_RESDIR = 'results_tophat_secondstrand'
-#TH_RESDIR = 'results_tophat_2str'
-TH_RESDIR = 'results_tophat'
 TH_RESDIRPATH = os.path.join(ANALYSIS_PATH, TH_RESDIR)
 TH_DIR = 'tophat_out'
 THCMD_FILE = 'tophatcmd.txt'
@@ -81,7 +89,7 @@ TH_LOG_FILE = 'tophat.log'
 TH_SET_DIR_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
 TH_SET_FILE = 'rnaseq_settings.py'
 TH_SET_PATH_ORIG = os.path.join(TH_SET_DIR_ORIG, TH_SET_FILE)
-TH_SET_PATH_COPY = os.path.join(TH_RESDIRPATH, TH_SET_FILE)
+TH_SET_PATH_COPY = os.path.join(TH_RESDIRPATH, os.path.splitext(TH_SET_FILE)[0])
 
 CUFF_DIR = 'cufflinks_out'
 CUFFLOG_FILE = 'cufflinks.log'

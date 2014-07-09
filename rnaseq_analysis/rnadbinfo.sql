@@ -320,4 +320,4 @@ select distinct hom.fly_sym, hom.human_sym, final.logfc, hom.weighted_score,
     homologs as hom
     on (final.fly_sym = hom.fly_sym)
     order by final.logfc desc
-    ;
+    -- ;

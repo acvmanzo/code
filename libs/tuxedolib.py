@@ -120,7 +120,7 @@ def mgen_combined_gzfile(sampledirs, results_base_dir):
         os.chdir(sd)
         combined_gzpath = gen_combined_gzfile(sd, results_base_dir)
 
-def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
+def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file, strand):
     '''Runs tophat from the command line with the indicated options and writes the command
     used into a file.
     Inputs:
@@ -129,10 +129,15 @@ def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file):
     btindex = root name of the bowtie index files need by tophat
     fastafile = name of the combined, unzipped fasta file containing reads
     tophatcmd_file = name of the file where the tophat command is written
+    strand = unstranded or second stranded library
     '''
-    tophatcmd = 'tophat -o {} -p 8 --no-coverage-search --library-type fr-secondstrand -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
-    #tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir,
-    #gff_file, btindex, fastafile)
+    if strand == 'fr-secondstrand':
+        tophatcmd = 'tophat -o {} -p 8 --no-coverage-search --library-type fr-secondstrand -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
+    elif strand == 'fr-unstranded':
+        tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir,
+            gff_file, btindex, fastafile)
+    else:
+        logging.info('No strand info given')
     logging.info('%s', tophatcmd)
     os.system(tophatcmd)
     with open(tophatcmd_file, 'w') as f:
@@ -160,7 +165,7 @@ def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinks
     os.system(cufflinkscmd)
 
 def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict, 
-        th_cuff_dict, runcufflinks):
+        th_cuff_dict, runcufflinks, strand):
     '''
     Runs tophat and cufflinks on one sample.
     Inputs:
@@ -180,7 +185,8 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
         gff_file = name of genome gff file for use wtih tophat and cufflinks 
         mitogff_file = name of mitochondriol gff file for use in masking during cufflinks
         btindex = name of bowtie index files used for tophat
-    runcufflinks = 'yes': runs cufflinks; otherwise does not
+    runcufflinks = True: runs cufflinks; otherwise does not
+    strand = unstranded or second stranded library
     '''
     d = th_cuff_dict
     rd = rnaseqdict
@@ -200,11 +206,12 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
     if os.path.exists(rd['th_dir']):
         logging.warning('%s', 'tophat directory exists')
     else:
-        run_tophat(rd['th_dir'], d['gff_path'], d['btindex'], fastafile, rd['th_cmd_file'])
+        run_tophat(rd['th_dir'], d['gff_path'], d['btindex'], fastafile,
+                rd['th_cmd_file'], strand)
         os.remove(fastafile)
    
     #Run cufflinks.
-    if runcufflinks == 'yes':
+    if runcufflinks:
         if os.path.exists(d['cufflinks_dir']):
             logging.warning('cufflinks directory exists')
         else:
@@ -212,7 +219,7 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
                     rd['cufflinkscmd_file']) 
     
 
-def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks):
+def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks, strand):
     '''Runs tophat and cufflinks on multiple samples organized in the following manner:
     main seqdir > sequence batch folder (date) > sequence subdirectory (sequences/) > sample 
     folder
@@ -228,6 +235,7 @@ def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks):
         seqbatchglob = string that is unique to names of sequence batch folders
         sampleglob = string that is unique to names of sample folders
     tophat_cufflinks_info: List containing the variables needed for the run_tophat_cufflinks()
+    strand = unstranded or second stranded library
     '''
     rd = rnaseqdict
     d = th_cuff_dict
@@ -250,7 +258,7 @@ def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks):
                 cmn.makenewdir(sample_resdir)
                 logging.info('Running tophat and cufflinks')
                 run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, 
-                        rd, d, runcufflinks)
+                        rd, d, runcufflinks, strand)
             else:
                 logging.warning('Tophat and cufflinks output exists')
 

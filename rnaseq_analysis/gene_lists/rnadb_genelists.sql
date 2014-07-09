@@ -662,14 +662,16 @@
     -- from homologs
     -- inner join
     -- all_fbgns
-    -- on (fbgn = psfbgn)
+    -- on (homologs.fbgn = all_fbgns.psfbgn)
     -- UNION
     -- select distinct all_fbgns.pfbgn, flyatlas_brain.gene_sym, flyatlas_brain.gene_source
     -- from flyatlas_brain 
     -- inner join
     -- all_fbgns
-    -- on (fbgn = psfbgn)
+    -- on (flyatlas_brain.fbgn = all_fbgns.psfbgn)
     -- where upordown = 'Up';
+
+
 
 
 ---- Returns the gff-specific fbgn_ids and name_names for the pfbgns in
@@ -753,9 +755,45 @@
 
 -- \copy flyatlas_brain from '/home/andrea/rnaseqanalyze/references/gene_lists/brain_autism_williams_genes/flyatlas_brain/microarray_fbgn_brain_db.txt';
 
+-- -- Stats about fly atlas genes:
+-- # rows: 
+-- rnaseq=# select count (*) from flyatlas_brain;
+ -- count 
+-- -------
+ -- 19545
+-- (1 row)
+
+-- # distinct gene symbols/fbgns:
+-- rnaseq=# select count (*) from (select distinct gene_sym from flyatlas_brain ) as foo;
+ -- count 
+-- -------
+ -- 13255
+-- (1 row)
+
+-- rnaseq=# select count (*) from (select distinct fbgn from flyatlas_brain ) as foo;
+ -- count 
+-- -------
+ -- 13255
+-- (1 row)
+
+-- # distinct gene symbols/fbgns that are upregulated in the brain:
+-- rnaseq=# select count (*) from (select distinct gene_sym from flyatlas_brain where upordown = 'Up') as foo;
+ -- count 
+-- -------
+  -- 3878
+-- (1 row)
+
+-- # homologs in homolog_pfbgns:
+-- rnaseq=# select count (*) from homolog_pfbgns where gene_source = 'fly_atlas';
+ -- count 
+-------
+  -- 3856
+-- (1 row)
+
 -- -- Creates a flyatlas view with the current primary fbgns of the flyatlas
 -- -- brain-upregulated genes. Couldn't use the create_homolog_view function
--- -- because of extra upordown condition.
+-- -- because of extra upordown condition. Never mind, just added fly_atlas items
+-- -- to the homolog_pfbgns view (see create statement for that).
 -- create or replace view flyatlasbrain_pfbgns as 
     -- select distinct all_fbgns.pfbgn, all_fbgns.gene_sym
     -- from flyatlas_brain 
@@ -770,6 +808,18 @@
 -- CREATE OR REPLACE VIEW sfari_r557 AS (
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'sfari'))
 -- ;
+
+
+-- Brain-expressed genes only --
+-- CREATE OR REPLACE VIEW brain_r557 AS (
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'fly_atlas')
+-- order by gene_short_name)
+-- ;
+-- rnaseq=# select count (*) from brain_r557 ;
+ -- count 
+-- -------
+  -- 3746
+-- (1 row)
 
 -- ---Putting all the lists together ------
 -- CREATE OR REPLACE VIEW bwa_r557 AS (
