@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 #Finds the correlation of gene expression values between biological replicates 
-
-import correlationlib as corl
+import argparse
+import libs.correlationlib as corl
 import logging
 import os
 import cmn.cmn as cmn
@@ -10,9 +10,36 @@ import psycopg2
 import shutil
 import sys
 from all_correlations_settings import *
+import libs.rnaseqlib as rl
 
-COPY_TO_TABLE = sys.argv[1] # 'y' to copy data into database table
-FIND_CORRELATIONS = sys.argv[2] # 'y' or 'yes' to find correlations
+parser = argparse.ArgumentParser()
+parser.add_argument('-g', '--genotype', 
+        help='genotype to analyze')
+parser.add_argument('-a', '--allgens', action='store_true', 
+        help='find correlations for all samples')
+parser.add_argument('-r', '--run', action='store_true', 
+        help='run correlation analysis')
+parser.add_argument('-c', '--copytodb', action='store_true', 
+        help='copy cufflinks results to database')
+parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
+        'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
+        'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        help='make new file of htseq-count results for the given subset of genes')
+
+args = parser.parse_args()
+COPY_TO_TABLE = args.copytodb 
+FIND_CORRELATIONS = args.run
+GENE_SUBSET_TABLE = args.genesubset
+if args.genesubset == 'all':
+    GENE_SUBSET_TABLE = False
+if args.allgens:
+    ALLREPS_OR_BERKIDS = 'allreps' 
+else:
+    ALLREPS_OR_BERKIDS = 'berkids'
+
+
+if args.genotype:
+    logging.info('Finding correlations for %s', args.genotype)
 
 def create_corrfiles():
     # Creates files for pearson and spearman correlation coefficients.
@@ -22,7 +49,7 @@ def create_corrfiles():
     corl.create_corr_file(spearman_corrfile)
     return(pearson_corrfile, spearman_corrfile)
    
-def gen_cufflink_path_dict(whichberkids, berkidlist, key):
+def gen_cufflink_path_dict():
     '''
     If whichberkids = 'all':
         Generates a dictionary where they keys are conditions (e.g., CS_M or
@@ -34,14 +61,18 @@ def gen_cufflink_path_dict(whichberkids, berkidlist, key):
     '''
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
-    if whichberkids == 'allreps':
-        cufflink_path_dict = corl.get_all_replicate_cufflink_paths(
-            cur, SAMPLEINFO_TABLE, RESULTS_DIR, CUFFLINKS_DIR, FPKM_FILE)
-    if whichberkids == 'berkids':
-        assert key != None
-        assert berkidlist != None
-        cufflink_path_dict = corl.get_some_cufflink_paths(berkidlist, 
-            RESULTS_DIR, CUFFLINKS_DIR, FPKM_FILE, key)
+    if args.allgens:
+        cufflink_path_dict = rl.get_all_replicate_cufflink_paths(cur, RNASEQDICT)
+    if args.genotype:
+        berkiddict = {args.genotype: rl.get_replicate_berkid_dict(cur, 
+            args.genotype, RNASEQDICT['sampleinfo_table'])}
+        cufflink_path_dict = rl.get_replicate_cufflink_paths(berkiddict)
+        #print(cufflink_path_dict)
+    #if whichberkids == 'berkids':
+        #assert key != None
+        #assert berkidlist != None
+        #cufflink_path_dict = corl.get_some_cufflink_paths(berkidlist, 
+            #RESULTS_DIR, CUFFLINKS_DIR, FPKM_FILE, key)
     cur.close()
     conn.close()
     return(cufflink_path_dict)
@@ -66,18 +97,15 @@ def prune_cufflink_path(cufflink_fpkm_paths):
 
 def main():
     # Settings for logging.
-    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    #curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     logpath = CORRLOGPATH
     rl.logginginfo(logpath)
-    console = logging.StreamHandler()  # Displays output to screen.
-    console.setLevel(logging.INFO)
-    logging.getLogger('').addHandler(console)
 
     # Create correlation output files.
     pearson_corrfile, spearman_corrfile = create_corrfiles()
     # Find paths to the cufflink output files for each condition.
-    cufflink_path_dict = gen_cufflink_path_dict(ALLREPS_OR_BERKIDS, BERKIDLIST,
-           COND_DIR)
+    cufflink_path_dict = gen_cufflink_path_dict()
+    #print(cufflink_path_dict)
 
     for condition, cufflink_fpkm_paths in sorted(cufflink_path_dict.items()):
         # Define and create figure directory.
@@ -94,7 +122,7 @@ def main():
         if COPY_TO_TABLE == 'y' or COPY_TO_TABLE == 'yes':
             corl.copy_data_to_table(extant_cufflink_fpkm_paths, BERKID_FPKM_FILE, CUFF_TABLE)
         # Finds correlations if sys.argv is 'y' # or 'yes'
-        if FIND_CORRELATIONS == 'y' or FIND_CORRELATIONS == 'yes':
+        if FIND_CORRELATIONS:
             try:
                 # Generates a list of arrays in which each array has the gene FPKM
                 # data for two samples.

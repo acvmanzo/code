@@ -1,6 +1,7 @@
 import os
 import logging
 import psycopg2
+from rnaseq_analysis.rnaseq_settings import *
 
 #globstring = 'RG*'
 
@@ -277,8 +278,7 @@ def get_some_cufflink_paths(berkidlist, key):
         #berkid_fpkm_file) for berkid in berkidlist]})
 
 
-def get_all_replicate_cufflink_paths(cur, sampleinfo_table, exp_results_dir, 
-        exp_dir, berkid_fpkm_file):
+def get_all_replicate_cufflink_paths(cur, rnaseqdict):
     '''Returns a dictionary of paths to the cufflink output FPKM files for
     every condition in the queried table.
     Inputs:
@@ -293,10 +293,9 @@ def get_all_replicate_cufflink_paths(cur, sampleinfo_table, exp_results_dir,
     A dictionary where the keys are the condition names and the values are
     paths to the FPKM file.
     '''
-    replicate_berkid_dict = get_all_replicate_berkid_dict(cur, 
-        sampleinfo_table)
-    return(get_replicate_cufflink_paths(replicate_berkid_dict, 
-        exp_results_dir, exp_dir, berkid_fpkm_file))
+    condition_berkid_dict = get_all_replicate_berkid_dict(cur, 
+        rnaseqdict['sampleinfo_table'])
+    return(get_replicate_cufflink_paths(condition_berkid_dict))
 
 def get_cufflink_berkid_fpkm_path(cufflink_fpkm_path, berkid_fpkm_file):
     berkid = get_berkid(cufflink_fpkm_path)
@@ -313,7 +312,7 @@ def get_samplename(berkid, cur):
     return(sample)
 
 
-def get_berkid(cufflink_fpkm_path, berkidlen):
+def get_berkid(exp_results_path, berkidlen=BERKIDLEN):
     '''return a berkid extracted from a cufflink_fpkm_path'''
     cf = exp_results_path
     return(cf[cf.find('RG'):cf.find('RG')+berkidlen])

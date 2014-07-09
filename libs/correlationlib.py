@@ -304,7 +304,7 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm, gene
     logging.info('opening connection')
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur1 = conn.cursor()
-    berkidlist = get_berkidlist(cufflink_fpkm_paths)
+    berkidlist = rl.get_berkidlist(cufflink_fpkm_paths)
     logging.info(berkidlist)
     joined_arrays = mjoin_db_table(berkidlist, selectlist, cuff_table, maxfpkm, cur1, 
             gene_subset_table)
@@ -327,7 +327,7 @@ def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile,
         if pc_log == True:
             fpkms = log_transform(add_pseudocount(fpkms))
         cur2 = conn.cursor()
-        samples = [get_samplename(x, cur2) for x in berkids]
+        samples = [rl.get_samplename(x, cur2) for x in berkids]
         cur2.close()
         fpkmlim = max([axislim(x) for x in fpkms])
         
