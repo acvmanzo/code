@@ -3,7 +3,6 @@
 #Code for running htseq-count, loading htseq-count results into a database,
 #generating files with htseq-count data of different subsets of genes. 
 #Settings and file structure are in rnaseq_settings.
-#Runs htseq-count on all samples.
 
 import libs.htseqlib as hl
 import libs.rnaseqlib as rl
@@ -20,7 +19,7 @@ parser.add_argument('-c', '--copytodb', action='store_true',
         help='copy htseq-count results to database')
 parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes', 
         'brain_r557', 'bwa_r557', 'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
-        help='generate new htseq-count results file for the given subset of genes')
+        help='make new file of htseq-count results for the given subset of genes')
 args = parser.parse_args()
 
 
@@ -44,7 +43,7 @@ def batch_ht_gene_subset(conn, gene_subset_table):
 
 def main():
     curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    logpath = '{}_{}'.format(curtime, RNASEQDICT['htseq_log_file'])
+    logpath = '{}_'.format(curtime) + RNASEQDICT['htseq_log_file']
     rl.logginginfo(logpath)
 
     if args.htseqcount:

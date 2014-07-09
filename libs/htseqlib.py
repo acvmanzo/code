@@ -39,6 +39,7 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
     htseq_dirpath = os.path.join(os.path.dirname(os.getcwd()), htseq_dir)
     cmn.makenewdir(htseq_dirpath)
     htseq_path = os.path.join(htseq_dirpath, htseq_file)
+    htseqcmd_path = os.path.join(htseq_dirpath, htseq_cmd_file)
 
     if os.path.exists(htseq_path):
         pass
@@ -48,9 +49,9 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
         logging.info('Creating new file')
 
         cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
-
+        logging.debug(cmd)
         os.system(cmd)
-        with open(htseq_cmd_file, 'w') as f:
+        with open(htseq_cmd_path, 'w') as f:
             f.write(cmd)
 
 

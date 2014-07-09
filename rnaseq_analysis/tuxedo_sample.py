@@ -2,14 +2,15 @@
 
 #Runs tophat and cufflinks on a fixed set of samples.
 
+import argparse
 import cmn.cmn as cmn
 import datetime
-import libs.tuxedolib as tl
 import logging 
 import os
-import argparse
 import psycopg2
 import shutil
+import libs.rnaseqlib as rl
+import libs.tuxedolib as tl
 from rnaseq_settings import *
 
 parser = argparse.ArgumentParser()
@@ -38,7 +39,7 @@ def main():
     logpath = '{}_'.format(curtime) + RNASEQDICT['htseq_log_file']
     rl.logginginfo(logpath)
 
-    seqpaths, respaths = tl.get_berkid_seq_res_paths(berkidlist, \
+    seqpaths, respaths = rl.get_berkid_seq_res_paths(berkidlist, \
         SAMPLEINFO_TABLE, COLQUERY,RNASEQDICT['seq_dir'],RNASEQDICT['seq_subdir'], 
         RNASEQDICT['th_resdirpath'])
     print(seqpaths, respaths)

@@ -9,9 +9,9 @@ import argparse
 import datetime
 import logging
 import psycopg2
+import cmn.cmn as cmn
 import libs.htseqlib as hl
 import libs.rnaseqlib as rl
-import libs.tuxedolib as tl
 from rnaseq_analysis.rnaseq_settings import *
 
 parser = argparse.ArgumentParser()
@@ -33,22 +33,45 @@ COLQUERY = ['genotype', 'tube', 'sex', 'frozend', 'rnad', 'rnaconc',
             'toseq', 'samplenum', 'sentd', 'qbitngul', 'qbitd', 'seq_received']
 
 berkidlist = args.berkidlist.split(',')
-print(berkidlist)
 
 def main():
 
-    #curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    #logpath = '{}_{}'.format(curtime, RNASEQDICT['htseq_log_file'])
-    #rl.logginginfo(logpath)
+    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logpath = '{}_{}'.format(curtime, RNASEQDICT['htseq_log_file'])
+    rl.logginginfo(logpath)
     
-    seqpaths, respaths = tl.get_berkid_seq_res_paths(berkidlist, \
+    seqpaths, respaths = rl.get_berkid_seq_res_paths(berkidlist, \
         SAMPLEINFO_TABLE, COLQUERY,RNASEQDICT['seq_dir'],RNASEQDICT['seq_subdir'], 
         RNASEQDICT['th_resdirpath'])
-    print(seqpaths, respaths)
-    print(seqpaths, respaths)
+    threspaths = [os.path.join(r, RNASEQDICT['th_dir']) for r in respaths]
+    htseqpaths = [os.path.join(r, RNASEQDICT['htseq_dir']) for r in respaths]
+    berkid = os.path.basename(os.path.dirname(hpath))
 
-    berkid_params = zip(berkidlist, seqpaths, respaths) 
-    #run_htseq(HTSEQ_DIR, HTSEQ_FILE, BAM_FILE, GFF_PATH_NOFA, HTSEQ_CMD_FILE):
+    if args.htseqcount:
+        for threspath in threspaths:
+            cmn.makenewdir(threspath)
+            os.chdir(threspath)
+            hl.run_htseq(HTSEQ_DIR, HTSEQ_FILE, BAM_FILE, GFF_PATH_NOFA, HTSEQ_CMD_FILE)
+
+    if args.copytodb:
+        logging.info('Copying to database')
+        conn = psycopg2.connect("dbname=rnaseq user=andrea")
+        for hpath in htseqpaths:
+            os.chdir(hpath)
+            cur=conn.cursor()
+            hl.htseq_add_berkid(berkid, HTSEQ_FILE)
+            hl.ht_copy_to_dbtable(HTSEQ_FILE, HTSEQ_TABLE, cur)
+            cur.close()
+        conn.commit()
+        conn.close()
+
+    if args.genesubset:
+        logging.info('Generating htseq-count file for {}'.format(args.genesubset))
+        conn = psycopg2.connect("dbname=rnaseq user=andrea")
+        join_table(cur, berkid, HTSEQ_TABLE, args.genesubset)
+        batch_ht_gene_subset(conn, args.genesubset)
+        conn.commit()
+        conn.close()
 
 if __name__ == '__main__':
     main()

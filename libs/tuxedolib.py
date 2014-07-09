@@ -1,69 +1,15 @@
 # Library containing functions useful for running tophat and cufflinks on 
 # multiple samples.
 
-import sys
-import os
-import glob
-import cmn.cmn as cmn
-import logging
 import datetime
+import glob
+import logging
+import os
 import psycopg2
+import sys
+import cmn.cmn as cmn
+import libs.rnaseqlib as rl
 
-
-def get_berkid_info(conn, berkidlist, infotable, colquery):
-    '''Queries a postgresql database table (infotable) and extracts the 
-    information specified in colquery for the berkids specified in berkidlist.
-    Returns a dictionary where the keys are the berkeley ids and the
-    values are a tuple of the database values.
-    Inputs:
-    conn = open psycopg2 connection to the database
-    berkidlist = list of berkids
-    infotable = database table to be queried
-    colquery = list of columns that will be returned; input to a SELECT 
-    statement
-    '''
-    cur = conn.cursor()
-    berkid_dict = {}
-    for bid in berkidlist:
-        query = "SELECT {} FROM {} WHERE berkid = '{}'".format(', '.join(colquery), 
-                infotable, bid)
-        cur.execute(query)
-        berkid_dict[bid] = cur.fetchall()[0]
-    cur.close()
-    return(colquery, berkid_dict)
-
-def gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir):
-    '''From the berkid_dict generated in get_berkid_info(), generates a list of
-    sequence directory paths.'''
-    seqdir_paths = []
-    seqd_col = colquery.index('seqd')
-    for berkid, info in berkid_dict.items():
-        seqd = info[seqd_col].strftime("%Y-%m%d")
-        seqdir_path = os.path.join(seq_dir, seqd, seq_subdir, \
-            'Sample_{}'.format(berkid))
-        seqdir_paths.append(seqdir_path)
-    return(seqdir_paths)
-
-def get_berkid_seq_res_paths(berkidlist, infotable, colquery, seq_dir,\
-        seq_subdir, results_dir):
-    '''For a list of berkids (berkidlist), generates the paths to the 
-    sequence directories and the directories containing the results of tophat
-    and cufflinks analyses.
-    '''
-    conn = psycopg2.connect("dbname=rnaseq user=andrea")
-    colquery, berkid_dict = get_berkid_info(conn, berkidlist, \
-        infotable, colquery)
-    conn.close()
-    seqpaths = gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir)
-    respaths = [os.path.join(results_dir, berkid) for berkid in berkidlist]
-    return(seqpaths, respaths)
-
-def get_dirs(folder, globstring):
-    '''Returns all the directories in a folder that match the string 'globstring'
-    '''
-    os.chdir(folder)
-    dirs = [os.path.abspath(x) for x in sorted(glob.glob('{0}'.format(globstring)))]
-    return(dirs)
 
 #def get_exptdirs(seqbase):
     #'''Returns all the directories in the seq basefolder that match the globstring'''
@@ -239,12 +185,12 @@ def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks, strand):
     '''
     rd = rnaseqdict
     d = th_cuff_dict
-    seqbatchdirs = get_dirs(rd['seq_dir'], rd['seqbatchglob']) # Finds all the sequence batch 
+    seqbatchdirs = rl.get_dirs(rd['seq_dir'], rd['seqbatchglob']) # Finds all the sequence batch 
     # folders.
     logging.info('Sequence batch directories %s', seqbatchdirs)
     for sbd in seqbatchdirs:
         try:
-            sample_seqdirs = get_dirs(os.path.join(sbd, rd['seq_subdir']), rd['sampleseqglob'])
+            sample_seqdirs = rl.get_dirs(os.path.join(sbd, rd['seq_subdir']), rd['sampleseqglob'])
             logging.info('Sample directories %s', [os.path.basename(x) for x in sample_seqdirs])
         except FileNotFoundError:
             logging.warning('Sequence folder does not exist')

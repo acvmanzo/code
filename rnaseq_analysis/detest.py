@@ -45,13 +45,13 @@ if args.copytodb or args.run:
     rl.logginginfo(logpath)
 
 if args.run:
-#Runs edgeR analysis on the indicated groups.
+#Runs DE analysis on the indicated groups.
     dl.batch_pairwise_DE(MALES, MALES_CTRL, gene_subset, RNASEQDICT, tool)
-    #dl.batch_pairwise_DE(FEMALES, FEMALES_CTRL, gene_subset, RNASEQDICT, tool)
-    #dl.run2groups_DE(AGG_DICT_ALL, gene_subset, RNASEQDICT, tool)
-    #dl.run2groups_DE(AGG_DICT_CS, gene_subset, RNASEQDICT, tool)
-    #dl.run2groups_DE(MUT_DICT_MALES, gene_subset, RNASEQDICT, tool)
-    #dl.run2groups_DE(MUT_DICT_FEMALES, gene_subset, RNASEQDICT, tool)
+    dl.batch_pairwise_DE(FEMALES, FEMALES_CTRL, gene_subset, RNASEQDICT, tool)
+    dl.run2groups_DE(AGG_DICT_ALL, gene_subset, RNASEQDICT, tool)
+    dl.run2groups_DE(AGG_DICT_CS, gene_subset, RNASEQDICT, tool)
+    dl.run2groups_DE(MUT_DICT_MALES, gene_subset, RNASEQDICT, tool)
+    dl.run2groups_DE(MUT_DICT_FEMALES, gene_subset, RNASEQDICT, tool)
 
 if args.copytodb:
     #Generates files formatted for database and copies data from that file into 

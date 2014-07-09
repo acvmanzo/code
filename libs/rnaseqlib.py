@@ -29,6 +29,60 @@ def batch_fn(pardir, globstring, subdir, conn, fn):
         eval(fn)
         cur.close()
 
+def get_berkid_info(conn, berkidlist, infotable, colquery):
+    '''Queries a postgresql database table (infotable) and extracts the 
+    information specified in colquery for the berkids specified in berkidlist.
+    Returns a dictionary where the keys are the berkeley ids and the
+    values are a tuple of the database values.
+    Inputs:
+    conn = open psycopg2 connection to the database
+    berkidlist = list of berkids
+    infotable = database table to be queried
+    colquery = list of columns that will be returned; input to a SELECT 
+    statement
+    '''
+    cur = conn.cursor()
+    berkid_dict = {}
+    for bid in berkidlist:
+        query = "SELECT {} FROM {} WHERE berkid = '{}'".format(', '.join(colquery), 
+                infotable, bid)
+        cur.execute(query)
+        berkid_dict[bid] = cur.fetchall()[0]
+    cur.close()
+    return(colquery, berkid_dict)
+
+def gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir):
+    '''From the berkid_dict generated in get_berkid_info(), generates a list of
+    sequence directory paths.'''
+    seqdir_paths = []
+    seqd_col = colquery.index('seqd')
+    for berkid, info in berkid_dict.items():
+        seqd = info[seqd_col].strftime("%Y-%m%d")
+        seqdir_path = os.path.join(seq_dir, seqd, seq_subdir, \
+            'Sample_{}'.format(berkid))
+        seqdir_paths.append(seqdir_path)
+    return(seqdir_paths)
+
+def get_berkid_seq_res_paths(berkidlist, infotable, colquery, seq_dir,\
+        seq_subdir, results_dir):
+    '''For a list of berkids (berkidlist), generates the paths to the 
+    sequence directories and the directories containing the results of tophat
+    and cufflinks analyses.
+    '''
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
+    colquery, berkid_dict = get_berkid_info(conn, berkidlist, \
+        infotable, colquery)
+    conn.close()
+    seqpaths = gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir)
+    respaths = [os.path.join(results_dir, berkid) for berkid in berkidlist]
+    return(seqpaths, respaths)
+
+def get_dirs(folder, globstring):
+    '''Returns all the directories in a folder that match the string 'globstring'
+    '''
+    os.chdir(folder)
+    dirs = [os.path.abspath(x) for x in sorted(glob.glob('{0}'.format(globstring)))]
+    return(dirs)
 
 def add_berkid(berkid, file_path):
     '''adds the berkid to the last columns of a file
@@ -59,7 +113,7 @@ def madd_berkid(berkid_filepath_tuples):
 
 
 
-def get_num_genes(dbtable, checktype, berkid, cur):
+def get_num_genes(dbtable, berkid, cur):
     '''Finds the number of genes in dbtable with berkid berkid'''
     checkrowscmd = "select count (*) from (select * from {} where berkid = '{}') as foo;".format(dbtable, berkid)
     cur.execute(checkrowscmd)
@@ -71,15 +125,15 @@ def copy_to_dbtable(berkid_file_path, dbtable, cur):
     table dbtable using the cursor cur.
     '''
     #print(berkid_fpkm_p_ath)
-    logging.debug('cwd', os.getcwd())
+    logging.debug('cwd %s', os.getcwd())
     with open(berkid_file_path, 'r') as f:
         info = next(f)
     berkid = info.strip('\n').split('\t')[-1]
-    logging.debug('copy_to_db', berkid)
+    logging.debug('copy_to_db %s', berkid)
     checkrows = int(get_num_genes(dbtable, berkid, cur))
-    logging.debug(checkrows, 'checkrows')
-    logging.debug(berkid_file_path)
-    logging.debug(dbtable)
+    logging.debug('checkrows %s', checkrows)
+    logging.debug('%s', berkid_file_path)
+    logging.debug('%s', dbtable)
     if checkrows != 0:
         delcmd = "delete from {} where berkid = '{}';".format(dbtable, berkid)
         cur.execute(delcmd)
