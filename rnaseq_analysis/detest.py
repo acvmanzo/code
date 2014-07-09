@@ -17,12 +17,13 @@ import cmn.cmn as cmn
 parser = argparse.ArgumentParser()
 parser.add_argument('tool', choices=['edger', 'deseq'],
         help='selects DE analysis tool')
-parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes', 
-        'brain_r557'],
-        help='set of genes on which to run DE analysis')
 #parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes', 
-        #'brain_r557', 'bwa_r557', 'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        #'brain_r557'],
         #help='set of genes on which to run DE analysis')
+parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
+        'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
+        'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        help='set of genes on which to run DE analysis')
 parser.add_argument('-r', '--run', action="store_true", 
         help='runs DE analysis')
 parser.add_argument('-c', '--copytodb', action="store_true", 

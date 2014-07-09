@@ -45,7 +45,6 @@ def main():
         RNASEQDICT['th_resdirpath'])
     threspaths = [os.path.join(r, RNASEQDICT['th_dir']) for r in respaths]
     htseqpaths = [os.path.join(r, RNASEQDICT['htseq_dir']) for r in respaths]
-    berkid = os.path.basename(os.path.dirname(hpath))
 
     if args.htseqcount:
         for threspath in threspaths:
@@ -59,6 +58,7 @@ def main():
         for hpath in htseqpaths:
             os.chdir(hpath)
             cur=conn.cursor()
+            berkid = os.path.basename(os.path.dirname(hpath))
             hl.htseq_add_berkid(berkid, HTSEQ_FILE)
             hl.ht_copy_to_dbtable(HTSEQ_FILE, HTSEQ_TABLE, cur)
             cur.close()
@@ -68,9 +68,13 @@ def main():
     if args.genesubset:
         logging.info('Generating htseq-count file for {}'.format(args.genesubset))
         conn = psycopg2.connect("dbname=rnaseq user=andrea")
-        join_table(cur, berkid, HTSEQ_TABLE, args.genesubset)
-        batch_ht_gene_subset(conn, args.genesubset)
-        conn.commit()
+        for hpath in htseqpaths:
+            os.chdir(hpath)
+            cur=conn.cursor()
+            berkid = os.path.basename(os.path.dirname(hpath))
+            hl.join_table(cur, berkid, HTSEQ_TABLE, args.genesubset)
+            cur.close()
+            conn.commit()
         conn.close()
 
 if __name__ == '__main__':

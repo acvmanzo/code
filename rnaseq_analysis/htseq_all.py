@@ -17,8 +17,9 @@ parser.add_argument('-ht', '--htseqcount', action='store_true',
         help='run htseq-count')
 parser.add_argument('-c', '--copytodb', action='store_true', 
         help='copy htseq-count results to database')
-parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes', 
-        'brain_r557', 'bwa_r557', 'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
+        'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
+        'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
         help='make new file of htseq-count results for the given subset of genes')
 args = parser.parse_args()
 
