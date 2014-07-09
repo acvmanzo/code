@@ -9,22 +9,24 @@ import cmn.cmn as cmn
 import psycopg2
 import shutil
 import sys
-from all_correlations_settings import *
+from correlations_settings import *
 import libs.rnaseqlib as rl
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-g', '--genotype', 
-        help='genotype to analyze')
-parser.add_argument('-a', '--allgens', action='store_true', 
-        help='find correlations for all samples')
 parser.add_argument('-r', '--run', action='store_true', 
         help='run correlation analysis')
+parser.add_argument('-a', '--allgens', action='store_true', 
+        help='find correlations for all samples')
+parser.add_argument('-g', '--genotype',
+        help='genotype to analyze')
+parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
+         'brain_r557'])
+#parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
+        #'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
+        #'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        #help='make new file of htseq-count results for the given subset of genes')
 parser.add_argument('-c', '--copytodb', action='store_true', 
         help='copy cufflinks results to database')
-parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
-        'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
-        'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
-        help='make new file of htseq-count results for the given subset of genes')
 
 args = parser.parse_args()
 COPY_TO_TABLE = args.copytodb 
@@ -32,14 +34,16 @@ FIND_CORRELATIONS = args.run
 GENE_SUBSET_TABLE = args.genesubset
 if args.genesubset == 'all':
     GENE_SUBSET_TABLE = False
-if args.allgens:
-    ALLREPS_OR_BERKIDS = 'allreps' 
-else:
-    ALLREPS_OR_BERKIDS = 'berkids'
 
+logpath = CORRLOGPATH
+rl.logginginfo(logpath)
+#if args.allgens:
+    #ALLREPS_OR_BERKIDS = 'allreps' 
+#else:
+    #ALLREPS_OR_BERKIDS = 'berkids'
 
-if args.genotype:
-    logging.info('Finding correlations for %s', args.genotype)
+#if args.genotype:
+    #logging.info('Finding correlations for %s', args.genotype)
 
 def create_corrfiles():
     # Creates files for pearson and spearman correlation coefficients.
@@ -94,12 +98,9 @@ def prune_cufflink_path(cufflink_fpkm_paths):
         extant_cufflink_fpkm_paths)
         return(extant_cufflink_fpkm_paths)
 
-
 def main():
     # Settings for logging.
     #curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    logpath = CORRLOGPATH
-    rl.logginginfo(logpath)
 
     # Create correlation output files.
     pearson_corrfile, spearman_corrfile = create_corrfiles()
@@ -138,7 +139,6 @@ def main():
                 continue
 
         shutil.copyfile(CORRELATION_SETTINGS_PATH, SAVED_CORRELATION_SETTINGS_PATH)
-               
 
 
 

@@ -43,7 +43,7 @@ CORRELATION_DIR = os.path.join(ANALYSIS_PATH, CORRMAINDIR, CORR_DIR_BASE)
     #CORRELATION_DIR = CORRELATION_DIR + '_pclog2'
 
 cmn.makenewdir(CORRELATION_DIR)
-CORRELATION_SETTINGS_PATH = '/home/andrea/Documents/lab/code/rnaseq_analysis/all_correlations_settings.py'
+CORRELATION_SETTINGS_PATH = '/home/andrea/Documents/lab/code/rnaseq_analysis/correlations_settings.py'
 SAVED_CORRELATION_SETTINGS_PATH = os.path.join(CORRELATION_DIR, '{}_settings.py'.format(curtime))
 
 # Files generated.
