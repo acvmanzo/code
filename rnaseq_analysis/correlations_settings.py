@@ -8,10 +8,11 @@ import shutil
 
 curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
+
 #IMPORTANT PARAMETERS
 #Set to 'allreps' if I want to find correlations
 #for all biological replicates with each other; otherwise set to 'berkids'
-ALLREPS_OR_BERKIDS = 'allreps' 
+#ALLREPS_OR_BERKIDS = 'allreps' 
 #ALLREPS_OR_BERKIDS = 'berkids' 
 
 #Only genes with FPKMs below this value will be used to calculate correlations;
@@ -23,7 +24,7 @@ MAXFPKM = False
 #If so, set equal to the name of the table in the database that contains this
 #list. Else set to 'False'
 #GENE_SUBSET_TABLE = False
-GENE_SUBSET_TABLE = 'prot_coding_genes'
+#GENE_SUBSET_TABLE = 'prot_coding_genes'
 
 PC_LOG = True # If set to 'True', adds 1 to each value in the list of 
 # FPKMS for each sample and then  log transforms the data (log base 2).
@@ -31,16 +32,18 @@ PC_LOG = True # If set to 'True', adds 1 to each value in the list of
 
 # Directories used.
 CORR_DIR_BASE = 'correl_tophat'
-CORRELATION_DIR = os.path.join(ANALYSIS_DIR, CORR_DIR_BASE)
-if GENE_SUBSET_TABLE != False:
-    CORRELATION_DIR = CORRELATION_DIR + '_{}'.format(GENE_SUBSET_TABLE)
-if MAXFPKM != False:
-    CORRELATION_DIR = CORRELATION_DIR + '_maxfpkm{}'.format(MAXFPKM)
-if PC_LOG == True:
-    CORRELATION_DIR = CORRELATION_DIR + '_pclog2'
+CORRMAINDIR = 'correlations'
+#CORRELATION_DIR = os.path.join(ANALYSIS_PATH, CORRMAINDIR, CORR_DIR_BASE)
+CORRELATION_DIR = os.path.join(ANALYSIS_PATH, CORRMAINDIR, CORR_DIR_BASE)
+#if GENE_SUBSET_TABLE != False:
+    #CORRELATION_DIR = CORRELATION_DIR + '_{}'.format(GENE_SUBSET_TABLE)
+#if MAXFPKM != False:
+    #CORRELATION_DIR = CORRELATION_DIR + '_maxfpkm{}'.format(MAXFPKM)
+#if PC_LOG == True:
+    #CORRELATION_DIR = CORRELATION_DIR + '_pclog2'
 
 cmn.makenewdir(CORRELATION_DIR)
-CORRELATION_SETTINGS_PATH = '/home/andrea/Documents/lab/code/rnaseq_analysis/all_correlations_settings.py'
+CORRELATION_SETTINGS_PATH = '/home/andrea/Documents/lab/code/rnaseq_analysis/correlations_settings.py'
 SAVED_CORRELATION_SETTINGS_PATH = os.path.join(CORRELATION_DIR, '{}_settings.py'.format(curtime))
 
 # Files generated.
@@ -49,22 +52,23 @@ SPEARMAN_CORRFILE = 'spearman_correlations.txt'
 CORRLOG = '{}_correlations.log'.format(curtime)
 CORRLOGPATH = os.path.join(CORRELATION_DIR, CORRLOG)
 
-if ALLREPS_OR_BERKIDS == 'allreps':
-    COND_DIR = False
-    BERKIDLIST = False
+#if ALLREPS_OR_BERKIDS == 'allreps':
+COND_DIR = False
+BERKIDLIST = False
 
 # Adjust paths for condition subset analyses.
-if ALLREPS_OR_BERKIDS == 'berkids':
-    TESTED_BERKIDS = 'selected_berkids' # File with list of berkeley ids for analysis.
-    COND_DIR = 'NrxIV_M' # Name of folder where results will be saved.
-    COND_PATH = os.path.join(CORRELATION_DIR, COND_DIR)
-    cmn.makenewdir(COND_PATH)
-    BERKIDLIST = cmn.load_keys(TESTED_BERKIDS)
-    shutil.copy(TESTED_BERKIDS, os.path.join(COND_PATH, TESTED_BERKIDS))
-    PEARSON_CORRFILE, SPEARMAN_CORRFILE = [os.path.join(COND_PATH, x) \
-            for x in [PEARSON_CORRFILE, SPEARMAN_CORRFILE]]
-    CORRLOGPATH = os.path.join(COND_PATH, CORRLOG)
-    SAVED_CORRELATION_SETTINGS_PATH = os.path.join(COND_PATH, 'settings.py')
+#if ALLREPS_OR_BERKIDS == 'berkids':
+    #TESTED_BERKIDS = 'selected_berkids' # File with list of berkeley ids for analysis.
+    #COND_DIR = 'NrxIV_M' # Name of folder where results will be saved.
+    #COND_PATH = os.path.join(CORRELATION_DIR, COND_DIR)
+    #cmn.makenewdir(COND_PATH)
+    ##BERKIDLIST = cmn.load_keys(TESTED_BERKIDS)
+    ##shutil.copy(TESTED_BERKIDS, os.path.join(COND_PATH, TESTED_BERKIDS))
+    ##PEARSON_CORRFILE, SPEARMAN_CORRFILE = [os.path.join(COND_PATH, x) \
+            ##for x in [PEARSON_CORRFILE, SPEARMAN_CORRFILE]]
+    #CORRLOGPATH = os.path.join(COND_PATH, CORRLOG)
+    #SAVED_CORRELATION_SETTINGS_PATH = os.path.join(COND_PATH,
+            #'{}_settings.py'.format(curtime))
 
 
 SAMPLEINFO_TABLE = 'autin'
