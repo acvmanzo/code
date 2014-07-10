@@ -150,8 +150,7 @@ YLABEL =''
 YAXISTICKS = 4 # Number of y-axis ticks.
 YLIM = 2
 
-fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', \
-edgecolor='k')
+fig1 = plt.figure(figsize=(FIGW, FIGH), dpi=FIGDPI, facecolor='w', edgecolor='k')
 multiplot(BARWIDTH, YMIN, YLIM, YLABEL, YAXISTICKS, fontsz=9, stitlesz=10, lw=1, starpos=0.8)
 plt.tight_layout()
 plt.savefig('rrplot.png')
