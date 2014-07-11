@@ -81,9 +81,11 @@ SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status',
 FPKM_FILE = 'genes.fpkm_tracking'
 BERKID_FPKM_FILE = 'genes_berkid.fpkm_tracking'
 
-SCATTER_FIGSIZE = (10, 5.5)
 SCATTER_DPI = 1000
-SCATTER_SUBPLOTS = [121, 122]
+#SCATTER_FIGSIZE = (10, 5.5)
+SCATTER_FIGSIZE = (5.5, 5.5)
+#SCATTER_SUBPLOTS = [121, 122]
+SCATTER_SUBPLOTS = [111]
 SCATTER_MAXFPKM = 2000
 
 SCATTER_INFO = {

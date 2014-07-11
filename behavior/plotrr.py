@@ -10,7 +10,7 @@ import libs.genplotlib as gpl
 #import libs.rstatslib as rsl
 #import rpy2.robjects as robjects
 
-FIGDPI=1200 # Figure DPI.
+FIGDPI=2000 # Figure DPI.
 FIGW=5# Figure width.
 #FIGW=6 # Figure width.
 FIGH=2.5 #Figure height.

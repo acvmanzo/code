@@ -151,8 +151,8 @@ def axislim(num):
 
 def format_plot(berkids, samples, fpkmlim):
     '''formats a scatter plot comaring gene expression of two samples.'''
-    xlabel = '{} {}'.format(berkids[0], samples[0])
-    ylabel = '{} {}'.format(berkids[1], samples[1])
+    xlabel = 'log2 RPKM {} {}'.format(berkids[0], samples[0])
+    ylabel = 'log2 RPKM {} {}'.format(berkids[1], samples[1])
     title = '{} vs. {}'.format(samples[0],samples[1])
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -183,12 +183,13 @@ def plot_scatter(fpkms, berkids, samples, r, slope, intercept,
     yline = [slope*x + intercept for x in xline] 
     plt.plot(xline, yline, c='b', ls = '--', label='Reg line')
     plt.plot(xline, xline, c='r', ls = '--', label='slope=1')
-    plt.legend()
+    plt.legend(loc='lower right')
     ax = plt.gca()
-    textstr = 'r = {:.3f}\n# genes = {}'.format(r, num_genes)
+    #textstr = 'r = {:.3f}\n# genes = {}'.format(r, num_genes)
+    textstr = 'r = {:.3f}'.format(r, num_genes)
     format_plot(berkids, samples, fpkmlim)
 
-    if subplotnum == 121:
+    if subplotnum == 111:
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
             verticalalignment='top')
     ax.ticklabel_format(style='sci', scilimits=(-1,2))

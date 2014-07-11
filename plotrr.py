@@ -89,7 +89,8 @@ def multiplot(barwidth, ymin, ylim, ylabel, yaxisticks, fontsz=9, stitlesz=10, l
 
     # Removes borders
     ax = plt.gca()
-    for loc, spine in ax.spines.iteritems():
+    #for loc, spine in ax.spines.iteritems():
+    for loc, spine in ax.spines.items():
         if loc in ['left','bottom']:
             pass
         elif loc in ['right','top']:

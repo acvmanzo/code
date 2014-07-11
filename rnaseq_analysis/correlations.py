@@ -25,11 +25,11 @@ parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
         #'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
         #'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
         #help='make new file of htseq-count results for the given subset of genes')
-parser.add_argument('-c', '--copytodb', action='store_true', 
-        help='copy cufflinks results to database')
+#parser.add_argument('-c', '--copytodb', action='store_true', 
+        #help='copy cufflinks results to database')
 
 args = parser.parse_args()
-COPY_TO_TABLE = args.copytodb 
+#COPY_TO_TABLE = args.copytodb 
 FIND_CORRELATIONS = args.run
 GENE_SUBSET_TABLE = args.genesubset
 if args.genesubset == 'all':
@@ -120,8 +120,8 @@ def main():
             continue
         # Copies data into the database table in CUFF_TABLE if sys.argv is 'y'
         # or 'yes'
-        if COPY_TO_TABLE == 'y' or COPY_TO_TABLE == 'yes':
-            corl.copy_data_to_table(extant_cufflink_fpkm_paths, BERKID_FPKM_FILE, CUFF_TABLE)
+        #if COPY_TO_TABLE:
+            #corl.copy_data_to_table(extant_cufflink_fpkm_paths, BERKID_FPKM_FILE, CUFF_TABLE)
         # Finds correlations if sys.argv is 'y' # or 'yes'
         if FIND_CORRELATIONS:
             try:
