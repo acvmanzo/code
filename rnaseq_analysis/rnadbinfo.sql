@@ -103,7 +103,9 @@
     -- FPKM_conf_lo double precision,
     -- FPKM_conf_hi double precision,
     -- FPKM_status character varying(5),
-    -- berkid character varying(20));
+    -- berkid character varying(20),
+    -- unique (tracking_id, berkid)
+-- );
 
 -- SELECT COUNT (*) FROM (
 -- SELECT t0.tracking_id, t0.berkid, t0.fpkm, t0.fpkm_status, t1.berkid, t1.fpkm, t1.fpkm_status 
@@ -179,7 +181,8 @@
 -- CREATE TABLE htseq (
     -- gene_name varchar(100),
     -- counts int,
-    -- berkid varchar(20)
+    -- berkid varchar(20),
+    -- unique(gene_name, berkid)
 -- );
 
 -- \copy htseq from '/home/andrea/bookmarks/analysis/results_tophat/RGAM009H/tophat_out/htseq_results_edit_berkid.txt';
@@ -331,7 +334,7 @@
 -- as foo;
 -- to '/home/andrea/Documents/lab/RNAseq/analysis/edger/prot_coding_genes/GO_analysis/de_all_fdr05.txt'
 -- select count (*) from (
-\copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'bwa_r557_ralph_mt_ex' and d.fdr < 0.5 and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/bwa_r557_ralph_mt_ex/GO_analysis/de_all_fdr05.txt'
+-- \copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'bwa_r557_ralph_mt_ex' and d.fdr < 0.5 and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/bwa_r557_ralph_mt_ex/GO_analysis/de_all_fdr05.txt'
 -- as foo;
 
 -- \copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes_ralph_mt_ex' and d.fdr < 0.5 and d.group1 = 'NrxI_M' and d.group2 = 'CS_M' and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/prot_coding_genes_ralph_mt_ex/GO_analysis/de_NrxI_M_fdr05.txt'

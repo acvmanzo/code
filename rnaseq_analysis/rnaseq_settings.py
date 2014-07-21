@@ -55,170 +55,215 @@ import os
         #tophat_all_align_summary.txt
         #date_time_rnaseq_settings.py
 
+class RNASeqData:
 
-if args.option == 'unstranded':
-    TH_RESDIR = 'results_tophat'
-    CUFF_TABLE = 'cufflinks_data'
-    HTSEQ_TABLE = 'htseq'
-    DEGENE_TABLE = 'degenes'
+    def __init__(self, option):
 
-if args.option == '2str':
-    TH_RESDIR = 'results_tophat_2str'
-    CUFF_TABLE = 'cufflinks_data_2str'
-    HTSEQ_TABLE = 'htseq_2str'
-    DEGENE_TABLE = 'degenes_2str'
+        if option == 'unstranded':
+            self.th_resdir = 'results_tophat'
+            self.cuff_table = 'cufflinks_data_un'
+            self.htseq_table = 'htseq_un'
+            self.degene_table = 'degenes_un'
 
-SAMPLEINFO_TABLE = 'autin'
+        if option == '2str':
+            self.th_resdir = 'results_tophat_2str'
+            self.cuff_table = 'cufflinks_data'
+            self.htseq_table = 'htseq'
+            self.degene_table = 'degenes'
 
-REFSEQ_PATH = '/home/andrea/rnaseqanalyze/references/dmel-r5.57' 
-GFF_PATH = os.path.join(REFSEQ_PATH, 'dmel-all-filtered-r5.57.gff')
-GFF_PATH_NOFA = os.path.join(REFSEQ_PATH, 'dmel-all-filtered-r5.57-nofa.gff')
-MITOGFF_PATH = os.path.join(REFSEQ_PATH, 'dmel-dmel_mitochondrion_genome-r5.57.gff')
-BTINDEX = os.path.join(REFSEQ_PATH, 'dmel-all-chromosome-r5.57')
+        self.sampleinfo_table = 'autin'
 
-REFSEQDICT =    {'refseq_path': REFSEQ_PATH,
-                 'gff_path': GFF_PATH,
-                 'mitogff_path': MITOGFF_PATH,
-                 'btindex': BTINDEX}
+        self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.57' 
+        self.gff_path = os.path.join(self.refseq_path,
+                'dmel-all-filtered-r5.57.gff')
+        self.gff_path_nofa = os.path.join(self.refseq_path,
+                'dmel-all-filtered-r5.57-nofa.gff')
+        self.mitogff_path = os.path.join(self.refseq_path, 
+                'dmel-dmel_mitochondrion_genome-r5.57.gff')
+        self.btindex = os.path.join(self.refseq_path,
+                'dmel-all-chromosome-r5.57')
+
+        self.seq_path = '/home/andrea/Documents/lab/RNAseq/sequences'
+        self.seq_subdir = 'sequences'
+        self.seqbatchglob = '2014-*/'
+        self.sampleseqglob = 'Sample_*'
+        self.combined_fastq_suffix = 'combined.fastq.gz'
+        
+        self.analysis_path = '/home/andrea/Documents/lab/RNAseq/analysis'
+        
+        self.set_dir_orig = '/home/andrea/Documents/lab/code/rnaseq_analysis'
+        self.set_file = 'rnaseq_settings.py'
+        self.set_path_orig = os.path.join(self.set_dir_orig, self.set_file)
+        
+        self.th_resdirpath = os.path.join(self.analysis_path, self.th_resdir)
+        self.th_dir = 'tophat_out'
+        self.thcmd_file = 'tophatcmd.txt'
+        self.bam_file = 'accepted_hits.bam'
+        self.th_log_file = 'tophat.log'
+        self.th_set_path_copy = os.path.join(self.th_resdirpath, 
+                os.path.splitext(self.set_file)[0])
+        
+        self.cuff_dir = 'cufflinks_out'
+        self.cufflog_file = 'cufflinks.log'
+        self.cuffcmd_file = 'cufflinkscmd.txt'
+        self.cuff_gfpkm = 'genes.fpkm_tracking'
+        self.berkid_cuff_gfpkm = 'genes_berkid.fpkm_tracking'
+        
+        self.corr_dir = 'correlations'
+        self.corr_dirpath = os.path.join(self.analysis_path, self.corr_dir,
+                self.th_resdir)
+        self.corr_set_path_copy = os.path.join(self.corr_dirpath,
+                os.path.splitext(self.set_file)[0])
+        self.corr_figset_file = 'corrfig_settings.py'
+        self.corr_figset_path_orig = os.path.join(self.set_dir_orig, 
+                self.corr_figset_file)
+        self.corr_figset_path_copy = os.path.join(self.corr_dirpath, 
+                os.path.splitext(self.corr_figset_file)[0])
+        self.pearson_corrfile = 'pearson_correlations.txt' 
+        self.spearman_corrfile = 'spearman_correlations.txt' 
+        self.pearson_corrpath = os.path.join(self.corr_dirpath,
+                self.pearson_corrfile)
+        self.spearman_corrpath= os.path.join(self.corr_dirpath,
+                self.spearman_corrfile)
+        self.corrlog_file = 'correlations.log'
+        #selectlist = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
+        #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
+        self.selectlist = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 
+                't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+        self.maxfpkm = False # Only genes with FPKMs below this value will be used to 
+        # calculate correlations; if no limit is desired, set to False.
+        self.pc_log = True # If set to 'True', adds 1 to each value in the list of 
+        # FPKMS for each sample and then log transforms the data (log base 2).
+        
+        self.htseq_dir = 'htseq_out'
+        self.htseq_cmd_file = 'htseq.info'
+        self.htseq_log_file = 'htseq.log'
+        self.htseq_file = 'htseqcount'
+        self.res_sample_glob = 'RG*'
+       
+        self.edger_dir = 'edger'
+        self.edger_dirpath = os.path.join(self.analysis_path, self.edger_dir,
+                self.th_resdir)
+        self.edger_log_file = 'edger.log'
+        self.edger_metadata_file = 'metadata.txt'
+        self.edger_group_file = 'groups'
+        self.edger_mdsplot_file = 'mds_plot.png'
+        self.edger_mvplot_file = 'mean_var_plot.png'
+        self.edger_bcvplot_file = 'biol_cv_plot.png'
+        self.edger_maplot_file = 'masmear_plot_'
+        self.edger_toptags_file = 'toptags_edgeR.csv'
+        self.edger_dbtoptags_file = 'db_toptags_edgeR.csv'
+        self.edger_toptags_fdr_file = 'toptags_edgeR_'
+        self.de_hh_file = 'human_hom_'
+      
+        self.deseq_dir = 'deseq'
+        self.deseq_dirpath = os.path.join(self.analysis_path, self.deseq_dir,
+                self.th_resdir)
+        self.deseq_log_file = 'deseq.log'
+    
+        self.berkidlen = 8
 
 
-SEQ_PATH = '/home/andrea/Documents/lab/RNAseq/sequences'
-SEQ_SUBDIR = 'sequences'
-SEQBATCHGLOB = '2014-*/'
-SAMPLESEQGLOB = 'Sample_*'
-COMBINED_FASTQ_SUFFIX = 'combined.fastq.gz'
 
-ANALYSIS_PATH = '/home/andrea/Documents/lab/RNAseq/analysis'
+    def GetResultsFiles(self, berkid):
 
-SET_DIR_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
-SET_FILE = 'rnaseq_settings.py'
-SET_PATH_ORIG = os.path.join(SET_DIR_ORIG, SET_FILE)
+        sample_dir = os.path.join(self.th_resdirpath, berkid)
+        sample_th_dir = os.path.join(sample_dir, self.th_dir)
+        sample_cuff_dir = os.path.join(sample_dir, self.cuff_dir)
+        sample_htseq_dir = os.path.join(sample_dir, self.htseq_dir)
 
-TH_RESDIRPATH = os.path.join(ANALYSIS_PATH, TH_RESDIR)
-TH_DIR = 'tophat_out'
-THCMD_FILE = 'tophatcmd.txt'
-BAM_FILE = 'accepted_hits.bam'
-TH_LOG_FILE = 'tophat.log'
-TH_SET_PATH_COPY = os.path.join(TH_RESDIRPATH, os.path.splitext(SET_FILE)[0])
-
-CUFF_DIR = 'cufflinks_out'
-CUFFLOG_FILE = 'cufflinks.log'
-CUFFCMD_FILE = 'cufflinkscmd.txt'
-CUFF_GFPKM = 'genes.fpkm_tracking'
-BERKID_CUFF_GFPKM = 'genes_berkid.fpkm_tracking'
-
-CORR_DIR = 'correlations'
-CORR_DIRPATH = os.path.join(ANALYSIS_PATH, CORR_DIR, TH_RESDIR)
-CORR_SET_PATH_COPY = os.path.join(CORR_DIRPATH, os.path.splitext(SET_FILE)[0])
-CORR_FIGSET_FILE = 'corrfig_settings.py'
-CORR_FIGSET_PATH_ORIG = os.path.join(SET_DIR_ORIG, CORR_FIGSET_FILE)
-CORR_FIGSET_PATH_COPY = os.path.join(CORR_DIRPATH, os.path.splitext(CORR_FIGSET_FILE)[0])
-PEARSON_CORRFILE = 'pearson_correlations.txt' 
-SPEARMAN_CORRFILE = 'spearman_correlations.txt' 
-CORRLOG_FILE = 'correlations.log'
-#SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
-    #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
-SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status',
-    't1.berkid', 't1.fpkm', 't1.fpkm_status']
-MAXFPKM = False # Only genes with FPKMs below this value will be used to 
-# calculate correlations; if no limit is desired, set to False.
-PC_LOG = True # If set to 'True', adds 1 to each value in the list of 
-# FPKMS for each sample and then log transforms the data (log base 2).
-
-HTSEQ_DIR = 'htseq_out'
-HTSEQ_CMD_FILE = 'htseq.info'
-HTSEQ_LOG_FILE = 'htseq.log'
-HTSEQ_FILE = 'htseqcount'
-RES_SAMPLE_GLOB = 'RG*'
-
-EDGER_DIR = 'edger'
-EDGER_DIRPATH = os.path.join(ANALYSIS_PATH, EDGER_DIR, TH_RESDIR)
-EDGER_LOG_FILE = 'edger.log'
-EDGER_METADATA_FILE = 'metadata.txt'
-EDGER_GROUP_FILE = 'groups'
-EDGER_MDSPLOT_FILE = 'mds_plot.png'
-EDGER_MVPLOT_FILE = 'mean_var_plot.png'
-EDGER_BCVPLOT_FILE = 'biol_cv_plot.png'
-EDGER_MAPLOT_FILE = 'masmear_plot_'
-EDGER_TOPTAGS_FILE = 'toptags_edgeR.csv'
-EDGER_DBTOPTAGS_FILE = 'db_toptags_edgeR.csv'
-EDGER_TOPTAGS_FDR_FILE = 'toptags_edgeR_'
-DE_HH_FILE = 'human_hom_'
-
-DESEQ_DIR = 'deseq'
-DESEQ_DIRPATH = os.path.join(ANALYSIS_PATH, DESEQ_DIR, TH_RESDIR)
-DESEQ_LOG_FILE = 'deseq.log'
-
-
-BERKIDLEN = 8
-
-RNASEQDICT =    {'seq_dir': SEQ_PATH,
-                'seq_subdir': SEQ_SUBDIR,
-                'seqbatchglob': SEQBATCHGLOB,
-                'sampleseqglob': SAMPLESEQGLOB,
-                'combined_fastq_suffix': COMBINED_FASTQ_SUFFIX,
-                'sampleinfo_table': SAMPLEINFO_TABLE,
-                'set_path_orig': SET_PATH_ORIG,
-                'analysis_path': ANALYSIS_PATH,
-                'th_resdirpath': TH_RESDIRPATH,
-                'th_log_file': TH_LOG_FILE,
-                'th_dir': TH_DIR,
-                'th_cmd_file': THCMD_FILE,
-                'bam_file': BAM_FILE,
-                'th_set_path_copy': TH_SET_PATH_COPY, 
-                'cuff_dir': CUFF_DIR,
-                'cufflog_file': CUFFLOG_FILE,
-                'cuffcmd_file': CUFFCMD_FILE,
-                'corr_dir': CORR_DIR,
-                'corr_dirpath': CORR_DIRPATH,
-                'corr_set_path_copy': CORR_SET_PATH_COPY,
-                'corr_figset_file': CORR_FIGSET_FILE,
-                'corr_figset_path_orig': CORR_FIGSET_PATH_ORIG,
-                'corr_figset_path_copy': CORR_FIGSET_PATH_COPY,
-                'pearson_corrfile': PEARSON_CORRFILE,
-                'spearman_corrfile': SPEARMAN_CORRFILE,
-                'corrlog_file': CORRLOG_FILE,
-                'htseq_dir': HTSEQ_DIR,
-                'htseq_cmd_file': HTSEQ_CMD_FILE,
-                'htseq_log_file': HTSEQ_LOG_FILE,
-                'htseq_file': HTSEQ_FILE,
-                'htseq_table': HTSEQ_TABLE,
-                'edger_dirpath': EDGER_DIRPATH,
-                'edger_metadata_file': EDGER_METADATA_FILE,
-                'edger_log_file': EDGER_LOG_FILE,
-                'edger_group_file': EDGER_GROUP_FILE,
-                'edger_mdsplot_file': EDGER_MDSPLOT_FILE,
-                'edger_mvplot_file': EDGER_MVPLOT_FILE,
-                'edger_bcvplot_file': EDGER_BCVPLOT_FILE,
-                'edger_maplot_file': EDGER_MAPLOT_FILE,
-                'edger_toptags_file': EDGER_TOPTAGS_FILE,
-                'edger_dbtoptags_file': EDGER_DBTOPTAGS_FILE,
-                'edger_toptags_fdr_file': EDGER_TOPTAGS_FDR_FILE,
-                'deseq_dir': DESEQ_DIR,
-                'deseq_dirpath': DESEQ_DIRPATH,
-                'deseq_log_file': DESEQ_LOG_FILE,
-                'deseq_metadata_file': EDGER_METADATA_FILE,
-                'deseq_group_file': EDGER_GROUP_FILE,
-                'degene_table': DEGENE_TABLE,
-                'de_hh_file': DE_HH_FILE
+        d =     {'sample_dir': sample_dir,
+                'sample_th_dir': sample_th_dir,
+                'bam_path': os.path.join(sample_th_dir, self.bam_file),
+                'sample_cuff_dir': sample_cuff_dir,
+                'cuff_gfpkm_path': os.path.join(sample_cuff_dir,
+                    self.cuff_gfpkm),
+                'sample_htseq_dir': sample_htseq_dir,
+                'htseq_count_path': os.path.join(sample_htseq_dir, self.htseq_file)
                 }
 
-def get_results_files(berkid):
+        return(d)
 
-    sample_dir = os.path.join(TH_RESDIRPATH, berkid)
-    sample_th_dir = os.path.join(sample_dir, TH_DIR)
-    sample_cuff_dir = os.path.join(sample_dir, CUFF_DIR)
-    sample_htseq_dir = os.path.join(sample_dir, HTSEQ_DIR)
+def get_replicate_cufflink_paths(condition_berkid_dict):
+    '''Returns a dictionary of paths to the cufflink output FPKM files for
+    every condition in condition_berkid_dict.
+    Input:
+    condition_berkid_dict: keywords are conditions and values are lists of 
+    berkids. Output by the functions get_replicate_berkid_dict or 
+    get_all_replicate_berkid_dict). 
+    Output:
+    Dictionary of paths; keywords are conditions and values are lists of
+    output FPKM file paths.
+    '''
+    replicate_path_dict = {} 
+    for condition, berkids in condition_berkid_dict.items():
+        replicate_path_dict[condition] = \
+                [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]
+    return(replicate_path_dict)
 
-    d =     {'sample_dir': sample_dir,
-             'sample_th_dir': sample_th_dir,
-             'bam_path': os.path.join(sample_th_dir, BAM_FILE),
-             'sample_cuff_dir': sample_cuff_dir,
-             'cuff_gfpkm_path': os.path.join(sample_cuff_dir,
-                 CUFF_GFPKM),
-             'sample_htseq_dir': sample_htseq_dir,
-             'htseq_count_path': os.path.join(sample_htseq_dir, HTSEQ_FILE)
-             }
-    return(d)
+if __name__ == '__main__':
+    testobj = RNASeqData('2str')
+    print(testobj.berkidlen)
+    print(testobj.set_file)
+    resfiles = testobj.GetResultsFiles('RGAM010D')
+    print(resfiles['sample_htseq_dir'])
+    print(testobj.__dict__)
+    
+#RNASEQDICT =    {'seq_dir': SEQ_PATH,
+                #'seq_subdir': SEQ_SUBDIR,
+                #'seqbatchglob': SEQBATCHGLOB,
+                #'sampleseqglob': SAMPLESEQGLOB,
+                #'combined_fastq_suffix': COMBINED_FASTQ_SUFFIX,
+                #'sampleinfo_table': SAMPLEINFO_TABLE,
+                #'set_path_orig': SET_PATH_ORIG,
+                #'analysis_path': ANALYSIS_PATH,
+                #'th_resdirpath': TH_RESDIRPATH,
+                #'th_log_file': TH_LOG_FILE,
+                #'th_dir': TH_DIR,
+                #'th_cmd_file': THCMD_FILE,
+                #'bam_file': BAM_FILE,
+                #'th_set_path_copy': TH_SET_PATH_COPY, 
+                #'cuff_dir': CUFF_DIR,
+                #'cufflog_file': CUFFLOG_FILE,
+                #'cuffcmd_file': CUFFCMD_FILE,
+                #'corr_dir': CORR_DIR,
+                #'corr_dirpath': CORR_DIRPATH,
+                #'corr_set_path_copy': CORR_SET_PATH_COPY,
+                #'corr_figset_file': CORR_FIGSET_FILE,
+                #'corr_figset_path_orig': CORR_FIGSET_PATH_ORIG,
+                #'corr_figset_path_copy': CORR_FIGSET_PATH_COPY,
+                #'pearson_corrfile': PEARSON_CORRFILE,
+                #'spearman_corrfile': SPEARMAN_CORRFILE,
+                #'corrlog_file': CORRLOG_FILE,
+                #'htseq_dir': HTSEQ_DIR,
+                #'htseq_cmd_file': HTSEQ_CMD_FILE,
+                #'htseq_log_file': HTSEQ_LOG_FILE,
+                #'htseq_file': HTSEQ_FILE,
+                #'htseq_table': HTSEQ_TABLE,
+                #'edger_dirpath': EDGER_DIRPATH,
+                #'edger_metadata_file': EDGER_METADATA_FILE,
+                #'edger_log_file': EDGER_LOG_FILE,
+                #'edger_group_file': EDGER_GROUP_FILE,
+                #'edger_mdsplot_file': EDGER_MDSPLOT_FILE,
+                #'edger_mvplot_file': EDGER_MVPLOT_FILE,
+                #'edger_bcvplot_file': EDGER_BCVPLOT_FILE,
+                #'edger_maplot_file': EDGER_MAPLOT_FILE,
+                #'edger_toptags_file': EDGER_TOPTAGS_FILE,
+                #'edger_dbtoptags_file': EDGER_DBTOPTAGS_FILE,
+                #'edger_toptags_fdr_file': EDGER_TOPTAGS_FDR_FILE,
+                #'deseq_dir': DESEQ_DIR,
+                #'deseq_dirpath': DESEQ_DIRPATH,
+                #'deseq_log_file': DESEQ_LOG_FILE,
+                #'deseq_metadata_file': EDGER_METADATA_FILE,
+                #'deseq_group_file': EDGER_GROUP_FILE,
+                #'degene_table': DEGENE_TABLE,
+                #'de_hh_file': DE_HH_FILE
+                #}
+
+#REFSEQDICT =    {'refseq_path': REFSEQ_PATH,
+                 #'gff_path': GFF_PATH,
+                 #'mitogff_path': MITOGFF_PATH,
+                 #'btindex': BTINDEX}
+
 
 
