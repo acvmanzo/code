@@ -2,17 +2,19 @@
 
 #Finds the correlation of gene expression values between biological replicates 
 import argparse
-import libs.correlationlib as corl
+import datetime
 import logging
 import os
-import cmn.cmn as cmn
 import psycopg2
 import shutil
 import sys
-from correlations_settings import *
+import cmn.cmn as cmn
+import libs.correlationlib as corl
 import libs.rnaseqlib as rl
+from corrfig_settings import *
+from rnaseq_settings import *
 
-parser = argparse.ArgumentParser()
+#parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--run', action='store_true', 
         help='run correlation analysis')
 parser.add_argument('-a', '--allgens', action='store_true', 
@@ -27,6 +29,8 @@ parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
         #help='make new file of htseq-count results for the given subset of genes')
 parser.add_argument('-c', '--copytodb', action='store_true', 
         help='copy cufflinks results to database')
+parser.add_argument('-o', '--option', choices=['unstranded', '2str'], 
+        help='Option for which data to analyze')
 
 args = parser.parse_args()
 COPY_TO_TABLE = args.copytodb 
@@ -35,20 +39,13 @@ GENE_SUBSET_TABLE = args.genesubset
 if args.genesubset == 'all':
     GENE_SUBSET_TABLE = False
 
-logpath = CORRLOGPATH
-rl.logginginfo(logpath)
-#if args.allgens:
-    #ALLREPS_OR_BERKIDS = 'allreps' 
-#else:
-    #ALLREPS_OR_BERKIDS = 'berkids'
-
-#if args.genotype:
-    #logging.info('Finding correlations for %s', args.genotype)
+if args.genotype:
+    logging.info('Finding correlations for %s', args.genotype)
 
 def create_corrfiles():
     # Creates files for pearson and spearman correlation coefficients.
-    pearson_corrfile = os.path.join(CORRELATION_DIR, PEARSON_CORRFILE)
-    spearman_corrfile = os.path.join(CORRELATION_DIR, SPEARMAN_CORRFILE)
+    pearson_corrfile = os.path.join(CORR_DIRPATH, PEARSON_CORRFILE)
+    spearman_corrfile = os.path.join(CORR_DIRPATH, SPEARMAN_CORRFILE)
     corl.create_corr_file(pearson_corrfile)
     corl.create_corr_file(spearman_corrfile)
     return(pearson_corrfile, spearman_corrfile)
@@ -100,48 +97,49 @@ def prune_cufflink_path(cufflink_fpkm_paths):
 
 def main():
     # Settings for logging.
-    #curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-
+    cmn.makenewdir(CORR_DIRPATH)
+    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logpath = os.path.join(CORR_DIRPATH, '{}_'.format(curtime) + RNASEQDICT['corrlog_file'])
+    rl.logginginfo(logpath)
     # Create correlation output files.
     pearson_corrfile, spearman_corrfile = create_corrfiles()
     # Find paths to the cufflink output files for each condition.
     cufflink_path_dict = gen_cufflink_path_dict()
     #print(cufflink_path_dict)
 
-    for condition, cufflink_fpkm_paths in sorted(cufflink_path_dict.items()):
-        # Define and create figure directory.
-        fig_dir = os.path.join(CORRELATION_DIR, condition)
-        cmn.makenewdir(fig_dir)
+    #for condition, cufflink_fpkm_paths in sorted(cufflink_path_dict.items()):
+        ## Define and create figure directory.
+        #fig_dir = os.path.join(CORR_DIRPATH, condition)
+        #cmn.makenewdir(fig_dir)
 
-        # Create a new list of paths only to the files that exist.
-        logging.info('Condition: %s', condition)    
-        extant_cufflink_fpkm_paths = prune_cufflink_path(cufflink_fpkm_paths)
-        if not extant_cufflink_fpkm_paths:
-            continue
-        # Copies data into the database table in CUFF_TABLE if sys.argv is 'y'
-        # or 'yes'
-        if COPY_TO_TABLE:
-            logging.info('Files copied to db %s', extant_cufflink_fpkm_paths)
-            corl.copy_data_to_table(extant_cufflink_fpkm_paths, BERKID_FPKM_FILE, CUFF_TABLE)
-        # Finds correlations if sys.argv is 'y' # or 'yes'
-        if FIND_CORRELATIONS:
-            try:
-                # Generates a list of arrays in which each array has the gene FPKM
-                # data for two samples.
-                joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
-                        SELECTLIST, CUFF_TABLE, MAXFPKM, GENE_SUBSET_TABLE) 
-                # Finds the correlations between each sample within a condition and
-                # generates plots.
-                corl.get_sample_correlations(joined_arrays, fig_dir, 
-                        pearson_corrfile, spearman_corrfile, SELECTLIST,
-                        SCATTER_INFO, HIST_INFO, PC_LOG)
-            except FileNotFoundError:
-                logging.info("File Not Found '%s'", cufflink_fpkm_paths)
-                continue
+        ## Create a new list of paths only to the files that exist.
+        #logging.info('Condition: %s', condition)    
+        #extant_cufflink_fpkm_paths = prune_cufflink_path(cufflink_fpkm_paths)
+        #if not extant_cufflink_fpkm_paths:
+            #continue
+        ## Copies data into the database table in CUFF_TABLE if sys.argv is 'y'
+        ## or 'yes'
+        #if COPY_TO_TABLE:
+            #logging.info('Files copied to db %s', extant_cufflink_fpkm_paths)
+            #corl.copy_data_to_table(extant_cufflink_fpkm_paths, BERKID_CUFF_GFPKM, CUFF_TABLE)
+        ## Finds correlations if sys.argv is 'y' # or 'yes'
+        #if FIND_CORRELATIONS:
+            #try:
+                ## Generates a list of arrays in which each array has the gene FPKM
+                ## data for two samples.
+                #joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
+                        #SELECTLIST, CUFF_TABLE, MAXFPKM, GENE_SUBSET_TABLE) 
+                ## Finds the correlations between each sample within a condition and
+                ## generates plots.
+                #corl.get_sample_correlations(joined_arrays, fig_dir, 
+                        #pearson_corrfile, spearman_corrfile, SELECTLIST,
+                        #SCATTER_INFO, HIST_INFO, PC_LOG)
+            #except FileNotFoundError:
+                #logging.info("File Not Found '%s'", cufflink_fpkm_paths)
+                #continue
 
-        shutil.copyfile(CORRELATION_SETTINGS_PATH, SAVED_CORRELATION_SETTINGS_PATH)
-
-
+        #shutil.copy(RNASEQDICT['set_path_orig'], '{}_{}'.format(RNASEQDICT['corr_set_path_copy'], curtime))
+        #shutil.copy(RNASEQDICT['corr_figset_path_orig'], '{}_{}'.format(RNASEQDICT['corr_figset_path_copy'], curtime))
 
 if __name__ == '__main__':
     main()

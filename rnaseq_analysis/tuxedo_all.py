@@ -32,7 +32,7 @@ def main():
 
     tl.seqdir_run_tophat_cufflinks(RNASEQDICT, REFSEQDICT, args.cufflinks,
         args.strand)
-    shutil.copy(RNASEQDICT['th_set_path_orig'], '{}_{}'.format(RNASEQDICT['th_set_path_copy'], curtime))
+    shutil.copy(RNASEQDICT['set_path_orig'], '{}_{}'.format(RNASEQDICT['th_set_path_copy'], curtime))
 
 if __name__ == '__main__':
     main()

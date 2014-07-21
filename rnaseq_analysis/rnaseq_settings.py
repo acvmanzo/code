@@ -56,18 +56,13 @@ import os
         #date_time_rnaseq_settings.py
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-o', '--option', choices=['unstranded', '2str')
-
-args = parser.parse_args()
-
-if args.option = 'unstranded':
+if args.option == 'unstranded':
     TH_RESDIR = 'results_tophat'
     CUFF_TABLE = 'cufflinks_data'
     HTSEQ_TABLE = 'htseq'
     DEGENE_TABLE = 'degenes'
 
-if args.option = '2str':
+if args.option == '2str':
     TH_RESDIR = 'results_tophat_2str'
     CUFF_TABLE = 'cufflinks_data_2str'
     HTSEQ_TABLE = 'htseq_2str'
@@ -95,28 +90,41 @@ COMBINED_FASTQ_SUFFIX = 'combined.fastq.gz'
 
 ANALYSIS_PATH = '/home/andrea/Documents/lab/RNAseq/analysis'
 
+SET_DIR_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
+SET_FILE = 'rnaseq_settings.py'
+SET_PATH_ORIG = os.path.join(SET_DIR_ORIG, SET_FILE)
+
 TH_RESDIRPATH = os.path.join(ANALYSIS_PATH, TH_RESDIR)
 TH_DIR = 'tophat_out'
 THCMD_FILE = 'tophatcmd.txt'
 BAM_FILE = 'accepted_hits.bam'
 TH_LOG_FILE = 'tophat.log'
-TH_SET_DIR_ORIG = '/home/andrea/Documents/lab/code/rnaseq_analysis'
-TH_SET_FILE = 'rnaseq_settings.py'
-TH_SET_PATH_ORIG = os.path.join(TH_SET_DIR_ORIG, TH_SET_FILE)
-TH_SET_PATH_COPY = os.path.join(TH_RESDIRPATH, os.path.splitext(TH_SET_FILE)[0])
+TH_SET_PATH_COPY = os.path.join(TH_RESDIRPATH, os.path.splitext(SET_FILE)[0])
 
 CUFF_DIR = 'cufflinks_out'
 CUFFLOG_FILE = 'cufflinks.log'
 CUFFCMD_FILE = 'cufflinkscmd.txt'
 CUFF_GFPKM = 'genes.fpkm_tracking'
+BERKID_CUFF_GFPKM = 'genes_berkid.fpkm_tracking'
 
+CORR_DIR = 'correlations'
+CORR_DIRPATH = os.path.join(ANALYSIS_PATH, CORR_DIR, TH_RESDIR)
+CORR_SET_PATH_COPY = os.path.join(CORR_DIRPATH, os.path.splitext(SET_FILE)[0])
+CORR_FIGSET_FILE = 'corrfig_settings.py'
+CORR_FIGSET_PATH_ORIG = os.path.join(SET_DIR_ORIG, CORR_FIGSET_FILE)
+CORR_FIGSET_PATH_COPY = os.path.join(CORR_DIRPATH, os.path.splitext(CORR_FIGSET_FILE)[0])
+PEARSON_CORRFILE = 'pearson_correlations.txt' 
+SPEARMAN_CORRFILE = 'spearman_correlations.txt' 
+CORRLOG_FILE = 'correlations.log'
 #SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
     #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
 SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status',
     't1.berkid', 't1.fpkm', 't1.fpkm_status']
+MAXFPKM = False # Only genes with FPKMs below this value will be used to 
+# calculate correlations; if no limit is desired, set to False.
+PC_LOG = True # If set to 'True', adds 1 to each value in the list of 
+# FPKMS for each sample and then log transforms the data (log base 2).
 
-FPKM_FILE = 'genes.fpkm_tracking'
-BERKID_FPKM_FILE = 'genes_berkid.fpkm_tracking'
 HTSEQ_DIR = 'htseq_out'
 HTSEQ_CMD_FILE = 'htseq.info'
 HTSEQ_LOG_FILE = 'htseq.log'
@@ -150,17 +158,26 @@ RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 'sampleseqglob': SAMPLESEQGLOB,
                 'combined_fastq_suffix': COMBINED_FASTQ_SUFFIX,
                 'sampleinfo_table': SAMPLEINFO_TABLE,
+                'set_path_orig': SET_PATH_ORIG,
                 'analysis_path': ANALYSIS_PATH,
                 'th_resdirpath': TH_RESDIRPATH,
                 'th_log_file': TH_LOG_FILE,
                 'th_dir': TH_DIR,
                 'th_cmd_file': THCMD_FILE,
                 'bam_file': BAM_FILE,
-                'th_set_path_orig': TH_SET_PATH_ORIG,
                 'th_set_path_copy': TH_SET_PATH_COPY, 
                 'cuff_dir': CUFF_DIR,
                 'cufflog_file': CUFFLOG_FILE,
                 'cuffcmd_file': CUFFCMD_FILE,
+                'corr_dir': CORR_DIR,
+                'corr_dirpath': CORR_DIRPATH,
+                'corr_set_path_copy': CORR_SET_PATH_COPY,
+                'corr_figset_file': CORR_FIGSET_FILE,
+                'corr_figset_path_orig': CORR_FIGSET_PATH_ORIG,
+                'corr_figset_path_copy': CORR_FIGSET_PATH_COPY,
+                'pearson_corrfile': PEARSON_CORRFILE,
+                'spearman_corrfile': SPEARMAN_CORRFILE,
+                'corrlog_file': CORRLOG_FILE,
                 'htseq_dir': HTSEQ_DIR,
                 'htseq_cmd_file': HTSEQ_CMD_FILE,
                 'htseq_log_file': HTSEQ_LOG_FILE,
