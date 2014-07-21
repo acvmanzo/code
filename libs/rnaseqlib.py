@@ -1,3 +1,4 @@
+import glob
 import os
 import logging
 import psycopg2
@@ -85,15 +86,15 @@ def get_dirs(folder, globstring):
     dirs = [os.path.abspath(x) for x in sorted(glob.glob('{0}'.format(globstring)))]
     return(dirs)
 
-def add_berkid(berkid, file_path):
+def add_berkid(berkid, file_path, berkid_file_path):
     '''adds the berkid to the last columns of a file
     '''
-    berkid_file_path = file_path + '_berkid'
+    print(berkid)
     with open(berkid_file_path, 'w') as g:
         with open(file_path, 'r') as f:
             #print(file_path)
             #print('current working dir', os.getcwd())
-            if file_path == 'genes.fpkm_tracking':
+            if os.path.basename(file_path) == 'genes.fpkm_tracking':
                 next(f)
             for l in f:
                 if '__' in l.split('\t')[0]:
@@ -104,13 +105,16 @@ def add_berkid(berkid, file_path):
 
 def madd_berkid(berkid_filepath_tuples):
     '''Input is list of tuples of the following form:
-    (berkid, file path)
+    (berkid, file path, new file path)
     '''
-    for berkid, fp in berkid_filepath_tuples:
-        if not os.path.exists(cf):
-            logging.info('%s does not exist', cf)
+    #print(list(berkid_filepath_tuples))
+    for berkid, fpkm_file, bfpkm_file in list(berkid_filepath_tuples):
+        if not os.path.exists(fpkm_file):
+            logging.info('%s does not exist', fpkm_file)
             continue
-        add_berkid(berkid, fp)
+        else:
+            print('Adding berkid')
+            add_berkid(berkid, fpkm_file, bfpkm_file)
 
 
 
@@ -130,7 +134,7 @@ def copy_to_dbtable(berkid_file_path, dbtable, cur):
     with open(berkid_file_path, 'r') as f:
         info = next(f)
     berkid = info.strip('\n').split('\t')[-1]
-    logging.debug('copy_to_db %s', berkid)
+    logging.info('copy_to_db %s', berkid)
     checkrows = int(get_num_genes(dbtable, berkid, cur))
     logging.debug('checkrows %s', checkrows)
     logging.debug('%s', berkid_file_path)

@@ -31,7 +31,7 @@ PC_LOG = True # If set to 'True', adds 1 to each value in the list of
 
 
 # Directories used.
-CORR_DIR_BASE = 'correl_tophat'
+CORR_DIR_BASE = 'correl_tophat_2str'
 CORRMAINDIR = 'correlations'
 #CORRELATION_DIR = os.path.join(ANALYSIS_PATH, CORRMAINDIR, CORR_DIR_BASE)
 CORRELATION_DIR = os.path.join(ANALYSIS_PATH, CORRMAINDIR, CORR_DIR_BASE)
@@ -72,7 +72,7 @@ BERKIDLIST = False
 
 
 SAMPLEINFO_TABLE = 'autin'
-CUFF_TABLE = 'cufflinks_data'
+CUFF_TABLE = 'cufflinks_data_2str'
 #SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
     #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
 SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status',

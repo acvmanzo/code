@@ -288,12 +288,12 @@ def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
     logging.info('opening connection')
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
-    berkid_cufflink_fpkm_paths = [get_cufflink_berkid_fpkm_path(cf,
+    berkid_cufflink_fpkm_paths = [rl.get_cufflink_berkid_fpkm_path(cf,
             berkid_fpkm_file) for cf in cufflink_fpkm_paths]
-    berkids = [get_berkid(cf) for cf in cufflink_fpkm_paths]
+    berkids = [rl.get_berkid(cf) for cf in cufflink_fpkm_paths]
     rl.madd_berkid(zip(berkids, cufflink_fpkm_paths, 
         berkid_cufflink_fpkm_paths))
-    mcopy_to_dbtable(berkid_cufflink_fpkm_paths, cuff_table, cur)
+    rl.mcopy_to_dbtable(berkid_cufflink_fpkm_paths, cuff_table, cur)
     conn.commit()
     cur.close()
     logging.info('closing connection')

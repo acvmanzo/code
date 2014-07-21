@@ -56,10 +56,24 @@ import os
         #date_time_rnaseq_settings.py
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-o', '--option', choices=['unstranded', '2str')
 
-TH_RESDIR = 'results_tophat'
-#TH_RESDIR = 'results_tophat_2str'
-#TH_RESDIR = 'results_tophat_secondstrand'
+args = parser.parse_args()
+
+if args.option = 'unstranded':
+    TH_RESDIR = 'results_tophat'
+    CUFF_TABLE = 'cufflinks_data'
+    HTSEQ_TABLE = 'htseq'
+    DEGENE_TABLE = 'degenes'
+
+if args.option = '2str':
+    TH_RESDIR = 'results_tophat_2str'
+    CUFF_TABLE = 'cufflinks_data_2str'
+    HTSEQ_TABLE = 'htseq_2str'
+    DEGENE_TABLE = 'degenes_2str'
+
+SAMPLEINFO_TABLE = 'autin'
 
 REFSEQ_PATH = '/home/andrea/rnaseqanalyze/references/dmel-r5.57' 
 GFF_PATH = os.path.join(REFSEQ_PATH, 'dmel-all-filtered-r5.57.gff')
@@ -96,6 +110,13 @@ CUFFLOG_FILE = 'cufflinks.log'
 CUFFCMD_FILE = 'cufflinkscmd.txt'
 CUFF_GFPKM = 'genes.fpkm_tracking'
 
+#SELECTLIST = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
+    #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
+SELECTLIST = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 't0.fpkm_status',
+    't1.berkid', 't1.fpkm', 't1.fpkm_status']
+
+FPKM_FILE = 'genes.fpkm_tracking'
+BERKID_FPKM_FILE = 'genes_berkid.fpkm_tracking'
 HTSEQ_DIR = 'htseq_out'
 HTSEQ_CMD_FILE = 'htseq.info'
 HTSEQ_LOG_FILE = 'htseq.log'
@@ -103,7 +124,7 @@ HTSEQ_FILE = 'htseqcount'
 RES_SAMPLE_GLOB = 'RG*'
 
 EDGER_DIR = 'edger'
-EDGER_DIRPATH = os.path.join(ANALYSIS_PATH, EDGER_DIR)
+EDGER_DIRPATH = os.path.join(ANALYSIS_PATH, EDGER_DIR, TH_RESDIR)
 EDGER_LOG_FILE = 'edger.log'
 EDGER_METADATA_FILE = 'metadata.txt'
 EDGER_GROUP_FILE = 'groups'
@@ -117,13 +138,9 @@ EDGER_TOPTAGS_FDR_FILE = 'toptags_edgeR_'
 DE_HH_FILE = 'human_hom_'
 
 DESEQ_DIR = 'deseq'
-DESEQ_DIRPATH = os.path.join(ANALYSIS_PATH, DESEQ_DIR)
+DESEQ_DIRPATH = os.path.join(ANALYSIS_PATH, DESEQ_DIR, TH_RESDIR)
 DESEQ_LOG_FILE = 'deseq.log'
 
-SAMPLEINFO_TABLE = 'autin'
-HTSEQ_TABLE = 'htseq'
-DEGENE_TABLE = 'degenes'
-#HTSEQ_TABLE = 'htseq_test'
 
 BERKIDLEN = 8
 

@@ -135,34 +135,39 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
     strand = unstranded or second stranded library
     '''
     d = th_cuff_dict
+    print('d', d)
     rd = rnaseqdict
     os.chdir(sample_seqdir)
     # Concatenate the sequence files into one file.
-    combined_gzpath = get_combined_gzpath(sample_resdir, sample, rd['combined_fastq_suffix'])
-    cmn.makenewdir(os.path.join(rd['th_resdirpath'], sample))
-    gen_combined_gzfile(sample_seqdir, combined_gzpath) 
-    # Unzip the combined sequence file.
-    unzip_gzfile(combined_gzpath)
-    
-    # Run tophat.
-    os.chdir(sample_resdir)
-    fastafile = os.path.basename(combined_gzpath).strip('.gz')
-    logging.info('%s', fastafile)    
-
-    if os.path.exists(rd['th_dir']):
-        logging.warning('%s', 'tophat directory exists')
+    if os.path.exists(os.path.join(sample_resdir, rd['th_dir'])):
+        logging.warning('%s', 'Tophat directory exists')
     else:
+        combined_gzpath = get_combined_gzpath(sample_resdir, sample, 
+                rd['combined_fastq_suffix'])
+        cmn.makenewdir(os.path.join(rd['th_resdirpath'], sample))
+        gen_combined_gzfile(sample_seqdir, combined_gzpath) 
+        # Unzip the combined sequence file.
+        unzip_gzfile(combined_gzpath)
+        fastafile = os.path.basename(combined_gzpath).strip('.gz')
+        logging.info('%s', fastafile)    
+    
+    ## Run tophat.
+    os.chdir(sample_resdir)
+
+    if not os.path.exists(rd['th_dir']):
         run_tophat(rd['th_dir'], d['gff_path'], d['btindex'], fastafile,
                 rd['th_cmd_file'], strand)
         os.remove(fastafile)
    
     #Run cufflinks.
     if runcufflinks:
-        if os.path.exists(d['cufflinks_dir']):
-            logging.warning('cufflinks directory exists')
-        else:
-            run_cufflinks(d['mitogff_file'], d['gff_path'], d['bam_file'], rd['cufflinkslog_file'], 
-                    rd['cufflinkscmd_file']) 
+        #if os.path.exists(rd['cuff_dir']):
+            #logging.warning('cufflinks directory exists')
+        #else:
+        bamfile = os.path.join(sample_resdir, rd['th_dir'], rd['bam_file'])
+        print(bamfile)
+        run_cufflinks(d['mitogff_path'], d['gff_path'], bamfile, 
+                rd['cufflog_file'], rd['cuffcmd_file']) 
     
 
 def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks, strand):
@@ -200,12 +205,13 @@ def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks, strand):
             sample = os.path.basename(sample_seqdir).split('_')[1]
             logging.info('%s', sample)
             sample_resdir = os.path.join(rd['th_resdirpath'], sample) 
-            if not os.path.exists(os.path.join(sample_resdir, rd['th_dir'])):
-                cmn.makenewdir(sample_resdir)
-                logging.info('Running tophat and cufflinks')
-                run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, 
-                        rd, d, runcufflinks, strand)
-            else:
-                logging.warning('Tophat and cufflinks output exists')
+
+            #if not os.path.exists(os.path.join(sample_resdir, rd['th_dir'])) or not os.path.exists(os.path.join(sample_resdir, rd['cuff_dir'])):
+            cmn.makenewdir(sample_resdir)
+            logging.info('Running tophat and cufflinks')
+            run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, 
+                    rd, d, runcufflinks, strand)
+            #else:
+                #logging.warning('Tophat and cufflinks output exists')
 
 
