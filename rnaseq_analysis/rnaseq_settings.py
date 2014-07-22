@@ -1,3 +1,6 @@
+# This module contains functions that define classes and objects where the
+# object attributes specify the files and directories used in RNA-Seq analysis.
+
 import os
 
 #Structure of directories containing raw sequence files
@@ -15,14 +18,17 @@ import os
 #Structure of directories that will contain analysis results 
 #/home/andrea/lab/RNAseq/analysis/
     #correlations/
-        #correl_tophat_pclog2/
-            #Betaintnu_F/
-                #Betaintnu_FA-RGAM011D_vs_Betaintnu_FB-RGAM012F_correlation.png
-            #Betaintnu_M/
-        #correl_tophat_protein_coding_genes_pclog2/
-            #Betaintnu_F/
-                #Betaintnu_FA-RGAM011D_vs_Betaintnu_FB-RGAM012F_correlation.png
-            #Betaintnu_M/
+        #results_tophat_2str/
+            #prot_coding_genes/
+                #allgens_date_time/
+                    #Betaintnu_F/
+                        #Betaintnu_FA-RGAM011D_vs_Betaintnu_FB-RGAM012F_correlation.png
+                    #Betaintnu_M/
+                    #pearson_correlations.txt
+                    #spearman_correlations.txt
+                    #rnaseq_settings
+                    #correlations.log
+                #NrxI_M_date_time/
     #edger/
         #date_time_edger.log
         #prot_coding_genes/
@@ -56,18 +62,26 @@ import os
         #date_time_rnaseq_settings.py
 
 class RNASeqData:
+    '''A class where the object attributes are the files, file paths,
+    and other user-defined parameters for RNA-Seq analysis.
+    '''
 
-    def __init__(self, option, genesubset):
-
-        self.option = option
-        self.genesubset = genesubset
-        if option == 'unstranded':
+    def __init__(self, alignment, genesubset):
+        '''
+        Inputs:
+        alignment = data to analyze, based on alignment settings (choices are
+            unstranded, 2str)
+        genesubset = subset of genes that are analyzed (all, prot_coding_genes,
+            bwa, etc.)
+        '''
+        self.genesubset = genesubset 
+        if alignment == 'unstranded':
             self.th_resdir = 'results_tophat'
             self.cuff_table = 'cufflinks_data_un'
             self.htseq_table = 'htseq_un'
             self.degene_table = 'degenes_un'
 
-        if option == '2str':
+        if alignment == '2str':
             self.th_resdir = 'results_tophat_2str'
             self.cuff_table = 'cufflinks_data'
             self.htseq_table = 'htseq'
@@ -75,6 +89,8 @@ class RNASeqData:
 
         self.sampleinfo_table = 'autin'
 
+        #Paths to the reference genome and other files used for alignment
+        #by Tophat.
         self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.57' 
         self.gff_path = os.path.join(self.refseq_path,
                 'dmel-all-filtered-r5.57.gff')
@@ -85,18 +101,22 @@ class RNASeqData:
         self.btindex = os.path.join(self.refseq_path,
                 'dmel-all-chromosome-r5.57')
 
+        #Paths to directories holding sequence data.
         self.seq_path = '/home/andrea/Documents/lab/RNAseq/sequences'
         self.seq_subdir = 'sequences'
         self.seqbatchglob = '2014-*/'
         self.sampleseqglob = 'Sample_*'
         self.combined_fastq_suffix = 'combined.fastq.gz'
-        
+       
+        #Path to main analysis folder.
         self.analysis_path = '/home/andrea/Documents/lab/RNAseq/analysis'
-        
+
+        #Paths to settings files.   
         self.set_dir_orig = '/home/andrea/Documents/lab/code/rnaseq_analysis'
         self.set_file = 'rnaseq_settings.py'
         self.set_path_orig = os.path.join(self.set_dir_orig, self.set_file)
-        
+
+        #Path to Tophat files. 
         self.th_resdirpath = os.path.join(self.analysis_path, self.th_resdir)
         self.th_dir = 'tophat_out'
         self.thcmd_file = 'tophatcmd.txt'
@@ -104,18 +124,18 @@ class RNASeqData:
         self.th_log_file = 'tophat.log'
         self.th_set_path_copy = os.path.join(self.th_resdirpath, 
                 os.path.splitext(self.set_file)[0])
-        
+
+        #Paths to Cufflinks files. 
         self.cuff_dir = 'cufflinks_out'
         self.cufflog_file = 'cufflinks.log'
         self.cuffcmd_file = 'cufflinkscmd.txt'
         self.cuff_gfpkm = 'genes.fpkm_tracking'
         self.berkid_cuff_gfpkm = 'genes_berkid.fpkm_tracking'
-        
+
+        #Paths to output of correlation analysis. 
         self.corr_dir = 'correlations'
         self.corr_dirpath = os.path.join(self.analysis_path, self.corr_dir,
                 self.th_resdir, self.genesubset)
-        #self.corr_set_path_copy = os.path.join(self.corr_dirpath,
-                #os.path.splitext(self.set_file)[0])
         self.pearson_corrfile = 'pearson_correlations.txt' 
         self.spearman_corrfile = 'spearman_correlations.txt' 
         self.corrlog_file = 'correlations.log'
@@ -128,12 +148,14 @@ class RNASeqData:
         self.pc_log = True # If set to 'True', adds 1 to each value in the list of 
         # FPKMS for each sample and then log transforms the data (log base 2).
         
+        #Paths to htseq-count files.
         self.htseq_dir = 'htseq_out'
         self.htseq_cmd_file = 'htseq.info'
         self.htseq_log_file = 'htseq.log'
         self.htseq_file = 'htseqcount'
         self.res_sample_glob = 'RG*'
-       
+      
+        #Paths to edgeR files.
         self.edger_dir = 'edger'
         self.edger_dirpath = os.path.join(self.analysis_path, self.edger_dir,
                 self.th_resdir)
@@ -148,18 +170,21 @@ class RNASeqData:
         self.edger_dbtoptags_file = 'db_toptags_edgeR.csv'
         self.edger_toptags_fdr_file = 'toptags_edgeR_'
         self.de_hh_file = 'human_hom_'
-      
+    
+        #Paths to DEseq files.
         self.deseq_dir = 'deseq'
         self.deseq_dirpath = os.path.join(self.analysis_path, self.deseq_dir,
                 self.th_resdir)
         self.deseq_log_file = 'deseq.log'
     
-        self.berkidlen = 8
+        self.berkidlen = 8 #Length of berkid names.
 
 
 
     def GetResultsFiles(self, berkid):
-
+        '''A method that returns a dictionary of the file paths for a specific
+        berkeley id.
+        '''
         sample_dir = os.path.join(self.th_resdirpath, berkid)
         sample_th_dir = os.path.join(sample_dir, self.th_dir)
         sample_cuff_dir = os.path.join(sample_dir, self.cuff_dir)
@@ -178,6 +203,8 @@ class RNASeqData:
         return(d)
 
 class CorrPlotData:
+    '''A class where the object attributes specify parameters for plotting
+    correlation plots and histograms.'''
 
     def __init__(self):
         self.scatter_dpi = 1000

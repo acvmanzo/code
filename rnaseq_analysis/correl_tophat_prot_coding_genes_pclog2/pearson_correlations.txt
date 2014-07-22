@@ -1,1 +1,0 @@
-berkid0	sample0	berkid1	sample1	r	r^2	#genes

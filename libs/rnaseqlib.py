@@ -1,8 +1,9 @@
 import glob
-import os
 import logging
+import os
 import psycopg2
-from rnaseq_analysis.rnaseq_settings import *
+import rnaseq_analysis.rnaseq_settings as rs
+
 
 #globstring = 'RG*'
 
@@ -102,8 +103,16 @@ def add_berkid(berkid, file_path, berkid_file_path):
                 newline = l.strip('\n') + '\t{0}\n'.format(berkid)
                 g.write(newline) 
 
+def remove_blank_trackid(file_path, new_file_path):
+    with open(new_file_path, 'w') as g:
+        with open(file_path, 'r') as f:
+            next(f)
+            for l in f:
+                tid = l.split('\t')[0]
+                if tid != '':
+                    g.write(l)
 
-def madd_berkid(berkid_filepath_tuples):
+def madd_berkid(berkid_filepath_tuples, removeblank='no'):
     '''Input is list of tuples of the following form:
     (berkid, file path, new file path)
     '''
@@ -113,9 +122,14 @@ def madd_berkid(berkid_filepath_tuples):
             logging.info('%s does not exist', fpkm_file)
             continue
         else:
-            print('Adding berkid')
-            add_berkid(berkid, fpkm_file, bfpkm_file)
-
+            logging.info('Adding berkid')
+            if removeblank == 'no':
+                add_berkid(berkid, fpkm_file, bfpkm_file)
+            if removeblank == 'yes':
+                temp_file = fpkm_file + '_temp'
+                add_berkid(berkid, fpkm_file, temp_file)
+                remove_blank_trackid(temp_file, bfpkm_file)
+                #os.remove(temp_file)
 
 
 def get_num_genes(dbtable, berkid, cur):
@@ -239,13 +253,14 @@ def get_fpkm_path(berkid, exp_results_dir, exp_dir, berkid_fpkm_file):
 
 
 
-def get_replicate_cufflink_paths(condition_berkid_dict):
+def get_replicate_cufflink_paths(condition_berkid_dict, rnaset):
     '''Returns a dictionary of paths to the cufflink output FPKM files for
     every condition in condition_berkid_dict.
     Input:
     condition_berkid_dict: keywords are conditions and values are lists of 
     berkids. Output by the functions get_replicate_berkid_dict or 
     get_all_replicate_berkid_dict). 
+    rnaset: object of class RNASeqData in the rnaseq_settings module
     Output:
     Dictionary of paths; keywords are conditions and values are lists of
     output FPKM file paths.
@@ -253,13 +268,14 @@ def get_replicate_cufflink_paths(condition_berkid_dict):
     replicate_path_dict = {} 
     for condition, berkids in condition_berkid_dict.items():
         replicate_path_dict[condition] = \
-                [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]
+                [rnaset.GetResultsFiles(b)['cuff_gfpkm_path'] for b in berkids]
     return(replicate_path_dict)
 
-def get_some_cufflink_paths(berkidlist, key):
+def get_some_cufflink_paths(berkidlist, key, rnaset):
     '''Returns a dictionary of paths to the cufflink output FPKM files for 
-    the berkids in the berkidlist; key is given by key'''
-    return({key: [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]})
+    the berkids in the berkidlist; key is given by key; rnaset is an object
+    of class RNASeqData in the rnaseq_settings module'''
+    return({key: [rnaset.GetResultsFiles(b)['cuff_gfpkm_path'] for b in berkids]})
 
 ### OLD VERSIONS
 #def get_replicate_cufflink_paths(condition_berkid_dict, exp_results_dir,
@@ -282,27 +298,23 @@ def get_some_cufflink_paths(berkidlist, key):
         #berkid_fpkm_file) for berkid in berkidlist]})
 
 
-def get_all_replicate_cufflink_paths(cur, rnaseqdict):
+def get_all_replicate_cufflink_paths(cur, rnaset):
     '''Returns a dictionary of paths to the cufflink output FPKM files for
     every condition in the queried table.
     Inputs:
     cur = cursor used to execute SQL commands with psycopg2
-    sampleinfo_table = table to be queried
-    exp_results_dir = directory containing all the results files all samples
-    exp_dir = directory containing the expression results output
-    berkid_fpkm_file = name of the file containing the cufflink FPKM output;
-    not the raw output file but the modified file with the berkid appended to
-    the end
+    rnaset = object of class RNASeqData from the rnaseq_settings module
     Outputs:
     A dictionary where the keys are the condition names and the values are
     paths to the FPKM file.
     '''
+    rnaseqdict = rnaset.__dict__
     condition_berkid_dict = get_all_replicate_berkid_dict(cur, 
         rnaseqdict['sampleinfo_table'])
-    return(get_replicate_cufflink_paths(condition_berkid_dict))
+    return(get_replicate_cufflink_paths(condition_berkid_dict, rnaset))
 
-def get_cufflink_berkid_fpkm_path(cufflink_fpkm_path, berkid_fpkm_file):
-    berkid = get_berkid(cufflink_fpkm_path)
+def get_cufflink_berkid_fpkm_path(cufflink_fpkm_path, berkid_fpkm_file, berkidlen):
+    berkid = get_berkid(cufflink_fpkm_path, berkidlen)
     berkid_fpkm_path = os.path.join(os.path.dirname(cufflink_fpkm_path), 
             berkid_fpkm_file) 
     return(berkid_fpkm_path)
@@ -316,14 +328,14 @@ def get_samplename(berkid, cur):
     return(sample)
 
 
-def get_berkid(exp_results_path, berkidlen=BERKIDLEN):
+def get_berkid(exp_results_path, berkidlen):
     '''return a berkid extracted from a cufflink_fpkm_path'''
     cf = exp_results_path
     return(cf[cf.find('RG'):cf.find('RG')+berkidlen])
 
-def get_berkidlist(cufflink_fpkm_paths):
+def get_berkidlist(cufflink_fpkm_paths, berkidlen):
     '''returns a list of berkids extracted from a list of cufflink output paths'''
-    return([get_berkid(cf) for cf in cufflink_fpkm_paths])
+    return([get_berkid(cf, berkidlen) for cf in cufflink_fpkm_paths])
 
 
 def check_table_exists(table, cur):

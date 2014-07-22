@@ -233,8 +233,11 @@
 
 -- \copy aligninfo from '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat/tophat_all_align_summarywithal.txt';
 -- \copy aligninfo from '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results/clc_all_align_summarywithal.txt';
+-- \copy aligninfo from '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str/tophat_all_align_summarywithal.txt';
 
 -- \copy (select t0.berkid, t0.sample, t1.input as total_sequenced_reads, t0.mapped as clc_mapped, t1.mapped as th_mapped, t1.mapped-t0.mapped as diff_thmap_clcmap, t0.pmapped as clc_percent_mapped, t1.pmapped as th_percent_mapped, t0.mapped-t0.multimapped as clc_unique, (t0.mapped-t0.multimapped)/t1.input::float as clc_ratio_totalseq_unique, t1.mapped-t1.multimapped as th_unique, (t1.mapped-t1.multimapped)/t1.input::float as th_ratio_totalseq_unique from aligninfo as t0 inner join aligninfo as t1 using (berkid) where t0.aligner = 'clc' and t1.aligner = 'tophat' order by sample) to 'clc_tophat_mapping.csv' csv header;
+-- \copy (select t0.berkid, t0.sample, t1.input as total_sequenced_reads, t0.mapped as unstranded, t1.mapped as secondstr, t0.mapped-t1.mapped as diff_un_2str, t0.pmapped as un_percent_mapped, t1.pmapped as secstr_percent_mapped, t0.mapped-t0.multimapped as un_unique, (t0.mapped-t0.multimapped)/t1.input::float as un_ratio_totalseq_unique, t1.mapped-t1.multimapped as secstr_unique, (t1.mapped-t1.multimapped)/t1.input::float as secstr_ratio_totalseq_unique from aligninfo as t0 inner join aligninfo as t1 using (berkid) where t0.aligner = 'tophat' and t1.aligner = 'tophat_2str' order by sample) to 'tophat_un_2str_mapping.csv' csv header;
+-- \copy (select t0.berkid, t0.sample, t1.input as total_sequenced_reads, t0.mapped as clc_mapped, t1.mapped as th_mapped, t1.mapped-t0.mapped as diff_thmap_clcmap, t0.pmapped as clc_percent_mapped, t1.pmapped as th_percent_mapped, t0.mapped-t0.multimapped as clc_unique, (t0.mapped-t0.multimapped)/t1.input::float as clc_ratio_totalseq_unique, t1.mapped-t1.multimapped as th_unique, (t1.mapped-t1.multimapped)/t1.input::float as th_ratio_totalseq_unique from aligninfo as t0 inner join aligninfo as t1 using (berkid) where t0.aligner = 'clc' and t1.aligner = 'tophat_2str' order by sample) to 'clc_tophat_mapping.csv' csv header;
 
 
 -- Creates a table for the DE gene data.

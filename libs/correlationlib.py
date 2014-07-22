@@ -276,7 +276,8 @@ def genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_di
     plt.close()
 
 
-def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
+def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table, 
+        berkidlen):
     '''copies cufflinks data to database table.
     inputs:
     cufflink_fpkm_paths: paths to original genes.fpkm_tracking file output by
@@ -284,28 +285,31 @@ def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table):
     berkid_fpkm_file: new name for fpkm file with the berkid appended to each
     row
     cuff_table: database table with cufflinks data
+    berkidlen: length of berkid names
     '''
     logging.info('opening connection')
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
     berkid_cufflink_fpkm_paths = [rl.get_cufflink_berkid_fpkm_path(cf,
-            berkid_fpkm_file) for cf in cufflink_fpkm_paths]
-    berkids = [rl.get_berkid(cf) for cf in cufflink_fpkm_paths]
+            berkid_fpkm_file, berkidlen) for cf in cufflink_fpkm_paths]
+    berkids = [rl.get_berkid(cf, berkidlen) for cf in cufflink_fpkm_paths]
+    print(berkids)
     rl.madd_berkid(zip(berkids, cufflink_fpkm_paths, 
-        berkid_cufflink_fpkm_paths))
+        berkid_cufflink_fpkm_paths), removeblank='yes')
     rl.mcopy_to_dbtable(berkid_cufflink_fpkm_paths, cuff_table, cur)
     conn.commit()
     cur.close()
     logging.info('closing connection')
     conn.close()
 
-def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm, gene_subset_table):
+def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm,
+        gene_subset_table, berkidlen):
 
     logging.info('joining and querying tables')
     logging.info('opening connection')
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur1 = conn.cursor()
-    berkidlist = rl.get_berkidlist(cufflink_fpkm_paths)
+    berkidlist = rl.get_berkidlist(cufflink_fpkm_paths, berkidlen)
     logging.info(berkidlist)
     joined_arrays = mjoin_db_table(berkidlist, selectlist, cuff_table, maxfpkm, cur1, 
             gene_subset_table)
@@ -316,8 +320,12 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm, gene
 
 
 def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile, 
-        spearman_corrfile, selectlist, scatter_info, hist_info, pc_log):
-    
+        spearman_corrfile, selectlist, corrplotobj, pc_log):
+    ''' 
+    Inputs:
+    corrplotobj: object of class CorrPlotData from the rnaseq_settings module
+    '''
+    corrplotinfo = corrplotobj.__dict__
     logging.info('finding correlations')
     logging.info('opening connection') 
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
@@ -344,10 +352,11 @@ def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile,
         logging.info('plotting scatter plots')
         cmn.makenewdir(fig_dir)
         genfig_scatter_zoom(fpkms, berkids, samples, r, slope, intercept, 
-                num_genes, fpkmlim, scatter_info, fig_dir)
+                num_genes, fpkmlim, corrplotinfo, fig_dir)
 
         logging.info('plotting histograms')
-        genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim, hist_info, fig_dir)
+        genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim,
+               corrplotinfo, fig_dir)
     
     logging.info('closing connections') 
     conn.close()

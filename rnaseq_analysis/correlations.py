@@ -15,7 +15,7 @@ import libs.rnaseqlib as rl
 import rnaseq_settings as rs 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('option', choices=['unstranded', '2str'], 
+parser.add_argument('alignment', choices=['unstranded', '2str'], 
         help='Option for which data to analyze')
 parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
          'brain_r557'])
@@ -41,7 +41,7 @@ else:
 if args.genesubset == 'all':
     args.genesubset = False
 
-rnaset = rs.RNASeqData(option=args.option, genesubset=args.genesubset)
+rnaset = rs.RNASeqData(alignment=args.alignment, genesubset=args.genesubset)
 rnaseqdict = rnaset.__dict__
 corrplotset = rs.CorrPlotData()
 curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")

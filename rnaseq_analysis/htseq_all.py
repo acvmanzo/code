@@ -10,7 +10,7 @@ import psycopg2
 import argparse
 import logging
 import datetime
-from rnaseq_analysis.rnaseq_settings import *
+import rnaseq_settings as rs
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-ht', '--htseqcount', action='store_true', 
@@ -23,9 +23,15 @@ parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
         help='make new file of htseq-count results for the given subset of genes')
 args = parser.parse_args()
 
+rnaset = rs.RNASeqData(alignment=args.alignment, genesubset=args.genesubset)
+rnaseqdict = rnaset.__dict__
+curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+if args.genesubset == 'all':
+    args.genesubset = False
+
 
 def batch_run_htseq(conn):
-    fn = "run_htseq('{}', '{}', '{}', '{}', '{}')".format(HTSEQ_DIR, HTSEQ_FILE, BAM_FILE, GFF_PATH_NOFA, HTSEQ_CMD_FILE)
+    fn = "run_htseq('{}', '{}', '{}', '{}', '{}')".format(rnaset.htseq_dir, HTSEQ_FILE, BAM_FILE, GFF_PATH_NOFA, HTSEQ_CMD_FILE)
     hl.batch_fn_thdir(TH_RESDIRPATH, TH_DIR, RES_SAMPLE_GLOB, conn, fn)
 
 def batch_ht_add_berkid(conn):

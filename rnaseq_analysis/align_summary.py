@@ -3,12 +3,12 @@
 # tophat alignments.
 
 import csv
-import rnaseqdirlib as rdl
+import libs.rnaseqlib as rl
 import psycopg2
 import os
 import glob
 
-TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
+TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str'
 CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
 TOPHAT_DIR = 'tophat_out'
 SUMM_FILE = 'align_summary.txt'
@@ -32,49 +32,6 @@ def get_align_info_tophat(summ_file):
     return(d)
 
 
-
-def batch_align_summ_tophat(th_align_dir, all_summ_file, tophat_dir, summ_file):
-    conn = psycopg2.connect("dbname=rnaseq user=andrea")
-
-    all_summ_path = os.path.join(clc_align_dir, all_summ_file) 
-    create_summ_file(all_summ_path)
-
-    os.chdir(th_align_dir)
-    resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
-    for resdir in resdirs:
-        cur = conn.cursor()
-        os.chdir(os.path.join(resdir, tophat_dir))
-        berkid = os.path.basename(resdir)
-        print(berkid)
-        try:
-            sample = rdl.get_samplename(berkid, cur)
-            cur.close()
-            print(sample)
-        except TypeError:
-            continue
-        d = get_align_info_tophat(summ_file)
-        write_summ_file(all_summ_file, d, berkid, sample)
-        
-def batch_align_summ_clc(clc_align_dir, all_summ_file):
-
-    conn = psycopg2.connect("dbname=rnaseq user=andrea")
-    all_summ_path = os.path.join(clc_align_dir, all_summ_file) 
-    create_summ_file(all_summ_path)
-
-    os.chdir(clc_align_dir)
-    xlsfiles = sorted([os.path.abspath(x) for x in glob.glob('*RNA-Seq.xls')])
-    print(xlsfiles)
-    for xf in xlsfiles:
-        d = get_align_info_clc(xf)
-        berkid = xf.split('_')[4]
-        print('berkid', berkid)
-        cur = conn.cursor()
-        sample = rdl.get_samplename(berkid, cur)
-        cur.close()
-        write_summ_file(all_summ_path, d, berkid, sample)
-
-
-
 def get_align_info_clc(xlsfile):
 
     csvfile = xlsfile.rstrip('.xls') + ('_mapinfo.csv')
@@ -92,24 +49,91 @@ def get_align_info_clc(xlsfile):
                 unique = int(l[l.index(' - uniquely')+1])
             if l.count(' - non-specifically') > 0:
                 d['multireads'] = int(l[l.index(' - non-specifically')+1])
-
-    print(d) 
+    #print(d) 
     return(d)
 
 def create_summ_file(all_summ_file):
     with open (all_summ_file, 'w') as g:
         g.write('Berkid\tSample\tInput\tMapped\t% of Input\tMulti-alignment\t% Multi\n')
 
-
 def write_summ_file(all_summ_file, d, berkid, sample):
+    '''Writes the summary file.
+    Inputs:
+    all_summ_file: output file
+    d: dictionary output by get_align_info_clc or get_align_info_tophat
+    berkid: berkeley id
+    sample: sample name matching berkid
+    '''
 
-        d['pmulti'] = d['multireads']/d['mapped']*100
-        d['pmapped'] = d['mapped']/d['input_reads']*100
+    d['pmulti'] = d['multireads']/d['mapped']*100
+    d['pmapped'] = d['mapped']/d['input_reads']*100
 
-        with open (all_summ_file, 'a') as g:
-            g.write('{}\t{}\t{:}\t{:}\t{:.1f}\t{:}\t{:.1f}\n'.format(berkid,
-                sample, d['input_reads'], d['mapped'], d['pmapped'], 
-                d['multireads'], d['pmulti']))
+    print(d)
+    print(all_summ_file)
+    #print(os.getcwd())
+    with open(all_summ_file, 'a') as g:
+        g.write('{}\t{}\t{:}\t{:}\t{:.1f}\t{:}\t{:.1f}\n'.format(berkid,
+            sample, d['input_reads'], d['mapped'], d['pmapped'], 
+            d['multireads'], d['pmulti']))
+
+
+def batch_align_summ_tophat(th_align_dir, all_summ_file, tophat_dir, summ_file):
+    '''Extracts alignment information from each sample folder and combines
+    them into one file.
+    Inputs:
+    th_align_dir: tophat results directory containing all the sample folders
+    all_summ_file: name of output file
+    tophat_dir: name of the directory within each sample folder that contains
+        the alignment files
+    summ_file: name of the alignment summary file output by tophat
+    '''
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
+
+    all_summ_path = os.path.join(th_align_dir, all_summ_file) 
+    create_summ_file(all_summ_path)
+
+    os.chdir(th_align_dir)
+    resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
+    for resdir in resdirs:
+        cur = conn.cursor()
+        os.chdir(os.path.join(resdir, tophat_dir))
+        berkid = os.path.basename(resdir)
+        print(berkid)
+        try:
+            sample = rl.get_samplename(berkid, cur)
+            cur.close()
+            print(sample)
+        except TypeError:
+            continue
+        d = get_align_info_tophat(summ_file)
+        write_summ_file(all_summ_path, d, berkid, sample)
+    conn.close()
+        
+def batch_align_summ_clc(clc_align_dir, all_summ_file):
+    '''Extracts alignment information from each CLC summary file and combines
+    them into one file.
+    Inputs:
+    clc_align_dir: CLC results directory containing all the exported CLC 
+        output files
+    all_summ_file: name of output file
+    '''
+
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
+    all_summ_path = os.path.join(clc_align_dir, all_summ_file) 
+    create_summ_file(all_summ_path)
+
+    os.chdir(clc_align_dir)
+    xlsfiles = sorted([os.path.abspath(x) for x in glob.glob('*RNA-Seq.xls')])
+    print(xlsfiles)
+    for xf in xlsfiles:
+        d = get_align_info_clc(xf)
+        berkid = xf.split('_')[4]
+        print('berkid', berkid)
+        cur = conn.cursor()
+        sample = rl.get_samplename(berkid, cur)
+        cur.close()
+        write_summ_file(all_summ_path, d, berkid, sample)
+    conn.close()
 
 
 def add_aligner_col(all_summ_file, aligner):
@@ -127,5 +151,8 @@ def add_aligner_col(all_summ_file, aligner):
 
                 
 if __name__ == '__main__':
+    #batch_align_summ_tophat(TH_ALIGN_DIR, TH_ALL_SUMM_FILE, TOPHAT_DIR, 
+            #SUMM_FILE)
+
     #add_aligner_col(CLC_ALL_SUMM_FILE, 'clc')
-    add_aligner_col(TH_ALL_SUMM_FILE, 'tophat')
+    add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
