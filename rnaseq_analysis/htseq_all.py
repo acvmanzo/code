@@ -13,14 +13,24 @@ import datetime
 import rnaseq_settings as rs
 
 parser = argparse.ArgumentParser()
+parser.add_argument('alignment', choices=['unstranded', '2str'], 
+        help='Option for which data to analyze')
+parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
+        'brain_r557'], 
+        help='make new file of htseq-count results for the given subset of genes')
+         
+#parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
+        #'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
+        #'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        #help='make new file of htseq-count results for the given subset of genes')
 parser.add_argument('-ht', '--htseqcount', action='store_true', 
         help='run htseq-count')
 parser.add_argument('-c', '--copytodb', action='store_true', 
         help='copy htseq-count results to database')
-parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
-        'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
-        'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
-        help='make new file of htseq-count results for the given subset of genes')
+#parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
+        #'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
+        #'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        #help='make new file of htseq-count results for the given subset of genes')
 args = parser.parse_args()
 
 rnaset = rs.RNASeqData(alignment=args.alignment, genesubset=args.genesubset)
@@ -31,30 +41,35 @@ if args.genesubset == 'all':
 
 
 def batch_run_htseq(conn):
-    fn = "run_htseq('{}', '{}', '{}', '{}', '{}')".format(rnaset.htseq_dir, HTSEQ_FILE, BAM_FILE, GFF_PATH_NOFA, HTSEQ_CMD_FILE)
-    hl.batch_fn_thdir(TH_RESDIRPATH, TH_DIR, RES_SAMPLE_GLOB, conn, fn)
+    fn = "run_htseq('{}', '{}', '{}', '{}', '{}')".format(rnaset.htseq_dir, 
+            rnaset.htseq_file, rnaset.bam_file, rnaset.gff_path_nofa, 
+            rnaset.htseq_cmd_file)
+    hl.batch_fn_thdir(rnaset.th_resdirpath, rnaset.th_dir, 
+            rnaset.res_sample_glob, conn, fn)
 
 def batch_ht_add_berkid(conn):
-    fn = "htseq_add_berkid(berkid, '{}')".format(HTSEQ_FILE)
-    hl.batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
+    fn = "htseq_add_berkid(berkid, '{}')".format(rnaset.htseq_file)
+    hl.batch_fn_thdir(rnaset.th_resdirpath, rnaset.htseq_dir, rnaset.res_sample_glob, conn, fn)
 
 def batch_ht_copy_to_dbtable(conn):
-    fn = "ht_copy_to_dbtable('{}', '{}', cur)".format(HTSEQ_FILE, HTSEQ_TABLE)
-    hl.batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
+    fn = "ht_copy_to_dbtable('{}', '{}', cur)".format(rnaset.htseq_file, 
+            rnaset.htseq_table)
+    hl.batch_fn_thdir(rnaset.th_resdirpath, rnaset.htseq_dir, rnaset.res_sample_glob, conn, fn)
 
 def batch_ht_gene_subset(conn, gene_subset_table):
-    fn = "join_table(cur, berkid, '{}', '{}')".format(HTSEQ_TABLE,
+    fn = "join_table(cur, berkid, '{}', '{}')".format(rnaset.htseq_table,
         gene_subset_table)
     print(fn)
-    hl.batch_fn_thdir(TH_RESDIRPATH, HTSEQ_DIR, RES_SAMPLE_GLOB, conn, fn)
+    hl.batch_fn_thdir(rnaset.th_resdirpath, rnaset.htseq_dir, rnaset.res_sample_glob, conn, fn)
 
 def main():
     curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    logpath = '{}_'.format(curtime) + RNASEQDICT['htseq_log_file']
+    logpath = '{}_'.format(curtime) + rnaset.htseq_log_file
     rl.logginginfo(logpath)
 
     if args.htseqcount:
-        conn = False
+        #conn = False
+        conn = psycopg2.connect("dbname=rnaseq user=andrea")
         logging.info('Running htseq-count')
         batch_run_htseq(conn)
 

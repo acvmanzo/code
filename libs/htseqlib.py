@@ -19,12 +19,14 @@ def batch_fn_thdir(th_resdirpath, tophat_dir, globstring, conn, fn):
     logging.info('running batch')
     os.chdir(th_resdirpath)
     resdirs = sorted([os.path.abspath(x) for x in glob.glob(globstring)])
+    print(conn)
     for resdir in resdirs:
         cur = conn.cursor()
         logging.info(resdir)
         os.chdir(os.path.join(resdir, tophat_dir))
         berkid = os.path.basename(resdir)
         logging.info(berkid)
+        print(fn)
         eval(fn)
         cur.close()
 
