@@ -57,8 +57,10 @@ import os
 
 class RNASeqData:
 
-    def __init__(self, option):
+    def __init__(self, option, genesubset):
 
+        self.option = option
+        self.genesubset = genesubset
         if option == 'unstranded':
             self.th_resdir = 'results_tophat'
             self.cuff_table = 'cufflinks_data_un'
@@ -111,20 +113,11 @@ class RNASeqData:
         
         self.corr_dir = 'correlations'
         self.corr_dirpath = os.path.join(self.analysis_path, self.corr_dir,
-                self.th_resdir)
-        self.corr_set_path_copy = os.path.join(self.corr_dirpath,
-                os.path.splitext(self.set_file)[0])
-        self.corr_figset_file = 'corrfig_settings.py'
-        self.corr_figset_path_orig = os.path.join(self.set_dir_orig, 
-                self.corr_figset_file)
-        self.corr_figset_path_copy = os.path.join(self.corr_dirpath, 
-                os.path.splitext(self.corr_figset_file)[0])
+                self.th_resdir, self.genesubset)
+        #self.corr_set_path_copy = os.path.join(self.corr_dirpath,
+                #os.path.splitext(self.set_file)[0])
         self.pearson_corrfile = 'pearson_correlations.txt' 
         self.spearman_corrfile = 'spearman_correlations.txt' 
-        self.pearson_corrpath = os.path.join(self.corr_dirpath,
-                self.pearson_corrfile)
-        self.spearman_corrpath= os.path.join(self.corr_dirpath,
-                self.spearman_corrfile)
         self.corrlog_file = 'correlations.log'
         #selectlist = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
         #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
@@ -184,22 +177,27 @@ class RNASeqData:
 
         return(d)
 
-def get_replicate_cufflink_paths(condition_berkid_dict):
-    '''Returns a dictionary of paths to the cufflink output FPKM files for
-    every condition in condition_berkid_dict.
-    Input:
-    condition_berkid_dict: keywords are conditions and values are lists of 
-    berkids. Output by the functions get_replicate_berkid_dict or 
-    get_all_replicate_berkid_dict). 
-    Output:
-    Dictionary of paths; keywords are conditions and values are lists of
-    output FPKM file paths.
-    '''
-    replicate_path_dict = {} 
-    for condition, berkids in condition_berkid_dict.items():
-        replicate_path_dict[condition] = \
-                [get_results_files(b)['cuff_gfpkm_path'] for b in berkids]
-    return(replicate_path_dict)
+class CorrPlotData:
+
+    def __init__(self):
+        self.scatter_dpi = 1000
+        #self.scatter_figsize = (10, 5.5)
+        self.scatter_figsize = (5.5, 5.5)
+        #self.scatter_subplots = [121, 122]
+        self.scatter_subplots = [111]
+        self.scatter_maxfpkm = 2000
+        
+        self.hist_figsize = (10, 14)
+        self.hist_dpi = 1250
+        self.hist_subplots = [411, 412, 413, 414]
+        #self.hist_ylims = [18000, 1000, 25, 5]
+        self.hist_ylims = [6000, 1000, 200, 100]
+        self.hist_titles = ['All bins', 'Zoom in on bins with very low FPKM',
+            'Zoom in on bins with low FPKM', 'Zoom in on bins with high FPKM']
+        #self.hist_maxfpkm = 2000
+        self.hist_maxfpkm = 4
+        self.hist_maxfpkm_frac = 0.01
+
 
 if __name__ == '__main__':
     testobj = RNASeqData('2str')
@@ -207,7 +205,9 @@ if __name__ == '__main__':
     print(testobj.set_file)
     resfiles = testobj.GetResultsFiles('RGAM010D')
     print(resfiles['sample_htseq_dir'])
-    print(testobj.__dict__)
+    #print(testobj.__dict__)
+    corrobj = CorrPlotData()
+    print(corrobj.scatter_maxfpkm)
     
 #RNASEQDICT =    {'seq_dir': SEQ_PATH,
                 #'seq_subdir': SEQ_SUBDIR,

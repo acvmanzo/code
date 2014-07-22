@@ -13,19 +13,18 @@ import cmn.cmn as cmn
 import libs.correlationlib as corl
 import libs.rnaseqlib as rl
 import rnaseq_settings as rs 
-from corrfig_settings import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('option', choices=['unstranded', '2str'], 
         help='Option for which data to analyze')
+parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
+         'brain_r557'])
 parser.add_argument('-r', '--run', action='store_true', 
         help='run correlation analysis')
 parser.add_argument('-a', '--allgens', action='store_true', 
         help='find correlations for all samples')
 parser.add_argument('-g', '--genotype',
         help='genotype to analyze')
-parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
-         'brain_r557'])
 #parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
         #'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
         #'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
@@ -34,19 +33,31 @@ parser.add_argument('-c', '--copytodb', action='store_true',
         help='copy cufflinks results to database')
 
 args = parser.parse_args()
+
+if args.genotype:
+    filenamegs = args.genotype
+else:
+    filenamegs = 'allgens'
 if args.genesubset == 'all':
     args.genesubset = False
 
-if args.genotype:
-    logging.info('Finding correlations for %s', args.genotype)
-
-rnaset = rs.RNASeqData(option=args.option)
+rnaset = rs.RNASeqData(option=args.option, genesubset=args.genesubset)
 rnaseqdict = rnaset.__dict__
+corrplotset = rs.CorrPlotData()
+curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+corrdirpath = os.path.join(rnaset.corr_dirpath, '{}_{}'.format(filenamegs, 
+    curtime))
+cmn.makenewdir(corrdirpath)
 
 def create_corrfiles():
     # Creates files for pearson and spearman correlation coefficients.
-    corl.create_corr_file(rnaset.pearson_corrpath)
-    corl.create_corr_file(rnaset.spearman_corrpath)
+    corrpaths = []
+    for cf in [rnaset.pearson_corrfile, rnaset.spearman_corrfile]:
+        #corrfile =  '{}_{}_{}'.format(curtime, filenamegs, cf)
+        corrpath = os.path.join(corrdirpath, cf)
+        corl.create_corr_file(corrpath)
+        corrpaths.append(corrpath)
+    return(corrpaths) 
    
 def gen_cufflink_path_dict():
     '''
@@ -95,13 +106,13 @@ def prune_cufflink_path(cufflink_fpkm_paths):
 
 def main():
     # Settings for logging.
-    cmn.makenewdir(rnaset.corr_dirpath)
-    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    logpath = os.path.join(rnaset.corr_dirpath, '{}_'.format(curtime) + rnaseqdict['corrlog_file'])
+    logpath = os.path.join(corrdirpath, rnaseqdict['corrlog_file'])
     rl.logginginfo(logpath)
+    if args.genotype:
+        logging.info('Finding correlations for %s', args.genotype)
 
     # Create correlation output files.
-    create_corrfiles()
+    pearson_corrpath, spearman_corrpath = create_corrfiles()
 
     # Find paths to the cufflink output files for each condition.
     cufflink_path_dict = gen_cufflink_path_dict()
@@ -109,7 +120,7 @@ def main():
 
     for condition, cufflink_fpkm_paths in sorted(cufflink_path_dict.items()):
         # Define and create figure directory.
-        fig_dir = os.path.join(rnaset.corr_dirpath, condition)
+        fig_dir = os.path.join(corrdirpath, condition)
         cmn.makenewdir(fig_dir)
 
         # Create a new list of paths only to the files that exist.
@@ -117,32 +128,33 @@ def main():
         extant_cufflink_fpkm_paths = prune_cufflink_path(cufflink_fpkm_paths)
         if not extant_cufflink_fpkm_paths:
             continue
-        # Copies data into the database table in rnaset.cuff_table if sys.argv is 'y'
-        # or 'yes'
+        # Copies data into the database table in rnaset.cuff_table 
         if args.copytodb:
             logging.info('Files copied to db %s', extant_cufflink_fpkm_paths)
             corl.copy_data_to_table(extant_cufflink_fpkm_paths, 
                     rnaset.berkid_cuff_gfpkm, rnaset.cuff_table, 
                     rnaset.berkidlen)
-        # Finds correlations if sys.argv is 'y' # or 'yes'
+        # Finds correlations 
         if args.run:
             try:
+                logging.info('Finding corelations')
                 # Generates a list of arrays in which each array has the gene FPKM
                 # data for two samples.
                 joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
                         rnaset.selectlist, rnaset.cuff_table, rnaset.maxfpkm, 
-                        args.genesubset)
+                        args.genesubset, rnaset.berkidlen)
                 # Finds the correlations between each sample within a condition and
                 # generates plots.
                 corl.get_sample_correlations(joined_arrays, fig_dir, 
-                        rnaset.pearson_corrpath, rnaset.spearman_corrpath, rnaset.selectlist,
-                        rnaset.scatter_info, rnaset.hist_info, rnaset.pc_log)
+                        pearson_corrpath, spearman_corrpath, 
+                        rnaset.selectlist, corrplotset, rnaset.pc_log)
             except FileNotFoundError:
                 logging.info("File Not Found '%s'", cufflink_fpkm_paths)
                 continue
 
-        #shutil.copy(rnaseqdict['set_path_orig'], '{}_{}'.format(rnaseqdict['corr_set_path_copy'], curtime))
-        #shutil.copy(rnaseqdict['corr_figset_path_orig'], '{}_{}'.format(rnaseqdict['corr_figset_path_copy'], curtime))
+            shutil.copy(rnaseqdict['set_path_orig'], os.path.join(corrdirpath, 
+                    os.path.splitext(rnaset.set_file)[0]))
+
 
 if __name__ == '__main__':
     main()

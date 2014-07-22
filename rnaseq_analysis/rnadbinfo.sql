@@ -102,7 +102,7 @@
     -- FPKM double precision ,
     -- FPKM_conf_lo double precision,
     -- FPKM_conf_hi double precision,
-    -- FPKM_status character varying(5),
+    -- FPKM_status character varying(10),
     -- berkid character varying(20),
     -- unique (tracking_id, berkid)
 -- );
