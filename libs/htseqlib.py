@@ -41,7 +41,7 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
     htseq_dirpath = os.path.join(os.path.dirname(os.getcwd()), htseq_dir)
     cmn.makenewdir(htseq_dirpath)
     htseq_path = os.path.join(htseq_dirpath, htseq_file)
-    htseqcmd_path = os.path.join(htseq_dirpath, htseq_cmd_file)
+    htseq_cmd_path = os.path.join(htseq_dirpath, htseq_cmd_file)
 
     if os.path.exists(htseq_path):
         pass
@@ -50,24 +50,12 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
     else:
         logging.info('Creating new file')
 
-        cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
+        #cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
+        cmd = 'htseq-count -f bam -s reverse -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
         logging.debug(cmd)
         os.system(cmd)
         with open(htseq_cmd_path, 'w') as f:
             f.write(cmd)
-
-
-def add_htseq_counts(htseqfile):
-    '''Adds up the counts found in the htseq-count file.
-    '''
-    counts = 0 
-    with open(htseqfile, 'r') as f:
-        for l in f:
-            gene, count = l.split('\t')
-            #if '__' in gene:
-                #continue
-            counts += int(count)
-    logging.info(counts)
 
 
 def htseq_add_berkid(berkid, htseq_file):

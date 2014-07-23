@@ -6,6 +6,7 @@ import libs.rnaseqlib as rl
 #from edgeR_settings import *
 import psycopg2
 import os
+import libs.htseqlib as hl
 
 #conn = psycopg2.connect("dbname=rnaseq user=andrea")
 
@@ -27,7 +28,11 @@ import os
 #cur.close()
 ##conn.commit()
 #conn.close()
-file_path = 'genes.fpkm_tracking_test'
-new_file_path = 'test'
-rl.remove_blank_trackid(file_path, new_file_path)
+#file_path = 'genes.fpkm_tracking_test'
+#new_file_path = 'test'
+#rl.remove_blank_trackid(file_path, new_file_path)
 
+
+
+print(hl.add_htseq_counts('htseqcount'))
+#print(hl.add_clc_counts('pten_MA_RGAM009G_RNA-Seq.txt'))

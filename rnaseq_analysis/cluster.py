@@ -1,3 +1,5 @@
+# Script for clustering samples according to similarity in expression data.
+
 from correlationlib import get_samplename
 import numpy as np
 import psycopg2
@@ -15,7 +17,6 @@ LEAF_DATE_FILE = ANALYSIS_DIR + 'cufflinks_cluster_leaves_date_pclog2.txt'
 def plot_dend(dend_file, leaf_file, gene_subset_table):
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
-
 
     berkidcmd = "select distinct berkid from cufflinks_data;"
     cur.execute(berkidcmd)
@@ -50,6 +51,7 @@ def plot_dend(dend_file, leaf_file, gene_subset_table):
     assert(all(hack_test))
 
     #all_fpkm = np.array(all_fpkm)
+    #take add pseudocount and take log2
     all_fpkm = np.log2(np.array(all_fpkm)+1)
 
 

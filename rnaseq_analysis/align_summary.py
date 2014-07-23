@@ -1,20 +1,25 @@
 # Script with functions to that extract alignment statistics for each sample 
 # and saves them to a file. Have functions to extract statistics for clc and
-# tophat alignments.
+# tophat alignments, and htseq-count results.
 
 import csv
+import libs.htseqlib as hl
 import libs.rnaseqlib as rl
+import matplotlib.pyplot as plt
+import numpy as np
 import psycopg2
 import os
 import glob
 
-TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str'
+TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
 CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
 TOPHAT_DIR = 'tophat_out'
+HTSEQ_DIR = 'htseq_out'
 SUMM_FILE = 'align_summary.txt'
 CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
+HTSEQ_FILE = 'htseqcount'
 TH_ALL_SUMM_FILE = 'tophat_all_align_summary.txt'
-
+HTSEQ_ALL_SUMM_FILE = 'htseq_all_unique_summary.txt'
 
 
 def get_align_info_tophat(summ_file):
@@ -51,6 +56,31 @@ def get_align_info_clc(xlsfile):
                 d['multireads'] = int(l[l.index(' - non-specifically')+1])
     #print(d) 
     return(d)
+
+def add_htseq_counts(htseqfile):
+    '''Adds up the counts found in the htseq-count file.
+    '''
+    counts = 0 
+    with open(htseqfile, 'r') as f:
+        for l in f:
+            gene, count = l.split('\t')
+            if '__' in gene:
+                continue
+            counts += int(count)
+    logging.info(counts)
+    return(counts)
+
+def add_clc_counts(clcfile):
+    '''Adds up the counts in the CLC file: Unique gene reads'''
+    counts = 0
+    with open(clcfile, 'r') as f:
+        print(next(f).split('\t')[5])
+        for l in f:
+            count = l.split('\t')[5]
+            counts += int(count)
+    logging.info(counts)
+    return(counts)
+
 
 def create_summ_file(all_summ_file):
     with open (all_summ_file, 'w') as g:
@@ -148,11 +178,88 @@ def add_aligner_col(all_summ_file, aligner):
                 g.write(l.replace(',', '').rstrip('\n') + '\t{}\n'.format(aligner))
 
 
+def batch_align_summ_htseqcount(th_align_dir, all_summ_file, htseq_dir, 
+        htseqfile):
+    '''Extracts alignment information from each sample folder and combines
+    them into one file.
+    Inputs:
+    th_align_dir: tophat results directory containing all the sample folders
+    all_summ_file: name of output file
+    tophat_dir: name of the directory within each sample folder that contains
+        the alignment files
+    summ_file: name of the alignment summary file output by tophat
+    '''
+    conn = psycopg2.connect("dbname=rnaseq user=andrea")
 
-                
+    all_summ_path = os.path.join(th_align_dir, all_summ_file) 
+    create_summ_file(all_summ_path)
+
+    os.chdir(th_align_dir)
+    resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
+    for resdir in resdirs:
+        try:
+            os.chdir(os.path.join(resdir, htseq_dir))
+            berkid = os.path.basename(resdir)
+            print(berkid)
+            try:
+                cur = conn.cursor()
+                sample = rl.get_samplename(berkid, cur)
+                cur.close()
+                print(sample)
+            except TypeError:
+                continue
+            count = add_htseq_counts(htseqfile)
+            print(count)
+            with open(all_summ_path, 'a') as g:
+                g.write('{}\t{}\t{:}\n'.format(berkid,
+                    sample, count))
+        except FileNotFoundError:
+            continue
+    conn.close()
+
+def list_htseq_counts(htseqfile):
+    '''Adds up the counts found in the htseq-count file.
+    '''
+    counts = []
+    with open(htseqfile, 'r') as f:
+        for l in f:
+            gene, count = l.split('\t')
+            if '__' in gene:
+                continue
+            counts.append(int(count))
+    return(counts)
+
+def plot_htseqcount_dist(htseqfile):
+    '''Run from htseq_out folder'''
+    counts = list_htseq_counts(htseqfile)
+    logcounts = [np.log2(c+1) for c in counts]
+    #plt.hist(logcounts, bins=1000, color='b')
+    #plt.ylim(0, 500)
+    #plt.savefig('loghist.png')
+    #plt.close()
+    #plt.hist(counts, bins=10000, color='b')
+    #plt.xlim(0, 100000)
+    #plt.ylim(0, 4000)
+    #plt.savefig('hist.png')
+    #plt.close()
+    #plt.boxplot(counts)
+    #plt.ylim(0, 10000)
+    #plt.savefig('boxplot.png')
+    d = {}
+    d['med'] = np.median(counts)
+    d['logmed'] = np.median(logcounts)
+    d['max'] = np.max(counts)
+    d['logmax'] = np.max(logcounts)
+    d['min'] = np.min(counts)
+    d['logmin'] = np.min(logcounts)
+    return(d)
+
+
 if __name__ == '__main__':
     #batch_align_summ_tophat(TH_ALIGN_DIR, TH_ALL_SUMM_FILE, TOPHAT_DIR, 
             #SUMM_FILE)
 
     #add_aligner_col(CLC_ALL_SUMM_FILE, 'clc')
     add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
+    batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR,
+        HTSEQ_FILE)

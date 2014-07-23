@@ -4,12 +4,13 @@
 #generating files with htseq-count data of different subsets of genes. 
 #Settings and file structure are in rnaseq_settings.
 
+import argparse
+import datetime
+import logging
+import os
+import psycopg2
 import libs.htseqlib as hl
 import libs.rnaseqlib as rl
-import psycopg2
-import argparse
-import logging
-import datetime
 import rnaseq_settings as rs
 
 parser = argparse.ArgumentParser()
@@ -63,10 +64,11 @@ def batch_ht_gene_subset(conn, gene_subset_table):
     hl.batch_fn_thdir(rnaset.th_resdirpath, rnaset.htseq_dir, rnaset.res_sample_glob, conn, fn)
 
 def main():
-    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    logpath = '{}_'.format(curtime) + rnaset.htseq_log_file
+    # Settings for logging.
+    logpath = os.path.join(rnaset.th_resdirpath,  '{}_{}'.format(curtime, 
+        rnaset.htseq_log_file))
     rl.logginginfo(logpath)
-
+    
     if args.htseqcount:
         #conn = False
         conn = psycopg2.connect("dbname=rnaseq user=andrea")

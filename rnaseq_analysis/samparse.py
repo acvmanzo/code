@@ -1,3 +1,6 @@
+# Functions for extracting and analyzing different fields in the sam file 
+# format.
+
 
 #SAMFILE = 'accepted_hits_2_short.sam'
 SAMFILE = 'accepted_hits_2.sam'

@@ -243,6 +243,7 @@
 
 
 -- TO ADD INFO FROM BERKELEY QUBIT FILES TO AUTIN
+-- \copy autqubit from '/home/andrea/Documents/lab/RNAseq/qubit/2014-0514_qubit_date.csv' with csv header delimiter as ',';
 -- \copy autqubit from '/home/andrea/Documents/lab/RNAseq/qubit/2014-0602_qubit_date.csv' with csv header delimiter as ',';
 -- \copy autqubit from '/home/andrea/Documents/lab/RNAseq/qubit/2014-0624_qubit_date.csv' with csv header delimiter as ',';
 
