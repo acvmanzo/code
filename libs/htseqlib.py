@@ -59,8 +59,9 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
 
 
 def htseq_add_berkid(berkid, htseq_file):
+    berkidfile = htseq_file + '_berkid'
     if os.path.exists(htseq_file):
-        rl.add_berkid(berkid, htseq_file)
+        rl.add_berkid(berkid, htseq_file, berkidfile)
 
 def ht_copy_to_dbtable(htseqfile, htseqdbtable, cur):
     '''Copies the results of htseqcount from the file htseqpath into the table

@@ -6,8 +6,8 @@ import glob
 #print(als.plot_htseqcount_dist(htseqfile))
 
 th_resdirpath = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str'
-htseq_dir = 'htseq_out'
-newhtseq_dir = 'htseq_out_trash'
+htseq_dir = 'htseq_out_un'
+newhtseq_dir = 'htseq_out'
 
 os.chdir(th_resdirpath)
 resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])

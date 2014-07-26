@@ -11,15 +11,15 @@ import psycopg2
 import os
 import glob
 
-TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat'
+TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str'
 CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
 TOPHAT_DIR = 'tophat_out'
-HTSEQ_DIR = 'htseq_out'
+HTSEQ_DIR = 'htseq_out_un'
 SUMM_FILE = 'align_summary.txt'
 CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
 HTSEQ_FILE = 'htseqcount'
 TH_ALL_SUMM_FILE = 'tophat_all_align_summary.txt'
-HTSEQ_ALL_SUMM_FILE = 'htseq_all_unique_summary.txt'
+HTSEQ_ALL_SUMM_FILE = 'htseq_all_un_unique_summary.txt'
 
 
 def get_align_info_tophat(summ_file):
@@ -67,7 +67,7 @@ def add_htseq_counts(htseqfile):
             if '__' in gene:
                 continue
             counts += int(count)
-    logging.info(counts)
+    #logging.info(counts)
     return(counts)
 
 def add_clc_counts(clcfile):
@@ -260,6 +260,6 @@ if __name__ == '__main__':
             #SUMM_FILE)
 
     #add_aligner_col(CLC_ALL_SUMM_FILE, 'clc')
-    add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
+    #add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
     batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR,
         HTSEQ_FILE)

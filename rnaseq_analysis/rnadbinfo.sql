@@ -343,5 +343,75 @@
 -- \copy ( select distinct g.fbgn_id from degenes_un as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'bwa_r557_ralph_mt_ex' and d.fdr < 0.05 and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_un/bwa_r557_ralph_mt_ex/GO_analysis/de_allgen_fdr05.txt'
 -- \copy ( select distinct g.name_name from degenes_un as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes_ralph_mt_ex' and d.fdr < 0.05 and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_un/prot_coding_genes_ralph_mt_ex/GO_analysis/de_allgen_name_fdr05.txt'
 
-\copy ( select distinct g.fbgn_id from degenes_un as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes_ralph_mt_ex' and d.fdr < 0.05 and (d.group1 = 'NrxI_M' or d.group1 = 'CG34127_M' or d.group1 = 'NrxI_M') and d.group2 = 'CS_M' and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_un/prot_coding_genes_ralph_mt_ex/GO_analysis/de_CGenNIM_fdr05.txt'
+-- \copy ( select distinct g.fbgn_id from degenes_un as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes_ralph_mt_ex' and d.fdr < 0.05 and (d.group1 = 'NrxI_M' or d.group1 = 'CG34127_M' or d.group1 = 'NrxI_M') and d.group2 = 'CS_M' and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_un/prot_coding_genes_ralph_mt_ex/GO_analysis/de_CGenNIM_fdr05.txt'
 -- \copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'bwa_r557_ralph_mt_ex' and d.fdr < 0.05 and d.group1 = 'NrxI_M' and d.group2 = 'CS_M' and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/bwa_r557_ralph_mt_ex/GO_analysis/de_NrxI_M_fdr05.txt'
+
+-- -- Create table with gene lengths for every gene.
+-- create table r557_gene_length (
+    -- gene_name varchar(100),
+    -- gene_bp int,
+    -- unique (gene_name, gene_bp)
+-- );
+
+-- \copy r557_gene_length from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-filtered-r5.57_gene_length.txt';
+
+-- -- Create table with GO for every gene.
+-- create table r557_gene_go (
+    -- gene_name varchar(100),
+    -- go_id varchar(20),
+    -- go_cat varchar(500),
+    -- go_nspace varchar(100)
+-- );
+
+-- \copy r557_gene_go from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/gene_goid_gocat.txt';
+
+-- create table r557_go_cat (
+    -- go_id varchar(20),
+    -- go_cat varchar(500),
+    -- go_nspace varchar(100)
+-- );
+
+-- \copy r557_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/goid_gocat.txt';
+
+-- Protein coding genes.
+-- \copy (select gene_name from prot_coding_genes inner join r557_gene_length on (gene_short_name = gene_name) order by gene_name) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/all_genes.txt';
+
+-- Gene lengths for protein coding genes.
+-- \copy (select gene_bp from prot_coding_genes inner join r557_gene_length on (gene_short_name = gene_name) order by gene_name) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/gene_lengths.txt';
+
+-- GO IDs for protein coding genes.
+-- \copy (select distinct gene_name, go_id from prot_coding_genes inner join r557_gene_go on (gene_short_name = gene_name) order by gene_name) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/genes_go.txt';
+
+-- DE genes for protein coding genes.
+-- \copy ( select distinct gene from degenes where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.05 and group1 != 'lowagg_all' and group1 != 'lowagg_CS' and group1 != 'aut_mut_m' and group1 != 'aut_mut_f') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/de_all_fdr05.txt'
+\copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and (d.group1 != 'lowagg_all' and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f') and gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/fbgn_de_all_fdr05.txt'
+
+-- Create GOseq table.
+-- drop table goseq;
+-- create table goseq (
+    -- go_id varchar(20),
+    -- over_pval double precision,
+    -- under_pval double precision,
+    -- num_DE int,
+    -- num_total int,
+    -- fdr_over_pval double precision,
+    -- fdr_under_pval double precision, 
+    -- tool varchar(40),
+    -- gene_subset varchar(50),
+    -- group1 varchar(50),
+    -- group2 varchar(50),
+    -- unique (go_id, over_pval, gene_subset, group1, group2)
+-- );
+
+-- \copy goseq from '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/db_de_all_fdr05_goseq.txt' (delimiter ' ');
+
+select gc.go_id, gc.go_cat, gs.fdr_over_pval, gs.fdr_under_pval
+from r557_go_cat as gc
+inner join
+goseq as gs
+using (go_id)
+-- where gs.fdr_over_pval < 0.05 or gs.fdr_under_pval < 0.05
+order by gs.fdr_over_pval
+;
+
+

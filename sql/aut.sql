@@ -312,3 +312,11 @@
 -- update autin set sample = 'Betaintnu_MD' where samplenum = 1015 and sample = 'Bintnu_MD';
 
 
+---- SELECTING REPLICATES TO USE ----
+-- update autin set use_seq = False where samplenum = 1016 and sample = 'CS_MB';
+-- update autin set use_seq = False where samplenum = 1019 and sample = 'Nhe3_MC';
+-- update autin set use_seq = False where samplenum = 1021 and sample = 'NrxIV_MC';
+-- update autin set use_seq = False where samplenum = 1028 and sample = 'pten_MC';
+-- update autin set use_seq = False where samplenum = 1020 and sample = 'NrxI_MD';
+
+-- \copy (select * from autin where use_seq = True order by sample) to '/home/andrea/Documents/lab/RNAseq/analysis/samples_used.csv' header csv;

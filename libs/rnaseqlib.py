@@ -91,6 +91,7 @@ def add_berkid(berkid, file_path, berkid_file_path):
     '''adds the berkid to the last columns of a file
     '''
     print(berkid)
+    print(berkid_file_path)
     with open(berkid_file_path, 'w') as g:
         with open(file_path, 'r') as f:
             #print(file_path)

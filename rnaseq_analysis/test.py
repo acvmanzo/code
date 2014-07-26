@@ -7,6 +7,7 @@ import libs.rnaseqlib as rl
 import psycopg2
 import os
 import libs.htseqlib as hl
+import libs.delib as dl
 
 #conn = psycopg2.connect("dbname=rnaseq user=andrea")
 
@@ -34,5 +35,14 @@ import libs.htseqlib as hl
 
 
 
-print(hl.add_htseq_counts('htseqcount'))
+#print(hl.add_htseq_counts('htseqcount'))
 #print(hl.add_clc_counts('pten_MA_RGAM009G_RNA-Seq.txt'))
+
+degenefile = 'de_all_fdr05_goseq.txt'
+db_degenefile = 'db_de_all_fdr05_goseq.txt'
+tool = 'edger'
+gene_subset = 'prot_coding_genes'
+group1 = 'all_mut'
+group2 = 'CS_M+CS_F'
+dl.gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset, group1, 
+        group2, delim=' ')

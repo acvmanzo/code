@@ -226,6 +226,34 @@ class CorrPlotData:
         self.hist_maxfpkm_frac = 0.01
 
 
+class DEGroups:
+    '''A class where the object attributes specify groups for DE gene
+    analysis'''
+
+    def __init__(self):
+        self.males = ['Betaintnu_M', 'CG34127_M', 'en_M', 'Nhe3_M', 'NrxI_M', 
+                'NrxIV_M', 'pten_M']
+        self.males_ctrl = 'CS_M'
+
+        self.females = ['Betaintnu_F', 'CG34127_F', 'en_F', 'Nhe3_F',
+                'NrxI_F', 'NrxIV_F', 'pten_F']
+        self.females_ctrl = 'CS_F'
+
+        self.agg_dict_all = {   'lowagg_all': ['CG34127_M', 'en_M', 'NrxI_M'],
+                                'ctrlagg_all': ['Nhe3_M', 'NrxIV_M', 'pten_M',
+                                    'CS_M', 'Betaintnu_M']}
+        self.agg_dict_cs = {    'lowagg_CS': ['CG34127_M', 'en_M', 'NrxI_M'],
+                                'ctrlagg_CS': ['CS_M']}
+
+        self.mut_dict_males = { 'aut_mut_m': ['Betaintnu_M', 'CG34127_M', 
+            'en_M', 'Nhe3_M', 'NrxI_M', 'NrxIV_M', 'pten_M'],
+                                'aut_ctrl_m': ['CS_M']}
+        self.mut_dict_females =  {  'aut_mut_f': ['Betaintnu_F', 'CG34127_F',
+            'en_F', 'Nhe3_F', 'NrxI_F', 'NrxIV_F', 'pten_F'],
+                                    'aut_ctrl_f': ['CS_F']}
+
+
+
 if __name__ == '__main__':
     testobj = RNASeqData('2str')
     print(testobj.berkidlen)

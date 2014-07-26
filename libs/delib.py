@@ -10,20 +10,26 @@ import libs.rnaseqlib as rl
 import rnaseq_settings as rs
 import logging
 
-def remove_htseqcount_files(conn):
-    'Removes old htseqcount files.'''
+
+
+def remove_htseqcount_files(conn, rnaset):
+    '''Removes old htseqcount files.
+    rnaset: object of class RNASeqData in the rnaseq_settings module
+    '''
     fn = "print(os.getcwd()), os.remove('htseqcount_brain_aut_will_r557_ralph_mt_excluded')"
-    hl.batch_fn_thdir(rs.TH_RESDIRPATH, rs.HTSEQ_DIR, rs.RES_SAMPLE_GLOB, conn, fn)
+    hl.batch_fn_thdir(rs.rnaset.th_resdirpath, rs.rnaset.htseq_dir, 
+            rs.rnaset.res_sample_glob, conn, fn)
     conn.close()
 
-def get_count_paths(berkids, gene_subset):
+def get_count_paths(rnaset, berkids, gene_subset):
     '''Returns a list of paths to the extant htseqcount files for each berkid
     in berkids. If gene_subset is given, the gene_subset is appended to the
-    htseqcount file name.
+    htseqcount file name. 
+    rnaset: object of class RNASeqData in the rnaseq_settings module
     '''
     paths = []
     for berkid in berkids:
-        countpath = rs.get_results_files(berkid)['htseq_count_path']
+        countpath = rnaset.GetResultsFiles(berkid)['htseq_count_path']
         if gene_subset != 'all':
             countpath = countpath+'_{}'.format(gene_subset)
         else:
@@ -31,13 +37,14 @@ def get_count_paths(berkids, gene_subset):
         paths.append(countpath)
     return(paths)
 
-def get_metadata(conn, allgenlist, sampleinfo_table, gene_subset):
+def get_metadata(conn, allgenlist, sampleinfo_table, rnaset, gene_subset):
     '''Gets metadata for use in writing a metadata file with write_metadata().
     Inputs:
     conn = connection to database using psycopg2
     allgenlist = list of all genotypes (e.g., CS_F), experimental and controls
     sample_infotable = table in the database that contains info about the 
     genotypes (usually autin)
+    rnaset: object of class RNASeqData in the rnaseq_settings module
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
     Output:
@@ -54,14 +61,14 @@ def get_metadata(conn, allgenlist, sampleinfo_table, gene_subset):
     for b in berkids:
         samples.append(rl.get_samplename(b, cur))
     cur.close()
-    paths = get_count_paths(berkids, gene_subset)
+    paths = get_count_paths(rnaset, berkids, gene_subset)
     #for i, b in enumerate(berkids):
         #print(b, paths[i])
     return(zip(berkids, samples, paths))
    
 
 def write_metadata(allgenlist, controllist, metadatafile, sampleinfo_table, 
-        gene_subset, tool):
+        rnaset, gene_subset, tool):
     '''Writes a file called metadatafile that contains information for edgeR
     analysis. The metadata file has 4 columns: Sample, Berkid, CorE (control or 
     experimental sample), and HTSeqPath (path to htseqfile)
@@ -73,11 +80,12 @@ def write_metadata(allgenlist, controllist, metadatafile, sampleinfo_table,
     metadatafile = name of the metadata file that will be written
     sample_infotable = table in the database that contains info about the 
     genotypes (usually autin)
+    rnaset = object of class RNASeqData in the rnaseq_settings module
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
     ''' 
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
-    items = get_metadata(conn, allgenlist, sampleinfo_table, gene_subset) 
+    items = get_metadata(conn, allgenlist, sampleinfo_table, rnaset, gene_subset) 
     with open(metadatafile, 'w') as f:
         if tool == 'edger':
             f.write('Sample\tBerkid\tCorE\tHTSeqPath\n')
@@ -119,7 +127,7 @@ def write_groups(groups, groupinfofile):
     with open(groupinfofile, 'w') as g:
         g.write('{}\n{}'.format(group1, group2))
 
-def pairwise_DE(expt, ctrl, gene_subset, de_file_dict, tool):
+def pairwise_DE(expt, ctrl, rnaset, gene_subset, de_file_dict, tool):
     '''Runs edgeR comparing expt and control genotypes. Writes a metadata file
     and calls the edgeR.R script.  
     Input:
@@ -129,6 +137,7 @@ def pairwise_DE(expt, ctrl, gene_subset, de_file_dict, tool):
     metadatafile = name of the metadata file that will be written
     sample_infotable = string specifying table in the database that contains
         info about the genotypes (usually autin)
+    rnaset: object of class RNASeqData in the rnaseq_settings module
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
     de_file_dict = dictionary containing the file names for the plots and 
@@ -149,12 +158,12 @@ def pairwise_DE(expt, ctrl, gene_subset, de_file_dict, tool):
     cmn.makenewdir(expt)
     os.chdir(expt)
     write_metadata(condlist, ctrl, metadatafile, sampleinfo_table, 
-            gene_subset, tool)
+            rnaset, gene_subset, tool)
     write_groups(condlist, groupinfofile)
     run_descript(de_file_dict, tool)
 
 
-def batch_pairwise_DE(exptlist, ctrl, gene_subset, de_file_dict, tool):
+def batch_pairwise_DE(exptlist, ctrl, rnaset, gene_subset, de_file_dict, tool):
     '''Runs edgeR for each genotype given in exptlist against the control
     given in ctrl. Writes a metadata file and calls the edgeR.R script.
     Input:
@@ -164,6 +173,7 @@ def batch_pairwise_DE(exptlist, ctrl, gene_subset, de_file_dict, tool):
     metadatafile = name of the metadata file that will be written
     sample_infotable = string specifying table in the database that contains
         info about the genotypes (usually autin)
+    rnaset = object of class RNASeqData in the rnaseq_settings module
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
     de_file_dict = dictionary containing the file names for the plots and 
@@ -171,16 +181,17 @@ def batch_pairwise_DE(exptlist, ctrl, gene_subset, de_file_dict, tool):
         data output by edgeR.R
     '''
     for cond in exptlist:
-        pairwise_DE(cond, ctrl, gene_subset, de_file_dict, tool)
+        pairwise_DE(cond, ctrl, rnaset, gene_subset, de_file_dict, tool)
 
 
 
-def run2groups_DE(exptdict, gene_subset, de_file_dict, tool):
+def run2groups_DE(exptdict, rnaset, gene_subset, de_file_dict, tool):
     '''Runs edgeR to find DE genes between two groups of samples.
     Input:
     exptdict = dictionary where the keys are the groups to be compared
         and the values are the list of genotypes for each group. One key is
         'ctrl' and specifies the control genotypes. 
+    rnaset = object of class RNASeqData in the rnaseq_settings module
     gene_subset = string specifying the subset of genes that will be analyzed
         (e.g., prot_coding_genes, bwa_r557)
     de_file_dict = dictionary containing the file names for the plots and 
@@ -212,7 +223,7 @@ def run2groups_DE(exptdict, gene_subset, de_file_dict, tool):
     os.chdir(exptname)
 
     write_metadata(allgenlist, ctrllist, metadatafile, sampleinfo_table, 
-            gene_subset, tool)
+            rnaset, gene_subset, tool)
     write_groups(exptdict, groupinfofile)
     run_descript(de_file_dict, tool)
 
@@ -243,7 +254,7 @@ def gen_de_dict(sample_list, degenedir, degenefile):
     return(degenes)
 
 def gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset, group1, 
-        group2):
+        group2, delim=','):
     '''Rewrites a file containing the results of DE analysis to add a 
     column specifying the tool (e.g., edgeR), the gene subset (e.g., 
     prot_coding_genes) and two columns specifying the groups being compared
@@ -265,8 +276,8 @@ def gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset, group1,
         with open(degenefile, 'r') as f:
             next(f)
             for l in f:
-                g.write('{},{},{},{},{}\n'.format(l.rstrip('\n'), tool, 
-                    gene_subset, group1, group2))
+                g.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}\n'.format(delim, 
+                    l.rstrip('\n'), tool, gene_subset, group1, group2))
 
 def batch_makecopy_db_degenefile(de_file_dict, tool, gene_subset, conn):
     '''Batch function for rewriting DE analysis output files for inclusion
