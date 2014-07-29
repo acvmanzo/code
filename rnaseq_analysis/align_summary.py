@@ -229,22 +229,23 @@ def list_htseq_counts(htseqfile):
             counts.append(int(count))
     return(counts)
 
-def plot_htseqcount_dist(htseqfile):
+def plot_htseqcount_dist(htseqfile, plot):
     '''Run from htseq_out folder'''
     counts = list_htseq_counts(htseqfile)
     logcounts = [np.log2(c+1) for c in counts]
-    #plt.hist(logcounts, bins=1000, color='b')
-    #plt.ylim(0, 500)
-    #plt.savefig('loghist.png')
-    #plt.close()
-    #plt.hist(counts, bins=10000, color='b')
-    #plt.xlim(0, 100000)
-    #plt.ylim(0, 4000)
-    #plt.savefig('hist.png')
-    #plt.close()
-    #plt.boxplot(counts)
-    #plt.ylim(0, 10000)
-    #plt.savefig('boxplot.png')
+    if plot == 'y':
+        plt.hist(logcounts, bins=1000, color='b')
+        plt.ylim(0, 500)
+        plt.savefig('loghist.png')
+        plt.close()
+        plt.hist(counts, bins=10000, color='b')
+        plt.xlim(0, 100000)
+        plt.ylim(0, 4000)
+        plt.savefig('hist.png')
+        plt.close()
+        plt.boxplot(counts)
+        plt.ylim(0, 10000)
+        plt.savefig('boxplot.png')
     d = {}
     d['med'] = np.median(counts)
     d['logmed'] = np.median(logcounts)
@@ -261,5 +262,7 @@ if __name__ == '__main__':
 
     #add_aligner_col(CLC_ALL_SUMM_FILE, 'clc')
     #add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
-    batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR,
-        HTSEQ_FILE)
+    #batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR,
+        #HTSEQ_FILE)
+    d = plot_htseqcount_dist(HTSEQ_FILE, 'y')
+    print(d)

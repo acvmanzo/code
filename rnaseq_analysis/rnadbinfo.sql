@@ -375,6 +375,7 @@
 
 -- Protein coding genes.
 -- \copy (select gene_name from prot_coding_genes inner join r557_gene_length on (gene_short_name = gene_name) order by gene_name) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/all_genes.txt';
+-- \copy (select tracking_id from prot_coding_genes intersect select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/all_fbgns.txt';
 
 -- Gene lengths for protein coding genes.
 -- \copy (select gene_bp from prot_coding_genes inner join r557_gene_length on (gene_short_name = gene_name) order by gene_name) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/gene_lengths.txt';
@@ -384,7 +385,15 @@
 
 -- DE genes for protein coding genes.
 -- \copy ( select distinct gene from degenes where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.05 and group1 != 'lowagg_all' and group1 != 'lowagg_CS' and group1 != 'aut_mut_m' and group1 != 'aut_mut_f') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/de_all_fdr05.txt'
-\copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and (d.group1 != 'lowagg_all' and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f') and gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/fbgn_de_all_fdr05.txt'
+-- \copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and (d.group1 != 'lowagg_all' and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f') and gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/fbgn_de_all_fdr05.txt'
+-- select distinct g.fbgn_id 
+-- from degenes as d 
+    -- inner join gff_genes as g 
+    -- on (g.name_name = d.gene) 
+    -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and 
+    -- d.fdr < 0.1 and gff_file = 'dmel-all-filtered-r5.57.gff' 
+    -- and group1 = 'NrxIV_F'
+    -- ;
 
 -- Create GOseq table.
 -- drop table goseq;
@@ -405,13 +414,71 @@
 
 -- \copy goseq from '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/db_de_all_fdr05_goseq.txt' (delimiter ' ');
 
-select gc.go_id, gc.go_cat, gs.fdr_over_pval, gs.fdr_under_pval
-from r557_go_cat as gc
-inner join
-goseq as gs
-using (go_id)
--- where gs.fdr_over_pval < 0.05 or gs.fdr_under_pval < 0.05
-order by gs.fdr_over_pval
-;
+-- select gc.go_id, gc.go_cat, gs.fdr_over_pval, gs.fdr_under_pval
+-- from r557_go_cat as gc
+-- inner join
+-- goseq as gs
+-- using (go_id)
+-- -- where gs.fdr_over_pval < 0.05 or gs.fdr_under_pval < 0.05
+-- order by gs.fdr_over_pval
+-- ;
 
+-- select g.fbgn_id, g.name_name, d.logfc, d.fdr
+-- from degenes as d 
+-- inner join gff_genes as g 
+-- on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and gff_file = 'dmel-all-filtered-r5.57.gff'
+-- and g.name_name ~ 'Rp...'
+-- -- and d.fdr < 0.1 
+-- and group1 = 'Betaintnu_F' 
+-- -- order by fdr;
+-- order by @d.logfc desc
+-- ;
 
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxI_M' 
+-- INTERSECT
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'CG34127_M' 
+-- INTERSECT
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'en_M' 
+-- ;
+
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxIV_M' 
+-- INTERSECT
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'pten_M' 
+-- INTERSECT
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Nhe3_M'
+-- INTERSECT
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M' 
+-- ;
+
+-- CREATE TABLE tempfbgns (
+    -- fbgn varchar(20)
+-- ;
