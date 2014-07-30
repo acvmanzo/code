@@ -162,33 +162,38 @@ EDGER_DIRPATH = os.path.join(RNASET.edger_dirpath, GENESUBSET)
 
 GCINFOFILE = 'toptags_edgeR_0.10fbgn_geneclass_deinfo.txt'
 FNCINFOFILE = 'toptags_edgeR_0.10fbgn_fncluster_deinfo.txt'
-GENOTYPE = os.path.basename(os.path.dirname(os.getcwd()))
 
-def gen_info_files():
-    if os.path.exists(GCINFOFILE):
-        os.remove(GCINFOFILE)
-    if os.path.exists(FNCINFOFILE):
-        os.remove(FNCINFOFILE)
+def gen_info_files(conn, gcinfofile, fncinfofile, geneclassfile, fnclusterfile):
+
+    genotype = os.path.basename(os.path.dirname(os.getcwd()))
+    if os.path.exists(gcinfofile):
+        os.remove(gcinfofile)
+    if os.path.exists(fncinfofile):
+        os.remove(fncinfofile)
     for i in range(1,15):
         try:
-            get_geneclass_de(CONN, GENECLASSFILE, i, GENOTYPE, GCINFOFILE)
+            get_geneclass_de(conn, geneclassfile, i, genotype, gcinfofile)
         except FileNotFoundError:
             pass 
-        get_fncluster_de(CONN, FNCLUSTERFILE, i, GENOTYPE, FNCINFOFILE)
+        get_fncluster_de(conn, fnclusterfile, i, genotype, fncinfofile)
 
-def get_num_DAVID_IDs(edger_dirpath, degroups):
+def get_info_DAVID(cmd, edger_dirpath, degroups):
     os.chdir(edger_dirpath)
     for item in degroups.males + degroups.females:
         os.chdir(os.path.join(edger_dirpath, item))
         print(item)
         os.chdir('DAVID')
-        os.system('cat toptags_edgeR_0.10fbgn_fntable | wc -l')
-        os.system('cat toptags_edgeR_0.10fbgn_fntable.txt | wc -l')
+        os.system(cmd)
 
-def get_num_DAVID_fnclusters(edger_dirpath, degroups):
-    os.chdir(edger_dirpath)
-    for item in degroups.males + degroups.females:
-        os.chdir(os.path.join(edger_dirpath, item))
-        print(item)
-        os.chdir('DAVID')
+def get_num_DAVID_ids():
+    cmd = 'cat toptags_edgeR_0.10fbgn_fntable | wc -l'
+    get_info_DAVID(cmd, edger_dirpath, degroups)
+
+#cmd = 'cat toptags_edgeR_0.10fbgn_fncluster | grep cyt | cut -f2'
+#get_info_DAVID(cmd, EDGER_DIRPATH, DEGROUPS)
+
+gen_info_files(CONN, 'degenes_ij_sfari_fdr10_geneclass_deinfo.txt', 
+    'degenes_ij_sfari_fdr10_fncluster_deinfo.txt', 
+    'degenes_ij_sfari_fdr10_geneclass',
+    'degenes_ij_sfari_fdr10_fncluster')
 

@@ -435,44 +435,46 @@
 -- order by @d.logfc desc
 -- ;
 
--- select g.fbgn_id 
+-- select g.name_name 
 -- from degenes as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
 -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
 -- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxI_M' 
--- INTERSECT
--- select g.fbgn_id 
+-- UNION
+-- select g.name_name 
 -- from degenes as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
 -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
 -- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'CG34127_M' 
--- INTERSECT
--- select g.fbgn_id 
+-- UNION
+-- select g.name_name 
 -- from degenes as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
 -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
 -- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'en_M' 
--- ;
-
--- select g.fbgn_id 
+-- EXCEPT
+-- select g.name_name 
 -- from degenes as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
 -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
 -- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxIV_M' 
--- INTERSECT
--- select g.fbgn_id 
+-- -- INTERSECT
+-- EXCEPT
+-- select g.name_name 
 -- from degenes as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
 -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
 -- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'pten_M' 
--- INTERSECT
--- select g.fbgn_id 
+-- -- INTERSECT
+-- except
+-- select g.name_name 
 -- from degenes as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
 -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
 -- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Nhe3_M'
--- INTERSECT
--- select g.fbgn_id 
+-- -- INTERSECT
+-- except
+-- select g.name_name 
 -- from degenes as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
 -- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and 
@@ -482,3 +484,51 @@
 -- CREATE TABLE tempfbgns (
     -- fbgn varchar(20)
 -- ;
+
+-- \copy (select tracking_id from sfari_r557) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/sfari_fbgns.txt';
+
+-- -- INNER JOIN BETWEEN SFARI_R557 AND DEGENES FDR < 0.1
+-- select count (*) from (
+-- select s.tracking_id, s.gene_short_name, d.logfc, d.fdr
+-- select distinct s.tracking_id, s.gene_short_name
+-- from degenes as d 
+-- inner join 
+-- sfari_r557 as s
+-- on (d.gene = s.gene_short_name)
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1 and
+-- (d.group1 != 'lowagg_all' and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' 
+    -- and d.group1 != 'aut_mut_f')
+-- ) as foo
+-- ;
+
+-- select s.tracking_id, s.gene_short_name, d.logfc, d.fdr
+-- from degenes as d 
+-- inner join 
+-- sfari_r557 as s
+-- on (d.gene = s.gene_short_name)
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.1
+-- and d.group1 = 'Betaintnu_F'
+-- ;
+-- \copy (select distinct s.tracking_id from degenes as d inner join sfari_r557 as s on (d.gene = s.gene_short_name) where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and (d.group1 != 'lowagg_all' and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f')) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/degenes_ij_sfari_fdr05.txt';
+
+-- Checking number of genes in sfari list that is in the filtered gff list.
+-- select count (*) from (
+-- select s.tracking_id 
+-- from sfari_r557 as s
+-- inner join
+-- gff_genes as g
+-- on (s.tracking_id = g.fbgn_id)
+-- where g.gff_file = 'dmel-all-filtered-r5.57.gff'
+-- ) as foo
+-- ;
+
+-- -- Getting pooled list of DE genes using sfari_r557 DE comparison.
+-- select g.fbgn_id
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'sfari_r557' and d.fdr < 0.1 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and
+-- (d.group1 != 'lowagg_all' and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' 
+    -- and d.group1 != 'aut_mut_f')
+
+-- \copy (select g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'sfari_r557' and d.fdr < 0.1 and gff_file = 'dmel-all-filtered-r5.57.gff' and (d.group1 != 'lowagg_all' and d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f')) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/sfari_r557/GO_analysis/de_sfari_fbgns_fdr10.txt';
