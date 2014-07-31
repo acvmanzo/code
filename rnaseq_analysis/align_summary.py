@@ -14,12 +14,12 @@ import glob
 TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str'
 CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
 TOPHAT_DIR = 'tophat_out'
-HTSEQ_DIR = 'htseq_out_un'
+HTSEQ_DIR = 'htseq_out'
 SUMM_FILE = 'align_summary.txt'
 CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
 HTSEQ_FILE = 'htseqcount'
 TH_ALL_SUMM_FILE = 'tophat_all_align_summary.txt'
-HTSEQ_ALL_SUMM_FILE = 'htseq_all_un_unique_summary.txt'
+HTSEQ_ALL_SUMM_FILE = 'htseq_all_2str_unique_summary.txt'
 
 
 def get_align_info_tophat(summ_file):
@@ -85,6 +85,10 @@ def add_clc_counts(clcfile):
 def create_summ_file(all_summ_file):
     with open (all_summ_file, 'w') as g:
         g.write('Berkid\tSample\tInput\tMapped\t% of Input\tMulti-alignment\t% Multi\n')
+
+def create_htseqsumm_file(all_summ_file):
+    with open (all_summ_file, 'w') as g:
+        g.write('Berkid\tSample\tSum_counts\tAligner\n')
 
 def write_summ_file(all_summ_file, d, berkid, sample):
     '''Writes the summary file.
@@ -177,9 +181,19 @@ def add_aligner_col(all_summ_file, aligner):
             for l in f:
                 g.write(l.replace(',', '').rstrip('\n') + '\t{}\n'.format(aligner))
 
+def add_col(all_summ_file, text):
+
+    new_all_summ_file = all_summ_file.rstrip('.txt') + '_new.txt'
+
+    with open(new_all_summ_file, 'w') as g:
+        with open(all_summ_file, 'r') as f:
+            #g.write(next(f).strip('\n') + '\tAligner\n')
+            next(f)
+            for l in f:
+                g.write(l.replace(',', '').rstrip('\n') + '\t{}\n'.format(text))
 
 def batch_align_summ_htseqcount(th_align_dir, all_summ_file, htseq_dir, 
-        htseqfile):
+        htseqfile, aligner):
     '''Extracts alignment information from each sample folder and combines
     them into one file.
     Inputs:
@@ -192,11 +206,13 @@ def batch_align_summ_htseqcount(th_align_dir, all_summ_file, htseq_dir,
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
 
     all_summ_path = os.path.join(th_align_dir, all_summ_file) 
-    create_summ_file(all_summ_path)
+    create_htseqsumm_file(all_summ_path)
 
     os.chdir(th_align_dir)
     resdirs = sorted([os.path.abspath(x) for x in glob.glob('RG*')])
+    print(resdirs)
     for resdir in resdirs:
+        print(os.path.join(resdir, htseq_dir))
         try:
             os.chdir(os.path.join(resdir, htseq_dir))
             berkid = os.path.basename(resdir)
@@ -207,13 +223,15 @@ def batch_align_summ_htseqcount(th_align_dir, all_summ_file, htseq_dir,
                 cur.close()
                 print(sample)
             except TypeError:
+                print('TypeError')
                 continue
             count = add_htseq_counts(htseqfile)
             print(count)
             with open(all_summ_path, 'a') as g:
-                g.write('{}\t{}\t{:}\n'.format(berkid,
-                    sample, count))
+                g.write('{}\t{}\t{:}\t{}\n'.format(berkid,
+                    sample, count, aligner))
         except FileNotFoundError:
+            print('FileNotFoundError')
             continue
     conn.close()
 
@@ -264,5 +282,8 @@ if __name__ == '__main__':
     #add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
     #batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR,
         #HTSEQ_FILE)
-    d = plot_htseqcount_dist(HTSEQ_FILE, 'y')
-    print(d)
+    #d = plot_htseqcount_dist(HTSEQ_FILE, 'y')
+    #print(d)
+    #add_col('tophat_all_align_summarywithal.txt', '2str')
+    batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR, 
+        HTSEQ_FILE, aligner='tophat_2str')
