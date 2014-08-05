@@ -75,6 +75,7 @@ class RNASeqData:
             bwa, etc.)
         '''
         self.genesubset = genesubset 
+
         if alignment == 'unstranded':
             self.th_resdir = 'results_tophat'
             self.cuff_table = 'cufflinks_data_un'
@@ -83,23 +84,29 @@ class RNASeqData:
 
         if alignment == '2str':
             self.th_resdir = 'results_tophat_2str'
-            self.cuff_table = 'cufflinks_data'
-            self.htseq_table = 'htseq'
-            self.degene_table = 'degenes'
+            self.cuff_table = 'cufflinks_data_2str'
+            self.htseq_table = 'htseq_2str'
+            self.degene_table = 'degenes_2str'
+
+        if alignment == 'r6_2str':
+            self.th_resdir = 'results_tophat_r6_2str'
+            self.cuff_table = 'cufflinks_data_r6_2str'
+            self.htseq_table = 'htseq_r6_2str'
+            self.degene_table = 'degenes_r6_2str'
 
         self.sampleinfo_table = 'autin'
 
         #Paths to the reference genome and other files used for alignment
         #by Tophat.
-        self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.57' 
+        self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r6.01' 
         self.gff_path = os.path.join(self.refseq_path,
-                'dmel-all-filtered-r5.57.gff')
+                'dmel-all-r6.01.gff')
         self.gff_path_nofa = os.path.join(self.refseq_path,
-                'dmel-all-filtered-r5.57-nofa.gff')
+                'dmel-all-r6.01-nofa.gff')
         self.mitogff_path = os.path.join(self.refseq_path, 
-                'dmel-dmel_mitochondrion_genome-r5.57.gff')
+                'dmel-dmel_mitochondrion_genome-r6.01.gff')
         self.btindex = os.path.join(self.refseq_path,
-                'dmel-all-chromosome-r5.57')
+                'dmel-all-chromosome-r6.01')
 
         #Paths to directories holding sequence data.
         self.seq_path = '/home/andrea/Documents/lab/RNAseq/sequences'
@@ -119,7 +126,7 @@ class RNASeqData:
         #Path to Tophat files. 
         self.th_resdirpath = os.path.join(self.analysis_path, self.th_resdir)
         self.th_dir = 'tophat_out'
-        self.thcmd_file = 'tophatcmd.txt'
+        self.th_cmd_file = 'tophatcmd.txt'
         self.bam_file = 'accepted_hits.bam'
         self.th_log_file = 'tophat.log'
         self.th_set_path_copy = os.path.join(self.th_resdirpath, 
@@ -176,6 +183,11 @@ class RNASeqData:
         self.deseq_dirpath = os.path.join(self.analysis_path, self.deseq_dir,
                 self.th_resdir)
         self.deseq_log_file = 'deseq.log'
+        self.deseq_metadata_file = 'metadata.txt'
+        self.deseq_group_file = 'groups'
+        self.deseq_toptags_file = 'res_DEseq.csv'
+        self.deseq_dbtoptags_file = 'db_res_DEseq.csv'
+        self.deseq_toptags_fdr_file = 'res_DEseq_'
     
         self.berkidlen = 8 #Length of berkid names.
 

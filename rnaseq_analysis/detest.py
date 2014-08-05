@@ -54,10 +54,10 @@ if args.run:
             gene_subset, rnaseqdict, tool)
     dl.batch_pairwise_DE(degroups.females, degroups.females_ctrl, rnaset,
             gene_subset, rnaseqdict, tool)
-    dl.run2groups_DE(degroups.agg_dict_all, rnaset, gene_subset, rnaseqdict, tool)
-    dl.run2groups_DE(degroups.agg_dict_cs, rnaset, gene_subset, rnaseqdict, tool)
-    dl.run2groups_DE(degroups.mut_dict_males, rnaset, gene_subset, rnaseqdict, tool)
-    dl.run2groups_DE(degroups.mut_dict_females, rnaset, gene_subset, rnaseqdict, tool)
+    #dl.run2groups_DE(degroups.agg_dict_all, rnaset, gene_subset, rnaseqdict, tool)
+    #dl.run2groups_DE(degroups.agg_dict_cs, rnaset, gene_subset, rnaseqdict, tool)
+    #dl.run2groups_DE(degroups.mut_dict_males, rnaset, gene_subset, rnaseqdict, tool)
+    #dl.run2groups_DE(degroups.mut_dict_females, rnaset, gene_subset, rnaseqdict, tool)
 
 if args.copytodb:
     #Generates files formatted for database and copies data from that file into 

@@ -436,52 +436,52 @@
 -- order by @d.logfc desc
 -- ;
 
--- -- Genes that are in the 3 aggression mutants but not in the other males.
-select g.fbgn_id 
-from degenes as d 
-inner join gff_genes as g on (g.name_name = d.gene) 
-where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
-gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxI_M' 
-UNION
-select g.fbgn_id 
-from degenes as d 
-inner join gff_genes as g on (g.name_name = d.gene) 
-where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
-gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'CG34127_M' 
-UNION
-select g.fbgn_id 
-from degenes as d 
-inner join gff_genes as g on (g.name_name = d.gene) 
-where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
-gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'en_M' 
-EXCEPT
-select g.fbgn_id 
-from degenes as d 
-inner join gff_genes as g on (g.name_name = d.gene) 
-where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
-gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxIV_M' 
--- INTERSECT
-EXCEPT
-select g.fbgn_id 
-from degenes as d 
-inner join gff_genes as g on (g.name_name = d.gene) 
-where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
-gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'pten_M' 
--- INTERSECT
-except
-select g.fbgn_id 
-from degenes as d 
-inner join gff_genes as g on (g.name_name = d.gene) 
-where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
-gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Nhe3_M'
--- INTERSECT
-except
-select g.fbgn_id 
-from degenes as d 
-inner join gff_genes as g on (g.name_name = d.gene) 
-where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
-gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M' 
-;
+-- -- -- Genes that are in the 3 aggression mutants but not in the other males.
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxI_M' 
+-- UNION
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'CG34127_M' 
+-- UNION
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'en_M' 
+-- EXCEPT
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxIV_M' 
+-- -- INTERSECT
+-- EXCEPT
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'pten_M' 
+-- -- INTERSECT
+-- except
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Nhe3_M'
+-- -- INTERSECT
+-- except
+-- select g.fbgn_id 
+-- from degenes as d 
+-- inner join gff_genes as g on (g.name_name = d.gene) 
+-- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M' 
+-- ;
 
 -- CREATE TABLE tempfbgns (
     -- fbgn varchar(20)
@@ -586,13 +586,15 @@ gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M'
 -- group1 = 'NrxIV_M' ) as foo
 -- ;
 
+-- -- Gives all the genes and group1s from degenes that have fdr < specified amount.
 -- \copy ( select gene, group1 from degenes where tool = 'edger' and gene_subset = 'prot_coding_genes' and group1 != 'lowagg_CS' and group1 != 'lowagg_all' and group1 != 'aut_mut_m' and group1 != 'aut_mut_f' and fdr < 0.02 order by group1) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/de_all_fdr02_group.txt' ; 
 
+-- -- Counts the distinct genes that are DE with the given parameters for all male genotypes.
 -- select count (*) from (
 -- select distinct gene from degenes where tool = 'edger' and gene_subset = 'prot_coding_genes' and group1 != 'lowagg_CS' and group1 != 'lowagg_all' and group1 != 'aut_mut_m' and group1 != 'aut_mut_f' and group1 ~ '.._M' and fdr < 0.1) 
 -- as foo;
 
-
+-- -- Creates a view where each row is a row number, gene, and the \# of times it appears in the list of DE genes in female samples (fdr < 0.1).
 -- create or replace view decountf as (
 -- select row_number() OVER (ORDER BY count (*) DESC), gene, count (*) from degenes 
 -- where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.1 
@@ -601,6 +603,8 @@ gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M'
 -- )
 -- -- -- order by count (*) DESC
 -- ;
+-- \copy (select * from decountf) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decountf_fdr10.txt';
+
 
 -- select c.gene, c.count from 
 -- decountm as c
@@ -647,23 +651,55 @@ gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M'
 -- )
 -- SERVER andreaserver;
 
--- CREATE TABLE sumhtseqcount (
+-- CREATE TABLE sumhtseqcount_2str(
     -- berkid varchar(20) UNIQUE,
     -- sample varchar(20),
     -- sumcount int,
     -- aligner varchar(50)
 -- )
--- \copy sumhtseqcount from '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str/db_htseq_all_2str_unique_summary.txt'
+-- \copy sumhtseqcount_2str from '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str/db_htseq_all_2str_unique_summary.txt'
 
--- Get # DE genes for each genotype.
+-- -- Get # DE genes for each genotype.
+-- select group1, count (*) 
+-- from degenes
+-- where tool = 'deseq' and gene_subset = 'prot_coding_genes' and fdr < 0.1
+-- group by group1
+-- order by group1
+-- ;
+
 -- select group1, count (*) 
 -- from degenes
 -- where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.1
 -- group by group1
 -- order by group1
 -- ;
+-- \copy ( select group1, count (*) from degenes where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.10 group by group1 order by group1) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/num_de_genes_fdr10.txt' header csv;
 
--- \copy ( select group1, count (*) from degenes where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.05 group by group1 order by group1) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/num_de_genes_fdr05.txt' header csv;
+-- select count (*) from (
+-- select d0.gene, d0.tool, 2^d0.logfc as deseq_foldchange, d0.fdr as deseq_adjpval, 
+-- d1.tool, 2^d1.logfc as edger_foldchange, d1.fdr as edger_adjpval
+-- from degenes as d0
+-- inner join
+-- degenes as d1
+-- on (d0.gene = d1.gene)
+-- where d0.gene_subset = 'prot_coding_genes' and d0.group1 = 'NrxI_F' and d0.group2 = 'CS_F'  and d0.fdr < 0.1 and d0.tool = 'deseq'
+-- and d1.gene_subset = 'prot_coding_genes' and d1.group1 = 'NrxI_F' and d1.group2 = 'CS_F' and d1.fdr < 0.1 and d1.tool = 'edger'
+-- order by deseq_adjpval
+-- ) as foo
+-- ;
+
+-- select *
+-- select de.group1, de.tool, dd.tool, count (de.tool), count (dd.tool)
+-- , count (de.group1, de.tool), count (*)
+-- from degenes as de
+-- inner join
+-- degenes as dd
+-- using (group1)
+-- where de.tool = 'edger' and de.gene_subset = 'prot_coding_genes' and de.fdr < 0.1
+-- and dd.tool = 'deseq' and dd.gene_subset = 'prot_coding_genes' and dd.fdr < 0.1
+-- -- group by de.group1, de.tool, dd.tool
+-- order by de.group1
+-- ;
 
 -- -- Get # DE genes inner join sfari for each genotype
 -- select group1, count (*) 
@@ -676,9 +712,90 @@ gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M'
 -- order by group1
 -- ;
 -- \copy ( select group1, count (*) from degenes inner join sfari_r557 on (gene_short_name = gene) where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.05 group by group1 order by group1) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/num_degenesijsfari_fdr05.txt'
-;
+
+-- -- VIEW SHOWING # OF TIMES EACH GENE IS IN A DE LIST WHERE GROUP1 IS ONE OF THE FEMALE GENOTYPES
 -- create or replace view decountf as (
 -- select row_number() OVER (ORDER BY count (*) DESC), gene, count (*) from degenes 
 -- where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.1 
 -- and group1 ~ '.._F'
--- group by gene
+-- group by gene;
+
+-- -- FOR A GENE LIST, SEE HOW MANY TIMES IT IS IN A DE LIST
+
+-- drop function testfn(text,real);
+-- create function testfn(detable text, selfdr real) returns table (gene varchar(100), logfc double precision)
+-- as 
+-- $BODY$
+-- BEGIN
+-- RETURN QUERY EXECUTE format('
+    -- select gene, logfc from %s where fdr < %L
+    -- '
+    -- ,detable
+    -- ,selfdr);
+-- END
+-- $BODY$
+-- LANGUAGE plpgsql;
+
+-- select * from testfn('degenes', 0.10);
+
+-- DROP FUNCTION find_decount(text,text,text,text,real,text);
+-- CREATE FUNCTION find_decount(selgroup1 text, decounttable text, tool text, gene_subset text, selfdr real, gff_file text) RETURNS TABLE (fbgn_id varchar(20), gene varchar(100), count bigint, logfc double precision, fdr double precision, group1 varchar(50))
+-- AS
+        -- $BODY$
+        -- BEGIN
+        -- RETURN QUERY 
+        -- EXECUTE format('
+        -- select g.fbgn_id, dc.gene, dc.count, d.logfc, d.fdr, d.group1 
+        -- from %s as dc
+        -- inner join
+        -- degenes as d
+        -- using (gene)
+        -- inner join
+        -- gff_genes as g
+        -- on (d.gene = g.name_name)
+        -- where d.tool = %L and d.gene_subset = %L and d.fdr < %s and d.group1 = %L and gff_file = %L'
+        -- ,decounttable
+        -- ,tool
+        -- ,gene_subset
+        -- ,selfdr
+        -- ,selgroup1
+        -- ,gff_file);
+
+        -- END
+        -- $BODY$
+        -- LANGUAGE plpgsql;
+
+\copy ( select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff') ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/NrxIV_F/NrxIV_F_toptags_edgeR_0.10_
+select * from find_decount('NrxI_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
+select * from find_decount('Nhe3_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
+select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
+select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
+select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
+
+-- select fbgn_id, gene, count, logfc, fdr, group1
+-- from decountf as dcf
+-- inner join
+-- degenes as d
+-- using (gene)
+-- inner join
+-- gff_genes as g
+-- on (d.gene = g.name_name)
+-- where tool = 'edger' and gene_subset = 'prot_coding_genes' and fdr < 0.1 
+-- and group1 = 'Betaintnu_F' and gff_file = 'dmel-all-filtered-r5.57.gff'
+
+-- ;
+
+
+
+
+-- -- GET FBGNS of DECOUNTF -- --
+-- select *
+-- from decountf
+-- inner join
+-- gff_genes
+-- on (gene = name_name)
+-- where gff_file = 'dmel-all-filtered-r5.57.gff'
+-- order by count DESC
+-- ;
+-- \copy (  select * from decountf inner join gff_genes on (gene = name_name) where gff_file = 'dmel-all-filtered-r5.57.gff' order by count DESC ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decountf_fdr10_fbgns.txt' header csv;
+;
