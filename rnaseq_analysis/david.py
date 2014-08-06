@@ -10,15 +10,14 @@ import rnaseq_settings as rs
 import sys
 import shutil
 
-def batch_get_degenes(conn, fbgnorname, tool, genesubset, fdr, toptagfile, 
+def batch_get_degenes(conn, align, fbgnorname, tool, genesubset, fdr, toptagfile, 
         de_dirpath, degroups):
     os.chdir(de_dirpath)
     for item in degroups.males + degroups.females:
         os.chdir(os.path.join(de_dirpath, item))
         print(os.getcwd())
         cur = conn.cursor()
-        cmd = "COPY (select g.{} from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = '{}' and d.gene_subset = '{}' and d.fdr < {} and gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = '{}' order by fdr) TO STDOUT;".format(fbgnorname, tool,
-                genesubset, fdr, item)
+        cmd = "COPY (select g.{} from degenes_{} as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = '{}' and d.gene_subset = '{}' and d.fdr < {} and gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = '{}' order by fdr) TO STDOUT;".format(fbgnorname, align, tool, genesubset, fdr, item)
         ttfilename = '{}_{}_{:.2f}_{}'.format(item, toptagfile, fdr, fbgnorname.split('_')[0]) 
         print(ttfilename)
         with open(ttfilename, 'w') as g:
@@ -140,39 +139,6 @@ def get_fncluster_de(conn, fnclusterfile, classnum, genotype, fncinfofile):
             g.write('Functional annotation cluster {}\n'.format(classnum))
         write_query_results(results, fncinfofile)
 
-
-def write_sql_countf(cmdfile, degroups, fdr, decounttable, genesubset, tool):
-    with open(cmdfile, 'w') as h:
-        for g in degroups:
-            cmd = " \copy ( select * from find_decount('{0}', '{2}', '{4}', '{3}', {1}, 'dmel-all-filtered-r5.57.gff') ) to '/home/andrea/Documents/lab/RNAseq/analysis/{4}/results_tophat_2str/{3}/{0}/{0}_toptags_edgeR_{1}_decount' header csv;\n".format(g, fdr, decounttable, genesubset, tool)
-            h.write(cmd)
-
-
-
-
-ALIGN = '2str'
-GENESUBSET = 'prot_coding_genes'
-TOPTAGFILE = 'toptags_edgeR'
-GENECLASSFILE = 'toptags_edgeR_0.10fbgn_geneclass'
-FNCLUSTERFILE = 'toptags_edgeR_0.10fbgn_fncluster'
-
-CONN = psycopg2.connect("dbname=rnaseq user=andrea")
-RNASET = rs.RNASeqData(alignment=ALIGN, 
-        genesubset=GENESUBSET)
-DEGROUPS = rs.DEGroups()
-
-EDGER_DIRPATH = os.path.join(RNASET.edger_dirpath, GENESUBSET)
-DESEQ_DIRPATH = os.path.join(RNASET.deseq_dirpath, GENESUBSET)
-#print(edger_dirpath)
-
-
-GCINFOFILE = 'toptags_edgeR_0.10fbgn_geneclass_deinfo.txt'
-FNCINFOFILE = 'toptags_edgeR_0.10fbgn_fncluster_deinfo.txt'
-
-DESEQFILE = 'res_DEseq'
-
-SQLCMDFILE = '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decount_sqlcmd.sql'
-
 def gen_info_files(conn, gcinfofile, fncinfofile, geneclassfile, fnclusterfile):
 
     genotype = os.path.basename(os.path.dirname(os.getcwd()))
@@ -199,6 +165,32 @@ def get_num_DAVID_ids():
     cmd = 'cat toptags_edgeR_0.10fbgn_fntable | wc -l'
     get_info_DAVID(cmd, edger_dirpath, degroups)
 
+
+
+ALIGN = '2str'
+#GENESUBSET = 'prot_coding_genes'
+GENESUBSET = 'brain_r557'
+TOPTAGFILE = 'toptags_edgeR'
+GENECLASSFILE = 'toptags_edgeR_0.10fbgn_geneclass'
+FNCLUSTERFILE = 'toptags_edgeR_0.10fbgn_fncluster'
+
+CONN = psycopg2.connect("dbname=rnaseq user=andrea")
+RNASET = rs.RNASeqData(alignment=ALIGN, 
+        genesubset=GENESUBSET)
+DEGROUPS = rs.DEGroups()
+
+EDGER_DIRPATH = os.path.join(RNASET.edger_dirpath, GENESUBSET)
+DESEQ_DIRPATH = os.path.join(RNASET.deseq_dirpath, GENESUBSET)
+#print(edger_dirpath)
+
+
+GCINFOFILE = 'toptags_edgeR_0.10fbgn_geneclass_deinfo.txt'
+FNCINFOFILE = 'toptags_edgeR_0.10fbgn_fncluster_deinfo.txt'
+
+DESEQFILE = 'res_DEseq'
+
+SQLCMDFILE = '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decount_sqlcmd.sql'
+
 #cmd = 'cat toptags_edgeR_0.10fbgn_fncluster | grep cyt | cut -f2'
 #get_info_DAVID(cmd, EDGER_DIRPATH, DEGROUPS)
 
@@ -208,9 +200,7 @@ def get_num_DAVID_ids():
     #'degenes_ij_sfari_fdr10_fncluster')
 
 #rename_degene_file(toptagfile)
-#batch_get_degenes(CONN, 'fbgn_id', 'deseq', GENESUBSET, 0.1, DESEQFILE, 
-        #DESEQ_DIRPATH, DEGROUPS)
+batch_get_degenes(CONN, ALIGN, 'fbgn_id', 'edger', GENESUBSET, 0.1, TOPTAGFILE,
+        EDGER_DIRPATH, DEGROUPS)
 #remove_files('toptags_edgeR_0.1name')
 #rename_degene_file('toptags_edgeR_0.10fbgn', 'toptags_edgeR_0.10_fbgn')
-#write_sql_countf(SQLCMDFILE, DEGROUPS.females, 0.10, 'decountf', GENESUBSET, 'edger')
-#write_sql_countf(SQLCMDFILE, DEGROUPS.males, 0.10, 'decountm', GENESUBSET, 'edger')

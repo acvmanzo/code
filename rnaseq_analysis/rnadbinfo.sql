@@ -373,6 +373,9 @@
 
 -- \copy r557_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/goid_gocat.txt';
 
+-- Brain genes.
+\copy (select tracking_id from brain_r557 intersect select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/brain_fbgns.txt';
+
 -- Protein coding genes.
 -- \copy (select gene_name from prot_coding_genes inner join r557_gene_length on (gene_short_name = gene_name) order by gene_name) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/all_genes.txt';
 -- \copy (select tracking_id from prot_coding_genes intersect select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/all_fbgns.txt';
@@ -603,7 +606,15 @@
 -- )
 -- -- -- order by count (*) DESC
 -- ;
--- \copy (select * from decountf) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decountf_fdr10.txt';
+-- create or replace view decountf_brain_edger_fdr10_2str_ as (
+-- select row_number() OVER (ORDER BY count (*) DESC), gene, count (*) from degenes 
+-- where tool = 'edger' and gene_subset = 'brain_r557' and fdr < 0.1 
+-- and group1 ~ '.._F'
+-- group by gene
+-- order by count (*) DESC
+-- )
+-- ;
+\copy ( select row_number() OVER (ORDER BY count (*) DESC), gene, count (*) from degenes_2str where tool = 'edger' and gene_subset = 'brain_r557' and fdr < 0.1 and group1 ~ '.._M' group by gene order by count (*) DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/decountm_brain_edger_fdr10.txt';
 
 
 -- select c.gene, c.count from 
@@ -765,13 +776,6 @@
         -- $BODY$
         -- LANGUAGE plpgsql;
 
-\copy ( select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff') ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/NrxIV_F/NrxIV_F_toptags_edgeR_0.10_
-select * from find_decount('NrxI_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
-select * from find_decount('Nhe3_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
-select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
-select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
-select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 0.10, 'dmel-all-filtered-r5.57.gff');
-
 -- select fbgn_id, gene, count, logfc, fdr, group1
 -- from decountf as dcf
 -- inner join
@@ -798,4 +802,4 @@ select * from find_decount('NrxIV_F', 'decountf', 'edger', 'prot_coding_genes', 
 -- order by count DESC
 -- ;
 -- \copy (  select * from decountf inner join gff_genes on (gene = name_name) where gff_file = 'dmel-all-filtered-r5.57.gff' order by count DESC ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decountf_fdr10_fbgns.txt' header csv;
-;
+

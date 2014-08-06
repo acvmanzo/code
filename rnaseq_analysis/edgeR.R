@@ -24,16 +24,18 @@ print(paste("dim-counts(rows,cols) =", dim(counts)))
 # smallest group of replicates (here, n = 3 for the knockdown group)
 # cpm(): finds count per million for each gene
 cpms = cpm(counts)
+#print(cpms)
 #print(dim(cpms))
 
 # min_reps finds the smallest # of replicates among the control or experimental
 # groups.  cpms >1 is a Boolean array. rowSums(cpms>1) is the sum of Booleans
 # across each row of cpms>1. keep is a Boolean vector that has the value 'True'
 # if rowSums(cpms>1) is at least min_reps.
-noint = rownames(counts) %in% c("no_feature", "too_low_aQual", "not_aligned", "alignment_not_unique")
+#noint = rownames(counts) %in% c("no_feature", "too_low_aQual", "not_aligned", "alignment_not_unique")
 min_reps = min(table(samples$CorE))
 print(paste("min_reps", min_reps))
 keep = rowSums(cpms >1) >= min_reps & !noint
+print(keep)
 #keep = rowSums(cpms >1) >= 3 & !noint
 
 counts = counts[keep,]
