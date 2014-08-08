@@ -188,8 +188,7 @@ def copy_degenes_dbtable(db_degenefile, dbtable, cur):
         cur))
     logging.debug('checkrows=%s', checkrows)
     if checkrows != 0:
-        delcmd = "delete from {} where tool = '{}' and gene_subset = '{}' and group1 = '{}' and group2 = '{}';".format(dbtable, tool, gene_subset, group1, 
-                group2)
+        delcmd = "delete from {} where tool = '{}' and gene_subset = '{}' and group1 = '{}' and group2 = '{}';".format(dbtable, tool, gene_subset, group1, group2)
         cur.execute(delcmd)
     cur.copy_from(open(db_degenefile), dbtable, sep=',')
 
@@ -355,4 +354,6 @@ def logginginfo(logpath):
     console = logging.StreamHandler() # Displays output to screen.
     console.setLevel(logging.INFO)
     logging.getLogger('').addHandler(console)
+
+
 

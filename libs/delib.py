@@ -242,6 +242,7 @@ def run_descript(de_file_dict, tool):
                 d['edger_toptags_fdr_file'])
     elif tool == 'deseq':
         cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/deseq.R > deseq.log 2>&1'
+    print(tool, cmd)
     logging.debug(cmd)
     os.system(cmd)
 
@@ -276,8 +277,25 @@ def gen_db_degenefile(degenefile, db_degenefile, tool, gene_subset, group1,
         with open(degenefile, 'r') as f:
             next(f)
             for l in f:
-                g.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}\n'.format(delim, 
-                    l.rstrip('\n'), tool, gene_subset, group1, group2))
+                if tool == 'edger':
+                    g.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}\n'.format(delim, 
+                        l.rstrip('\n'), tool, gene_subset, group1, group2))
+                elif tool == 'deseq':
+                    llist = l.split(' ')
+                    gene = llist[0]
+                    basemean = llist[1]
+                    basemeana = llist[2]
+                    basemeanb = llist[3]
+                    if basemean == '0' and basemeana == '0' and basemeanb == '0':
+                        continue
+                    logfc = llist[5]
+                    logcpm = 0
+                    pvalue = llist[6]
+                    fdr = llist[7].rstrip('\n')
+                    g.write('{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}\n'.format(delim, 
+                        gene, logfc, logcpm, pvalue, fdr,
+                        tool, gene_subset, group1, group2))
+
 
 def batch_makecopy_db_degenefile(de_file_dict, tool, gene_subset, conn):
     '''Batch function for rewriting DE analysis output files for inclusion
@@ -425,3 +443,32 @@ def custom_DE(de_file_dict, tool):
         data output by edgeR.R
     '''
     run_descript(de_file_dict, tool)
+
+
+def get_de_info(cur, gene, group1, group2, detable, tool, gene_subset):
+    '''For the given gene, group1 and group2, finds the log fold change and
+    fdr from the table detable with the tool and gene_subset given.
+    '''
+    cmd = "select gene, 2^logfc as fc, fdr from {} where gene = '{}' and \
+        tool = '{}' and gene_subset = '{}' and group1 = '{}' and \
+        group2 = '{}';".format(detable, gene, tool, gene_subset, group1, group2)
+    #print(cmd)
+    cur.execute(cmd)
+    return(cur.fetchall()[0])
+
+
+def compare_replicate_de(cur, genotypes, group2, gene, detable, tool, gene_subset):
+    '''For each gentoype in the list genotypes, finds the log fold change
+    and fdr for gene from the table detable with the tool and gene_subset.
+    '''
+    d = {}
+    for gen in genotypes:
+        try:
+        #print(gen)
+            d[gen] = get_de_info(cur, gene, gen, group2, detable, tool, 
+                gene_subset)
+        except IndexError:
+            d[gen] = [gene, 0, 1]
+            #print(gen, 'IndexError')
+    return(d)
+    

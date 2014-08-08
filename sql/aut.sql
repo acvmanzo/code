@@ -320,3 +320,40 @@
 -- update autin set use_seq = False where samplenum = 1020 and sample = 'NrxI_MD';
 
 -- \copy (select * from autin where use_seq = True order by sample) to '/home/andrea/Documents/lab/RNAseq/analysis/samples_used.csv' header csv;
+
+
+-- CREATE TABLE basecall (
+    -- seq_d date,
+    -- lane int,
+    -- berkid varchar(20),
+    -- ref varchar(10),
+    -- indexseq varchar(40),
+    -- descrip varchar(40),
+    -- control varchar(5),
+    -- project varchar(20),
+    -- yield int,
+    -- per_pf real,
+    -- numreads int,
+    -- per_rcpl real,
+    -- per_pir real,
+    -- per_1mri real,
+    -- per_q30 double precision,
+    -- mean_qualscore double precision,
+    -- unique (berkid)
+-- )
+
+-- \copy basecall from '/home/andrea/Documents/lab/RNAseq/sequences/db_basecall_summary.txt'
+
+\copy ( select b.berkid, a.sample, b.per_q30, b.mean_qualscore, b.numreads from autin as a inner join basecall as b using (berkid) where use_seq = True order by sample) to '/home/andrea/Documents/lab/RNAseq/sequences/basecall_summ_useseq.txt' header csv;
+
+select a.genotype, a.sex, avg(b.mean_qualscore) as avg_qual, avg(b.numreads) as avg_numreads
+from autin as a
+inner join
+basecall as b
+using (berkid)
+where use_seq = True
+group by genotype, sex
+;
+
+
+

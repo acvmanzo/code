@@ -119,3 +119,33 @@ def move_htseq_files(htseq_dir, htseq_file):
     for ht in htfiles:
         shutil.move(ht, htseq_dirpath)
 
+def get_gene_count(cur, htseqtable, gene, berkid):
+    '''For the given gene and berkid, finds the counts from the table 
+    htseqtable.
+    '''
+    cmd = "SELECT * from {} where gene_name = '{}' and berkid = '{}';".format(htseqtable, gene, berkid)
+    cur.execute(cmd)
+    gene, count, berkid = cur.fetchall()[0]
+    return(gene, count, berkid)
+    #return(count)
+
+def get_replicate_counts(cur, genotype, gene, sampleinfo_table, htseqtable):
+    '''Gets the counts for each replicate of the given genotype, for the
+    given gene from the given htseqtable.
+    '''
+    berkids = rl.get_replicate_berkid_dict(cur, genotype, sampleinfo_table)
+    countslist = []
+    for berkid in berkids:
+        countslist.append(get_gene_count(cur, htseqtable, gene, berkid))
+    return(countslist)
+
+def compare_replicate_counts(cur, genotypes, gene, sampleinfo_table, htseqtable):
+    '''For each genotype in the genotypes list, gives the counts for each
+    replicate for the given gene.
+    '''
+    d = {}
+    for gen in genotypes:
+        d[gen] = get_replicate_counts(cur, gen, gene, sampleinfo_table, htseqtable)
+    return(d)
+
+    

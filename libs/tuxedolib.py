@@ -111,7 +111,7 @@ def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinks
     os.system(cufflinkscmd)
 
 def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict, 
-        th_cuff_dict, runcufflinks, strand):
+        runcufflinks, strand):
     '''
     Runs tophat and cufflinks on one sample.
     Inputs:
@@ -134,8 +134,6 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
     runcufflinks = True: runs cufflinks; otherwise does not
     strand = unstranded or second stranded library
     '''
-    d = th_cuff_dict
-    print('d', d)
     rd = rnaseqdict
     os.chdir(sample_seqdir)
     # Concatenate the sequence files into one file.
@@ -155,7 +153,7 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
     os.chdir(sample_resdir)
 
     if not os.path.exists(rd['th_dir']):
-        run_tophat(rd['th_dir'], d['gff_path'], d['btindex'], fastafile,
+        run_tophat(rd['th_dir'], rd['gff_path'], rd['btindex'], fastafile,
                 rd['th_cmd_file'], strand)
         os.remove(fastafile)
    
@@ -166,11 +164,11 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
         #else:
         bamfile = os.path.join(sample_resdir, rd['th_dir'], rd['bam_file'])
         print(bamfile)
-        run_cufflinks(d['mitogff_path'], d['gff_path'], bamfile, 
+        run_cufflinks(rd['mitogff_path'], rd['gff_path'], bamfile, 
                 rd['cufflog_file'], rd['cuffcmd_file']) 
     
 
-def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks, strand):
+def seqdir_run_tophat_cufflinks(rnaseqdict, runcufflinks, strand):
     '''Runs tophat and cufflinks on multiple samples organized in the following manner:
     main seqdir > sequence batch folder (date) > sequence subdirectory (sequences/) > sample 
     folder
@@ -189,8 +187,7 @@ def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks, strand):
     strand = unstranded or second stranded library
     '''
     rd = rnaseqdict
-    d = th_cuff_dict
-    seqbatchdirs = rl.get_dirs(rd['seq_dir'], rd['seqbatchglob']) # Finds all the sequence batch 
+    seqbatchdirs = rl.get_dirs(rd['seq_path'], rd['seqbatchglob']) # Finds all the sequence batch 
     # folders.
     logging.info('Sequence batch directories %s', seqbatchdirs)
     for sbd in seqbatchdirs:
@@ -210,7 +207,7 @@ def seqdir_run_tophat_cufflinks(rnaseqdict, th_cuff_dict, runcufflinks, strand):
             cmn.makenewdir(sample_resdir)
             logging.info('Running tophat and cufflinks')
             run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, 
-                    rd, d, runcufflinks, strand)
+                    rd, runcufflinks, strand)
             #else:
                 #logging.warning('Tophat and cufflinks output exists')
 
