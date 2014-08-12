@@ -50,8 +50,8 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
     else:
         logging.info('Creating new file')
 
-        #cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
-        cmd = 'htseq-count -f bam -s reverse -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
+        ##cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
+        cmd = 'htseq-count -f bam -s yes -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
         logging.debug(cmd)
         os.system(cmd)
         with open(htseq_cmd_path, 'w') as f:
@@ -77,14 +77,14 @@ def gen_joincmd(berkid, dbtable, gene_subset_table):
     '''
    
     if gene_subset_table:
-        gsstring = 'inner join {} as t2 on t0.gene_name = t2.gene_short_name'.format(gene_subset_table)
+        gsstring = 'inner join {} as t2 on t0.gene_short_name = t2.gene_short_name'.format(gene_subset_table)
     else:
         gsstring = ''
     
     newtable = dbtable + '_' + gene_subset_table
 
 
-    joinandcopycmd = "create table {3} as select gene_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, newtable)
+    joinandcopycmd = "create table {3} as select gene_short_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, newtable)
     logging.debug('%s', joinandcopycmd)
     return(joinandcopycmd, newtable)
 
@@ -123,7 +123,7 @@ def get_gene_count(cur, htseqtable, gene, berkid):
     '''For the given gene and berkid, finds the counts from the table 
     htseqtable.
     '''
-    cmd = "SELECT * from {} where gene_name = '{}' and berkid = '{}';".format(htseqtable, gene, berkid)
+    cmd = "SELECT * from {} where gene_short_name = '{}' and berkid = '{}';".format(htseqtable, gene, berkid)
     cur.execute(cmd)
     gene, count, berkid = cur.fetchall()[0]
     return(gene, count, berkid)

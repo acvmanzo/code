@@ -66,7 +66,8 @@ def mgen_combined_gzfile(sampledirs, results_base_dir):
         os.chdir(sd)
         combined_gzpath = gen_combined_gzfile(sd, results_base_dir)
 
-def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file, strand):
+def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file, 
+        strand, minintron):
     '''Runs tophat from the command line with the indicated options and writes the command
     used into a file.
     Inputs:
@@ -77,11 +78,19 @@ def run_tophat(tophatdir, gff_file, btindex, fastafile, tophatcmd_file, strand):
     tophatcmd_file = name of the file where the tophat command is written
     strand = unstranded or second stranded library
     '''
-    if strand == 'fr-secondstrand':
+    if strand == 'fr-secondstrand' and not minintron:
         tophatcmd = 'tophat -o {} -p 8 --no-coverage-search --library-type fr-secondstrand -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
-    elif strand == 'fr-unstranded':
+
+    elif strand == 'fr-secondstrand' and minintron:
+        tophatcmd = 'tophat -o {} -p 8 --no-coverage-search --library-type fr-secondstrand --min-intron-length 40 --min-segment-intron 40 --min-coverage-intron 40 -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
+
+    elif strand == 'fr-unstranded' and not minintron:
         tophatcmd = 'tophat -o {} -p 8 --no-coverage-search -G {} {} {}'.format(tophatdir,
             gff_file, btindex, fastafile)
+
+    elif strand == 'fr-unstranded' and minintron:
+        tophatcmd = 'tophat -o {} -p 8 --no-coverage-search --min-intron-length 40 --min-segment-intron 40 --min-coverage-intron 40 -G {} {} {}'.format(tophatdir, gff_file, btindex, fastafile)
+
     else:
         logging.info('No strand info given')
     logging.info('%s', tophatcmd)
@@ -111,7 +120,7 @@ def run_cufflinks(mitogff_file, gff_file, bam_file, cufflinkslog_file, cufflinks
     os.system(cufflinkscmd)
 
 def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict, 
-        runcufflinks, strand):
+        runcufflinks, strand, minintron=False):
     '''
     Runs tophat and cufflinks on one sample.
     Inputs:
@@ -154,7 +163,7 @@ def run_tophat_cufflinks(sample, sample_seqdir, sample_resdir, rnaseqdict,
 
     if not os.path.exists(rd['th_dir']):
         run_tophat(rd['th_dir'], rd['gff_path'], rd['btindex'], fastafile,
-                rd['th_cmd_file'], strand)
+                rd['th_cmd_file'], strand, minintron)
         os.remove(fastafile)
    
     #Run cufflinks.

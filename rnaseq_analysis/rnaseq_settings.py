@@ -164,8 +164,10 @@ class RNASeqData:
         self.corrlog_file = 'correlations.log'
         #selectlist = ['t0.tracking_id', 't0.berkid', 't0.fpkm', 't0.fpkm_status', 
         #'t1.berkid', 't1.fpkm', 't1.fpkm_status']
-        self.selectlist = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 
+        self.cuffselectlist = ['t0.gene_short_name', 't0.berkid', 't0.fpkm', 
                 't0.fpkm_status', 't1.berkid', 't1.fpkm', 't1.fpkm_status']
+        self.htseqselectlist = ['t0.gene_short_name', 't0.berkid', 't0.counts', 
+                't1.berkid', 't1.counts']
         self.maxfpkm = False # Only genes with FPKMs below this value will be used to 
         # calculate correlations; if no limit is desired, set to False.
         self.pc_log = True # If set to 'True', adds 1 to each value in the list of 

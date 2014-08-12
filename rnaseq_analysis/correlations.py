@@ -19,6 +19,8 @@ parser.add_argument('alignment', choices=['unstranded', '2str'],
         help='Option for which data to analyze')
 parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
          'brain_r557'])
+parser.add_argument('quant', choices=['htseq', 'cufflinks'],
+        help='Option for using cufflinks data or htseq data')
 parser.add_argument('-r', '--run', action='store_true', 
         help='run correlation analysis')
 parser.add_argument('-a', '--allgens', action='store_true', 
@@ -140,17 +142,25 @@ def main():
                 logging.info('Finding corelations')
                 # Generates a list of arrays in which each array has the gene FPKM
                 # data for two samples.
-                #joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
-                        #rnaset.selectlist, rnaset.cuff_table, rnaset.maxfpkm, 
-                        #args.genesubset, rnaset.berkidlen)
-                joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
-                        rnaset.selectlist, rnaset.htseq_table, rnaset.maxfpkm, 
-                        args.genesubset, rnaset.berkidlen)
+                if args.quant == 'cufflinks':
+                    joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
+                            rnaset.cuffselectlist, rnaset.cuff_table, rnaset.maxfpkm, 
+                            args.genesubset, rnaset.berkidlen, args.quant)
+                if args.quant == 'htseq':
+                    joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
+                            rnaset.htseqselectlist, rnaset.htseq_table, rnaset.maxfpkm, 
+                            args.genesubset, rnaset.berkidlen, args.quant)
                 # Finds the correlations between each sample within a condition and
                 # generates plots.
-                corl.get_sample_correlations(joined_arrays, fig_dir, 
-                        pearson_corrpath, spearman_corrpath, 
-                        rnaset.selectlist, corrplotset, rnaset.pc_log)
+                if args.quant == 'cufflinks':
+                    corl.get_sample_correlations(joined_arrays, fig_dir, 
+                            pearson_corrpath, spearman_corrpath, 
+                            rnaset.cuffselectlist, corrplotset, rnaset.pc_log, args.quant)
+                if args.quant == 'htseq':
+                    corl.get_sample_correlations(joined_arrays, fig_dir, 
+                            pearson_corrpath, spearman_corrpath, 
+                            rnaset.htseqselectlist, corrplotset, rnaset.pc_log, args.quant)
+
             except FileNotFoundError:
                 logging.info("File Not Found '%s'", cufflink_fpkm_paths)
                 continue

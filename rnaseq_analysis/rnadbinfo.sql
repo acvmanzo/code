@@ -179,7 +179,7 @@
 
 -- Testing using htseq and SERE
 -- CREATE TABLE htseq (
-    -- gene_name varchar(100),
+    -- gene_short_name varchar(100),
     -- counts int,
     -- berkid varchar(20),
     -- unique(gene_name, berkid)
@@ -194,8 +194,10 @@
 -- \copy (select t0.gene_name, t0.counts as RGSJ007D, t1.counts as RGSJ006H from htseq as t0 inner join htseq as t1 using (gene_name) where t0.berkid = 'RGSJ007D' and t1.berkid = 'RGSJ006H' order by gene_name) TO '/home/andrea/bookmarks/analysis/cg34127m_htseq_test.txt';
 -- ) as foo
 -- ;
-
 -- \copy prot_coding_genes  to '/home/andrea/bookmarks/analysis/test.txt';
+
+-- alter table htseq_2str rename column gene_name to gene_short_name;
+-- alter table htseq_un rename column gene_name to gene_short_name;
 
 -- DROP TABLE htseq_gene;
 -- CREATE TABLE htseq_gene (
@@ -803,7 +805,7 @@
 
 -- -- Get info from autin sorted and grouped by different fields
 
-select genotype, sex, sample, rnaconc, qbitngul, use_seq from autin order by qbitngul;
+-- select genotype, sex, sample, rnaconc, qbitngul, use_seq from autin order by qbitngul;
 
 
 

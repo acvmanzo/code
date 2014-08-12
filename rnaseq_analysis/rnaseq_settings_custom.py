@@ -83,7 +83,7 @@ class RNASeqData:
         #self.cuff_table = 'cufflinks_data_r6_2str'
         #self.htseq_table = 'htseq_r6_2str'
         #self.degene_table = 'degenes_r6_2str'
-        #self.htseq_dir = 'htseq_out_str'
+        self.htseq_dir = 'htseq_out_str'
 
 
         #Paths to the reference genome and other files used for alignment

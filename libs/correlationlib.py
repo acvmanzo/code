@@ -42,7 +42,8 @@ BERKIDLEN = 8
 
 
 
-def gen_joincmd(selectlist, berkids, dbtable, maxfpkm, gene_subset_table):
+def gen_joincmd(selectlist, berkids, dbtable, maxfpkm, gene_subset_table,
+        quant):
     '''returns a string with a command for joining tables.
     the joined table contains fpkm values for two samples, and
     includes all the genes reported in the gene fpkm file output
@@ -52,8 +53,14 @@ def gen_joincmd(selectlist, berkids, dbtable, maxfpkm, gene_subset_table):
     berkids = list of sample berkeley ids that will be compared
     dbtable = database table that contains the fpkm data
     maxfpkm = maximum fpkm of genes that will be compared. set to false
+    quant = 'cufflinks' or 'htseq'
     if all genes should be included, or to another number otherwise.
     '''
+    if quant == 'cufflinks':
+        joinfield = 'tracking_id'
+    elif quant == 'htseq':
+        joinfield = 'gene_short_name'
+
     selectstring = ", ".join(selectlist)
     if maxfpkm:
         mfstring = 'and t0.fpkm < {0} and t1.fpkm < {0}'.format(maxfpkm)
@@ -61,11 +68,20 @@ def gen_joincmd(selectlist, berkids, dbtable, maxfpkm, gene_subset_table):
         mfstring = ''
     
     if gene_subset_table:
-        gsstring = 'inner join {} as t2 using (tracking_id)'.format(gene_subset_table)
+        gsstring = 'inner join {} as t2 using ({})'.format(gene_subset_table,
+                joinfield)
     else:
         gsstring = ''
 
-    joincmd = "select {0} from {1} as t0 full outer join {1} as t1 using (tracking_id) {5} where t0.berkid = '{2}' and t1.berkid = '{3}' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' {4} order by tracking_id;".format(selectstring, dbtable, berkids[0], berkids[1], mfstring, gsstring)
+    if quant == 'cufflinks':
+        joincmd = "select {0} from {1} as t0 full outer join {1} as t1 using ({6}) {5} where t0.berkid = '{2}' and t1.berkid = '{3}' and t0.{6} != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' {4} order by {6};".format(selectstring, dbtable, berkids[0], 
+                berkids[1], mfstring, gsstring, joinfield)
+
+    elif quant == 'htseq':
+        joincmd = "select {0} from {1} as t0 full outer join {1} as t1 using ({6}) {5} where t0.berkid = '{2}' and t1.berkid = '{3}' and t0.{6} != '' {4} order by {6};".format(selectstring, 
+                dbtable, berkids[0], berkids[1], mfstring, gsstring, 
+                joinfield)
+
     logging.debug('%s', joincmd)
     return(joincmd)
 
@@ -79,7 +95,8 @@ def join_db_table(joincmd, cur):
     return(jointable)
 
 
-def mjoin_db_table(berkidlist, selectlist, dbtable, maxfpkm, cur, gene_subset_table):
+def mjoin_db_table(berkidlist, selectlist, dbtable, maxfpkm, cur, 
+        gene_subset_table, quant):
     '''applies join_db_table and gen_joincmd for each pairwise 
     combination of samples given in berkidlist; returns a list of lists
     '''
@@ -89,13 +106,14 @@ def mjoin_db_table(berkidlist, selectlist, dbtable, maxfpkm, cur, gene_subset_ta
     for i in comp_index:
         #cur = conn.cursor()
         berkids = [berkidlist[x] for x in i]
-        joincmd = gen_joincmd(selectlist, berkids, dbtable, maxfpkm, gene_subset_table)
+        joincmd = gen_joincmd(selectlist, berkids, dbtable, maxfpkm, 
+                gene_subset_table, quant)
         jointable = join_db_table(joincmd, cur)
         comparisons.append(jointable)
     return(comparisons)   
 
 
-def get_fpkm(jointable, colnames):
+def get_fpkmorcounts(jointable, colnames,quant):
     '''from the jointable returned by the function join_db_table(), returns
     the fpkm values and the berkids as a list of lists.
     input:
@@ -106,10 +124,15 @@ def get_fpkm(jointable, colnames):
     used in join_db_table().
     '''
     array = np.transpose(jointable)
-    fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),
-        colnames.index('t1.fpkm')]]
+    if quant == 'cufflinks':
+        fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.fpkm'),
+            colnames.index('t1.fpkm')]]
+    if quant == 'htseq':
+        fpkm0, fpkm1 = [array[x][:].astype(np.float) for x in [colnames.index('t0.counts'),
+            colnames.index('t1.counts')]]
     berkid0, berkid1, = [array[x][0] for x in [colnames.index('t0.berkid'), 
         colnames.index('t1.berkid')]]
+
     return([fpkm0, fpkm1], [berkid0, berkid1])
 
 
@@ -149,10 +172,15 @@ def axislim(num):
     lim = int(math.ceil(max(num))*1.1)
     return(lim)
 
-def format_plot(berkids, samples, fpkmlim):
+def format_plot(berkids, samples, fpkmlim, quant):
     '''formats a scatter plot comaring gene expression of two samples.'''
-    xlabel = 'log2 RPKM {} {}'.format(berkids[0], samples[0])
-    ylabel = 'log2 RPKM {} {}'.format(berkids[1], samples[1])
+    if quant == 'cufflinks':
+        xlabel = 'log2 RPKM {} {}'.format(berkids[0], samples[0])
+        ylabel = 'log2 RPKM {} {}'.format(berkids[1], samples[1])
+    elif quant == 'htseq':
+        xlabel = 'log2 counts {} {}'.format(berkids[0], samples[0])
+        ylabel = 'log2 counts {} {}'.format(berkids[1], samples[1])
+
     title = '{} vs. {}'.format(samples[0],samples[1])
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -162,7 +190,7 @@ def format_plot(berkids, samples, fpkmlim):
   
 
 def plot_scatter(fpkms, berkids, samples, r, slope, intercept, 
-        num_genes, subplotnum, fpkmlim): 
+        num_genes, subplotnum, fpkmlim, quant): 
     '''plots a scatter plot comparing gene expression of two samples.
     inputs:
     fpkms = a list of lists containing the fpkm values of two samples 
@@ -187,7 +215,7 @@ def plot_scatter(fpkms, berkids, samples, r, slope, intercept,
     ax = plt.gca()
     #textstr = 'r = {:.3f}\n# genes = {}'.format(r, num_genes)
     textstr = 'r = {:.3f}'.format(r, num_genes)
-    format_plot(berkids, samples, fpkmlim)
+    format_plot(berkids, samples, fpkmlim, quant)
 
     if subplotnum == 111:
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
@@ -203,7 +231,7 @@ def make_figname(berkids, samples, figtype):
 
 
 def genfig_scatter_zoom(fpkms, berkids, samples, r, slope, intercept, 
-        num_genes, fpkmlim, scatter_info, fig_dir):
+        num_genes, fpkmlim, scatter_info, fig_dir, quant):
     '''generates a figure containing scatter plots that compare expression of two samples.
     inputs:
     fpkms = list of fpkm values for both samples (list of 2 lists)
@@ -218,13 +246,14 @@ def genfig_scatter_zoom(fpkms, berkids, samples, r, slope, intercept,
         scatter_subplots = list of subplots to be plotted
         scatter_maxfpkm = maximum fpkm value to be plotted
         scatter_figdir = main correlation directory
+    quant = 'cufflinks' or 'htseq'
 '''
     d = scatter_info
     limlist = [fpkmlim, d['scatter_maxfpkm']]
     fig1 = plt.figure(figsize=d['scatter_figsize'], dpi=d['scatter_dpi'])
     for s, l in zip(d['scatter_subplots'], limlist):
         plot_scatter(fpkms, berkids, samples, r, slope, intercept, num_genes,
-            s, l)
+            s, l, quant)
     plt.tight_layout()
     plt.savefig(os.path.join(fig_dir, make_figname(berkids, samples, 'correlation')))
     plt.close()
@@ -303,7 +332,7 @@ def copy_data_to_table(cufflink_fpkm_paths, berkid_fpkm_file, cuff_table,
     conn.close()
 
 def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm,
-        gene_subset_table, berkidlen):
+        gene_subset_table, berkidlen, quant):
 
     logging.info('joining and querying tables')
     logging.info('opening connection')
@@ -312,7 +341,7 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm,
     berkidlist = rl.get_berkidlist(cufflink_fpkm_paths, berkidlen)
     logging.info(berkidlist)
     joined_arrays = mjoin_db_table(berkidlist, selectlist, cuff_table, maxfpkm, cur1, 
-            gene_subset_table)
+            gene_subset_table, quant)
     cur1.close()
     logging.info('closing connection')
     conn.close()
@@ -320,7 +349,7 @@ def get_joined_arrays(cufflink_fpkm_paths, selectlist, cuff_table, maxfpkm,
 
 
 def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile, 
-        spearman_corrfile, selectlist, corrplotobj, pc_log):
+        spearman_corrfile, selectlist, corrplotobj, pc_log, quant):
     ''' 
     Inputs:
     corrplotobj: object of class CorrPlotData from the rnaseq_settings module
@@ -332,7 +361,7 @@ def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile,
     
     for joined_array in joined_arrays:
         num_genes = np.shape(joined_array)[0]
-        fpkms, berkids = get_fpkm(joined_array, selectlist)
+        fpkms, berkids = get_fpkmorcounts(joined_array, selectlist, quant)
         if pc_log == True:
             fpkms = log_transform(add_pseudocount(fpkms))
         cur2 = conn.cursor()
@@ -352,7 +381,7 @@ def get_sample_correlations(joined_arrays, fig_dir, pearson_corrfile,
         logging.info('plotting scatter plots')
         cmn.makenewdir(fig_dir)
         genfig_scatter_zoom(fpkms, berkids, samples, r, slope, intercept, 
-                num_genes, fpkmlim, corrplotinfo, fig_dir)
+                num_genes, fpkmlim, corrplotinfo, fig_dir, quant)
 
         logging.info('plotting histograms')
         genfig_compare_hist_zoom(fpkms, berkids, samples, fpkmlim,
