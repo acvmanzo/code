@@ -140,8 +140,11 @@ def main():
                 logging.info('Finding corelations')
                 # Generates a list of arrays in which each array has the gene FPKM
                 # data for two samples.
+                #joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
+                        #rnaset.selectlist, rnaset.cuff_table, rnaset.maxfpkm, 
+                        #args.genesubset, rnaset.berkidlen)
                 joined_arrays = corl.get_joined_arrays(extant_cufflink_fpkm_paths, 
-                        rnaset.selectlist, rnaset.cuff_table, rnaset.maxfpkm, 
+                        rnaset.selectlist, rnaset.htseq_table, rnaset.maxfpkm, 
                         args.genesubset, rnaset.berkidlen)
                 # Finds the correlations between each sample within a condition and
                 # generates plots.

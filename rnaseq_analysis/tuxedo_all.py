@@ -2,22 +2,20 @@
 
 # Runs tophat and cufflinks on all sequence files.
 
+import argparse 
+import cmn.cmn as cmn
+import datetime
 import libs.tuxedolib as tl
 import libs.rnaseqlib as rl
 import logging
+import os
+import rnaseq_settings as rs
 import shutil
 import sys
-import datetime
-import argparse 
-import cmn.cmn as cmn
-import rnaseq_settings as rs
-import os
 
 
 parser = argparse.ArgumentParser()
 
-#parser.add_argument('strand', choices=['fr-secondstrand', 'fr-unstranded'],
-        #help='specify library type for tophat')
 parser.add_argument('alignment', choices=['unstranded', '2str', 'r6_2str'], 
         help='Option for which data to analyze')
 parser.add_argument('-c', '--cufflinks', action="store_true", 

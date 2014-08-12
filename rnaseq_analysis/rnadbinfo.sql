@@ -374,7 +374,7 @@
 -- \copy r557_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/goid_gocat.txt';
 
 -- Brain genes.
-\copy (select tracking_id from brain_r557 intersect select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/brain_fbgns.txt';
+-- \copy (select tracking_id from brain_r557 intersect select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/brain_fbgns.txt';
 
 -- Protein coding genes.
 -- \copy (select gene_name from prot_coding_genes inner join r557_gene_length on (gene_short_name = gene_name) order by gene_name) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/all_genes.txt';
@@ -614,7 +614,7 @@
 -- order by count (*) DESC
 -- )
 -- ;
-\copy ( select row_number() OVER (ORDER BY count (*) DESC), gene, count (*) from degenes_2str where tool = 'edger' and gene_subset = 'brain_r557' and fdr < 0.1 and group1 ~ '.._M' group by gene order by count (*) DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/decountm_brain_edger_fdr10.txt';
+-- \copy ( select row_number() OVER (ORDER BY count (*) DESC), gene, count (*) from degenes_2str where tool = 'edger' and gene_subset = 'brain_r557' and fdr < 0.1 and group1 ~ '.._M' group by gene order by count (*) DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/decountm_brain_edger_fdr10.txt';
 
 
 -- select c.gene, c.count from 
@@ -789,9 +789,6 @@
 
 -- ;
 
-
-
-
 -- -- GET FBGNS of DECOUNTF -- --
 -- select *
 -- from decountf
@@ -802,4 +799,17 @@
 -- order by count DESC
 -- ;
 -- \copy (  select * from decountf inner join gff_genes on (gene = name_name) where gff_file = 'dmel-all-filtered-r5.57.gff' order by count DESC ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decountf_fdr10_fbgns.txt' header csv;
+
+
+-- -- Get info from autin sorted and grouped by different fields
+
+select genotype, sex, sample, rnaconc, qbitngul, use_seq from autin order by qbitngul;
+
+
+
+
+
+
+
+
 

@@ -66,63 +66,60 @@ class RNASeqData:
     and other user-defined parameters for RNA-Seq analysis.
     '''
 
-    def __init__(self, alignment, genesubset):
-        '''
-        Inputs:
-        alignment = data to analyze, based on alignment settings (choices are
-            unstranded, 2str)
-        genesubset = subset of genes that are analyzed (all, prot_coding_genes,
-            bwa, etc.)
-        '''
-        self.genesubset = genesubset 
+    def __init__(self):
 
-        if alignment == 'unstranded':
-            self.th_resdir = 'results_tophat'
-            self.cuff_table = 'cufflinks_data_un'
-            self.htseq_table = 'htseq_un'
-            self.degene_table = 'degenes_un'
-            self.htseq_dir = 'htseq_out'
+        self.berkidlist = [
+                'RGSJ006G'  #CS_MA
+                ,'RGAM010F' #CS_MC
+                ,'RGAM009D' #NrxIV_MA
+                ,'RGAM010A' #NrxIV_MB
+                ,'RGAM010D' #CS_FA
+                ,'RGAM010H' #CS_FB
+                ]
 
-        if alignment == '2str':
-            self.th_resdir = 'results_tophat_2str'
-            self.cuff_table = 'cufflinks_data_2str'
-            self.htseq_table = 'htseq_2str'
-            self.degene_table = 'degenes_2str'
-            self.htseq_dir = 'htseq_out'
+        self.th_resdir = 'results_thcompare_r6_unfil_2str_minintron'
+        self.strand = 'fr-secondstrand'
+        self.minintron = True
+        #self.cuff_table = 'cufflinks_data_r6_2str'
+        #self.htseq_table = 'htseq_r6_2str'
+        #self.degene_table = 'degenes_r6_2str'
+        #self.htseq_dir = 'htseq_out_str'
 
-        if alignment == 'r6_2str':
-            self.th_resdir = 'results_tophat_r6_2str'
-            self.cuff_table = 'cufflinks_data_r6_2str'
-            self.htseq_table = 'htseq_r6_2str'
-            self.degene_table = 'degenes_r6_2str'
-            self.htseq_dir = 'htseq_out_str'
-        
-        self.sampleinfo_table = 'autin'
 
         #Paths to the reference genome and other files used for alignment
         #by Tophat.
-        if alignment == 'r6_2str':
-            self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r6.01' 
-            self.gff_path = os.path.join(self.refseq_path,
-                    'dmel-all-r6.01.gff')
-            self.gff_path_nofa = os.path.join(self.refseq_path,
-                    'dmel-all-r6.01-nofa.gff')
-            self.mitogff_path = os.path.join(self.refseq_path, 
-                    'dmel-dmel_mitochondrion_genome-r6.01.gff')
-            self.btindex = os.path.join(self.refseq_path,
-                    'dmel-all-chromosome-r6.01')
+        self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r6.01' 
+        self.gff_path = os.path.join(self.refseq_path,
+                'dmel-all-r6.01.gff')
+        self.gff_path_nofa = os.path.join(self.refseq_path,
+                'dmel-all-r6.01-nofa.gff')
+        self.mitogff_path = os.path.join(self.refseq_path, 
+                'dmel-dmel_mitochondrion_genome-r6.01.gff')
+        self.btindex = os.path.join(self.refseq_path,
+                'dmel-all-chromosome-r6.01')
 
-        elif alignment == 'unstranded' or alignment == '2str':
-            self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.57'
-            self.gff_path = os.path.join(self.refseq_path, 
-                    'dmel-all-filtered-r5.57.gff')
-            self.gff_path_nofa = os.path.join(self.refseq_path, 
-                    'dmel-all-filtered-r5.57-nofa.gff')
-            self.mitogff_path = os.path.join(self.refseq_path, 
-                    'dmel-dmel_mitochondrion_genome-r5.57.gff')
-            self.btindex = os.path.join(self.refseq_path, 
-                    'dmel-all-chromosome-r5.57')
+        #self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.57'
+        #self.gff_path = os.path.join(self.refseq_path, 
+                #'dmel-all-r5.57.gff')
+        #self.gff_path_nofa = os.path.join(self.refseq_path, 
+                #'dmel-all-r5.57-nofa.gff')
+        #self.mitogff_path = os.path.join(self.refseq_path, 
+                #'dmel-dmel_mitochondrion_genome-r5.57.gff')
+        #self.btindex = os.path.join(self.refseq_path, 
+                #'dmel-all-chromosome-r5.57')
 
+        #self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.50'
+        #self.gff_path = os.path.join(self.refseq_path, 
+                #'dmel-all-r5.50.gff')
+        #self.gff_path_nofa = os.path.join(self.refseq_path, 
+                #'dmel-all-r5.50-nofa.gff')
+        #self.mitogff_path = os.path.join(self.refseq_path, 
+                #'dmel-dmel_mitochondrion_genome-r5.50.gff')
+        #self.btindex = os.path.join(self.refseq_path, 
+                #'dmel-all-chromosome-r5.50')
+
+        self.genesubset = 'all'
+        self.sampleinfo_table = 'autin'
 
         #Paths to directories holding sequence data.
         self.seq_path = '/home/andrea/Documents/lab/RNAseq/sequences'
@@ -136,7 +133,7 @@ class RNASeqData:
 
         #Paths to settings files.   
         self.set_dir_orig = '/home/andrea/Documents/lab/code/rnaseq_analysis'
-        self.set_file = 'rnaseq_settings.py'
+        self.set_file = 'rnaseq_settings_custom.py'
         self.set_path_orig = os.path.join(self.set_dir_orig, self.set_file)
 
         #Path to Tophat files. 

@@ -11,15 +11,15 @@ import psycopg2
 import os
 import glob
 
-TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_2str'
+TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_r6_2str'
 CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
 TOPHAT_DIR = 'tophat_out'
-HTSEQ_DIR = 'htseq_out'
+HTSEQ_DIR = 'htseq_out_str'
 SUMM_FILE = 'align_summary.txt'
-CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
+#CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
 HTSEQ_FILE = 'htseqcount'
-TH_ALL_SUMM_FILE = 'tophat_all_align_summary.txt'
-HTSEQ_ALL_SUMM_FILE = 'htseq_all_2str_unique_summary.txt'
+TH_ALL_SUMM_FILE = 'tophat_r6_2str_all_align_summary.txt'
+HTSEQ_ALL_SUMM_FILE = 'htseq_r6_2str_all_unique_summary.txt'
 
 
 def get_align_info_tophat(summ_file):

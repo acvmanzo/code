@@ -14,7 +14,7 @@ import libs.rnaseqlib as rl
 import rnaseq_settings as rs
 
 parser = argparse.ArgumentParser()
-parser.add_argument('alignment', choices=['unstranded', '2str'], 
+parser.add_argument('alignment', choices=['unstranded', '2str', 'r6_2str'], 
         help='Option for which data to analyze')
 #parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
         #'brain_r557'], 
