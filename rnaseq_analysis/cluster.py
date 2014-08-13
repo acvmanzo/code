@@ -1,16 +1,16 @@
 # Script for clustering samples according to similarity in expression data.
 
-from correlationlib import get_samplename
+from libs.rnaseqlib import get_samplename
 import numpy as np
 import psycopg2
 import scipy.spatial
 import scipy.cluster
 import matplotlib.pyplot as plt
 
-ANALYSIS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/'
-DEND_FILE = ANALYSIS_DIR + 'cufflinks_cluster_pclog2.png'
-LEAF_FILE = ANALYSIS_DIR + 'cufflinks_cluster_leaves_pclog2.txt'
-LEAF_DATE_FILE = ANALYSIS_DIR + 'cufflinks_cluster_leaves_date_pclog2.txt'
+ANALYSIS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/clustering/results_tophat_2str/'
+DEND_FILE = ANALYSIS_DIR + 'htseq_cluster_pcg.png'
+LEAF_FILE = ANALYSIS_DIR + 'htseq_cluster_leaves_pcg.txt'
+LEAF_DATE_FILE = ANALYSIS_DIR + 'htseq_cluster_leaves_date_pcg.txt'
 
 
 
@@ -18,7 +18,7 @@ def plot_dend(dend_file, leaf_file, gene_subset_table):
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
 
-    berkidcmd = "select distinct berkid from cufflinks_data;"
+    berkidcmd = "select distinct berkid from autin where use_seq = True;"
     cur.execute(berkidcmd)
     berkids = np.array(sorted([x[0] for x in cur.fetchall()]))
     samples = [get_samplename(b, cur) for b in berkids]
@@ -31,8 +31,9 @@ def plot_dend(dend_file, leaf_file, gene_subset_table):
     cur = conn.cursor()
     for berkid in berkids:
         #if gene_subset_table:
-        fpkmcmd = "select tracking_id, fpkm from cufflinks_data as t0 inner join prot_coding_genes as t2 using(tracking_id) where t0.berkid = '{0}' and t0.tracking_id != '' order by tracking_id;".format(berkid) 
-        #fpkmcmd = "select tracking_id, fpkm from cufflinks_data where berkid = '{}' and tracking_id != '' order by tracking_id;".format(berkid)
+        fpkmcmd = "select gene_short_name, counts from htseq_2str as t0 inner join prot_coding_genes as t2 using(gene_short_name) where t0.berkid = '{0}' and t0.gene_short_name != '' order by gene_short_name;".format(berkid) 
+        #fpkmcmd = "select tracking_id, fpkm from cufflinks_data_2str as t0 inner join prot_coding_genes as t2 using(tracking_id) where t0.berkid = '{0}' and t0.tracking_id != '' order by tracking_id;".format(berkid) 
+        #fpkmcmd = "select tracking_id, fpkm from cufflinks_data_2str where berkid = '{}' and tracking_id != '' order by tracking_id;".format(berkid)
         cur.execute(fpkmcmd)
         results = cur.fetchall()
         tracking_id = [x[0] for x in results]
@@ -50,9 +51,9 @@ def plot_dend(dend_file, leaf_file, gene_subset_table):
         hack_test.append(all(row))
     assert(all(hack_test))
 
-    #all_fpkm = np.array(all_fpkm)
+    all_fpkm = np.array(all_fpkm)
     #take add pseudocount and take log2
-    all_fpkm = np.log2(np.array(all_fpkm)+1)
+    #all_fpkm = np.log2(np.array(all_fpkm)+1)
 
 
     blabels = samples
@@ -73,6 +74,7 @@ def dend_analyze(leaf_file, leaf_date_file):
         for l in f:
             leaves.append(l.strip('\n'))
 
+    frozends = []
     rnads = []
     mrnads = []
     cdnads = []
@@ -82,21 +84,23 @@ def dend_analyze(leaf_file, leaf_date_file):
     conn = psycopg2.connect("dbname=rnaseq user=andrea")
     cur = conn.cursor()
     for leaf in leaves:
-        cmd = "select rnad, mrnad, cdnad, seqd from autin where sample = '{}'".format(leaf)
+        cmd = "select frozend, rnad, mrnad, cdnad, seqd from autin where sample = '{}'".format(leaf)
         cur.execute(cmd)
         results = cur.fetchall()
-        rnads.append(results[0][0])
-        mrnads.append(results[0][1])
-        cdnads.append(results[0][2])
-        seqds.append(results[0][3])
+        frozends.append(results[0][0])
+        rnads.append(results[0][1])
+        mrnads.append(results[0][2])
+        cdnads.append(results[0][3])
+        seqds.append(results[0][4])
 
-    datas = zip(leaves, rnads, mrnads, cdnads, seqds)
+    datas = zip(leaves, frozends, rnads, mrnads, cdnads, seqds)
     with open(leaf_date_file, 'w') as g:
-        g.write('Sample\tRNA\tmRNA\tcDNA\tseq\n')
+        g.write('Sample\tFrozen\tRNA\tmRNA\tcDNA\tseq\n')
     for data in datas:
         with open(leaf_date_file, 'a') as g:
-            g.write('{}\t{}\t{}\t{}\t{}\n'.format(data[0], data[1].isoformat(), 
-                data[2].isoformat(), data[3].isoformat(), data[4].isoformat()))
+            g.write('{}\t{}\t{}\t{}\t{}\t{}\n'.format(data[0], data[1].isoformat(), 
+                data[2].isoformat(), data[3].isoformat(), data[4].isoformat(),
+                data[5].isoformat()))
 
 plot_dend(DEND_FILE, LEAF_FILE, True)
 dend_analyze(LEAF_FILE, LEAF_DATE_FILE)
