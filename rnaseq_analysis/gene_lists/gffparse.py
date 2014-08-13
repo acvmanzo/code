@@ -21,6 +21,8 @@ R550_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r5.50')
 R550_FN2F_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_2fbgn_r5.50')
 
 def main():
+    get_genes_mrna(outfile='igv_dmel-all-r5.57.gff', gff_file='dmel-all-r5.57-nofa.gff')
+
     #open(R557_FNA_FILE, 'w')
     #og = [R557_FNA_FILE, R557_GFF_FILE]
        
@@ -29,9 +31,9 @@ def main():
     #except ValueError:
         #pass 
 
-    outfile = 'test.txt'
-    gff_file = R557_FIL_GFF_FILE
-    get_fbgn_length(outfile, gff_file)
+    #outfile = 'test.txt'
+    #gff_file = R557_FIL_GFF_FILE
+    #get_fbgn_length(outfile, gff_file)
     
 def batch_fbgn_name():
     '''Applies get_fbgn_name to multiple gff files'''
@@ -161,6 +163,22 @@ def get_fbgn_length(outfile, gff_file):
                 #fbgn_name.append((fbgn, name))
                 g.write('{}\t{}\n'.format(name, length))
     #return(fbgn_name)
+
+def get_genes_mrna(outfile, gff_file):
+    '''From gff_file, writes the lines that have the feature type gene, mRNA,
+    exon, or cds into the file outfile.
+    '''
+
+    take_features = ['gene', 'mRNA', 'exon', 'CDS']
+    gf = HTSeq.GFF_Reader(gff_file, end_included=True)
+    counter = 0
+
+    with open(outfile, 'w') as g:
+        for feature in itertools.islice(gf, None):
+            counter +=1
+            if feature.type in take_features:
+                gffline = feature.get_gff_line()
+                g.write(gffline)
 
 if __name__ == '__main__':
     main()
