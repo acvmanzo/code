@@ -59,7 +59,8 @@ def gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir):
     sequence directory paths.'''
     seqdir_paths = []
     seqd_col = colquery.index('seqd')
-    for berkid, info in berkid_dict.items():
+    for berkid in sorted(berkid_dict.keys()):
+        info = berkid_dict[berkid]
         seqd = info[seqd_col].strftime("%Y-%m%d")
         seqdir_path = os.path.join(seq_dir, seqd, seq_subdir, \
             'Sample_{}'.format(berkid))
@@ -77,8 +78,10 @@ def get_berkid_seq_res_paths(berkidlist, infotable, colquery, seq_dir,\
         infotable, colquery)
     conn.close()
     seqpaths = gen_seq_paths(colquery, berkid_dict, seq_dir, seq_subdir)
-    respaths = [os.path.join(results_dir, berkid) for berkid in berkidlist]
-    return(seqpaths, respaths)
+    print(seqpaths)
+    respaths = [os.path.join(results_dir, berkid) for berkid in sorted(berkidlist)]
+    print(respaths)
+    return(sorted(berkidlist), seqpaths, respaths)
 
 def get_dirs(folder, globstring):
     '''Returns all the directories in a folder that match the string 'globstring'

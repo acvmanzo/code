@@ -11,15 +11,6 @@ import psycopg2
 import os
 import glob
 
-TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_tophat_r6_2str'
-CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
-TOPHAT_DIR = 'tophat_out'
-HTSEQ_DIR = 'htseq_out_str'
-SUMM_FILE = 'align_summary.txt'
-#CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
-HTSEQ_FILE = 'htseqcount'
-TH_ALL_SUMM_FILE = 'tophat_r6_2str_all_align_summary.txt'
-HTSEQ_ALL_SUMM_FILE = 'htseq_r6_2str_all_unique_summary.txt'
 
 
 def get_align_info_tophat(summ_file):
@@ -131,7 +122,7 @@ def batch_align_summ_tophat(th_align_dir, all_summ_file, tophat_dir, summ_file):
     for resdir in resdirs:
         cur = conn.cursor()
         os.chdir(os.path.join(resdir, tophat_dir))
-        berkid = os.path.basename(resdir)
+        berkid = os.path.basename(resdir).split('_')[0]
         print(berkid)
         try:
             sample = rl.get_samplename(berkid, cur)
@@ -215,7 +206,7 @@ def batch_align_summ_htseqcount(th_align_dir, all_summ_file, htseq_dir,
         print(os.path.join(resdir, htseq_dir))
         try:
             os.chdir(os.path.join(resdir, htseq_dir))
-            berkid = os.path.basename(resdir)
+            berkid = os.path.basename(resdir).split('_')[0]
             print(berkid)
             try:
                 cur = conn.cursor()
@@ -275,8 +266,16 @@ def plot_htseqcount_dist(htseqfile, plot):
 
 
 if __name__ == '__main__':
-    #batch_align_summ_tophat(TH_ALIGN_DIR, TH_ALL_SUMM_FILE, TOPHAT_DIR, 
-            #SUMM_FILE)
+
+    TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_thcompare_r6_unfil_2str_minintron'
+    CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
+    TOPHAT_DIR = 'tophat_out'
+    HTSEQ_DIR = 'htseq_out_str'
+    SUMM_FILE = 'align_summary.txt'
+    #CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
+    HTSEQ_FILE = 'htseqcount'
+    TH_ALL_SUMM_FILE = 'tophat_r6_unfil_2str_minintron_all_align_summary.txt'
+    HTSEQ_ALL_SUMM_FILE = 'htseq_r6_unfil_2str_minintron_all_unique_summary.txt'
 
     #add_aligner_col(CLC_ALL_SUMM_FILE, 'clc')
     #add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
@@ -285,5 +284,7 @@ if __name__ == '__main__':
     #d = plot_htseqcount_dist(HTSEQ_FILE, 'y')
     #print(d)
     #add_col('tophat_all_align_summarywithal.txt', '2str')
+    batch_align_summ_tophat(TH_ALIGN_DIR, TH_ALL_SUMM_FILE, TOPHAT_DIR, 
+            SUMM_FILE)
     batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR, 
         HTSEQ_FILE, aligner='tophat_2str')

@@ -31,11 +31,11 @@ cpms = cpm(counts)
 # groups.  cpms >1 is a Boolean array. rowSums(cpms>1) is the sum of Booleans
 # across each row of cpms>1. keep is a Boolean vector that has the value 'True'
 # if rowSums(cpms>1) is at least min_reps.
-#noint = rownames(counts) %in% c("no_feature", "too_low_aQual", "not_aligned", "alignment_not_unique")
+noint = rownames(counts) %in% c("no_feature", "too_low_aQual", "not_aligned", "alignment_not_unique")
 min_reps = min(table(samples$CorE))
-print(paste("min_reps", min_reps))
+#print(paste("min_reps", min_reps))
 keep = rowSums(cpms >1) >= min_reps & !noint
-print(keep)
+#print(keep)
 #keep = rowSums(cpms >1) >= 3 & !noint
 
 counts = counts[keep,]
@@ -82,6 +82,7 @@ dev.off()
 
 # From the manual: Implements the method of Robinson and Smyth (2008) for estimating a common dispersion parameter by conditional maximum likelihood. 
 d = estimateCommonDisp(d)
+print(paste("common dispersion =", d))
 
 # From the manual: This function implements the empirical Bayes strategy
 # proposed by Robinson and Smyth (2007) for estimating the tagwise negative

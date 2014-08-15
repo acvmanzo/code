@@ -78,10 +78,10 @@ class RNASeqData:
                 ]
 
 
-        self.th_resdir = 'results_thcompare_r550_unfil_un'
-        self.strand = 'fr-unstranded'
+        self.th_resdir = 'results_thcompare_r550_unfil_2str'
+        self.strand = 'fr-secondstrand'
         self.minintron = False
-        self.htseq_dir = 'htseq_out_un'
+        self.htseq_dir = 'htseq_out_str'
 
         #self.th_resdir = 'results_thcompare_r6_unfil_2str_minintron'
         #self.strand = 'fr-secondstrand'

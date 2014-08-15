@@ -50,8 +50,8 @@ def run_htseq(htseq_dir, htseq_file, bamfile, gff_file, htseq_cmd_file):
     else:
         logging.info('Creating new file')
 
-        cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
-        #cmd = 'htseq-count -f bam -s yes -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
+        #cmd = 'htseq-count -f bam -s no -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
+        cmd = 'htseq-count -f bam -s yes -t gene -i Name {} {} > {}'.format(bamfile, gff_file, htseq_path)
         logging.debug(cmd)
         os.system(cmd)
         with open(htseq_cmd_path, 'w') as f:

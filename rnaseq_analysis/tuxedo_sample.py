@@ -31,12 +31,13 @@ def main():
     rl.logginginfo(logpath)
 
 
-    seqpaths, respaths = rl.get_berkid_seq_res_paths(rnaset.berkidlist, \
+    sberkids, seqpaths, respaths = rl.get_berkid_seq_res_paths(rnaset.berkidlist, \
         rnaset.sampleinfo_table, COLQUERY, rnaseqdict['seq_path'],
         rnaseqdict['seq_subdir'], rnaseqdict['th_resdirpath'])
-    #print(seqpaths, respaths)
 
-    berkid_params = zip(rnaset.berkidlist, seqpaths, respaths) 
+    berkid_params = zip(sberkids, seqpaths, respaths) 
+    #for i in list(berkid_params):
+        #print(i)
     for berkid, sample_seqdir, sample_resdir in berkid_params:
         tl.run_tophat_cufflinks(berkid, sample_seqdir, sample_resdir, rnaseqdict, 
         args.cufflinks, rnaset.strand, rnaset.minintron)

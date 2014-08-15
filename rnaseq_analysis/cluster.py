@@ -8,9 +8,9 @@ import scipy.cluster
 import matplotlib.pyplot as plt
 
 ANALYSIS_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/clustering/results_tophat_2str/'
-DEND_FILE = ANALYSIS_DIR + 'htseq_cluster_pcg.png'
-LEAF_FILE = ANALYSIS_DIR + 'htseq_cluster_leaves_pcg.txt'
-LEAF_DATE_FILE = ANALYSIS_DIR + 'htseq_cluster_leaves_date_pcg.txt'
+DEND_FILE = ANALYSIS_DIR + 'htseq_cluster_pcg_pclog2.png'
+LEAF_FILE = ANALYSIS_DIR + 'htseq_cluster_leaves_pcg_pclog2.txt'
+LEAF_DATE_FILE = ANALYSIS_DIR + 'htseq_cluster_leaves_date_pcg_pclog2.txt'
 
 
 
@@ -51,9 +51,9 @@ def plot_dend(dend_file, leaf_file, gene_subset_table):
         hack_test.append(all(row))
     assert(all(hack_test))
 
-    all_fpkm = np.array(all_fpkm)
+    #all_fpkm = np.array(all_fpkm)
     #take add pseudocount and take log2
-    #all_fpkm = np.log2(np.array(all_fpkm)+1)
+    all_fpkm = np.log2(np.array(all_fpkm)+1)
 
 
     blabels = samples
