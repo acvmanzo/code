@@ -2,6 +2,7 @@
 # can be imported by postgresql using the \copy function. 
 
 FBGN_FILE = '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/fbgn_annotation_ID_fb_2014_03_fordb.tsv' # Manually deleted header from original file.
+R6_FBGN_FILE = '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/fbgn_annotation_ID_fb_2014_04_db.tsv'
 
 def add_braces():
     '''Puts brackets around lists so that they can be imported as arrays
@@ -21,7 +22,7 @@ def gen_index_fbgn(fbgn_file):
     '''Copies data into new file with 3 columns:  
     primary fbgn, primary/secondary fbgn, gene symbol
     '''
-    new_fbgn_file = fbgn_file.rstrip('.tsv') + '_2ndid.tsv'
+    new_fbgn_file = fbgn_file.rstrip('.tsv') + '_2fbgn.tsv'
     with open(new_fbgn_file, 'w') as g:
         with open(fbgn_file, 'r') as f:
             for l in f:
@@ -51,6 +52,6 @@ def gen_index_annid(fbgn_file):
                     if s != '':
                         g.write('{}\t{}\t{}\n'.format(annid, s, sym))
 if __name__ == '__main__':
-    gen_index_annid(FBGN_FILE)
+    gen_index_fbgn(R6_FBGN_FILE)
 
 

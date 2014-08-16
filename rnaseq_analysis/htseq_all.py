@@ -21,7 +21,7 @@ parser.add_argument('alignment', choices=['unstranded', '2str', 'r6_2str'],
         #help='make new file of htseq-count results for the given subset of genes')
 parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
         'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
-        'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        'bwa_r557_ralph_mt_ex', 'sfari_r557', 'bwa_r601', 'sfari_r601'], 
         help='make new file of htseq-count results for the given subset of genes')
 parser.add_argument('-ht', '--htseqcount', action='store_true', 
         help='run htseq-count')
@@ -70,13 +70,14 @@ def main():
     
     if args.htseqcount:
         #conn = False
-        conn = psycopg2.connect("dbname=rnaseq user=andrea")
+        conn = psycopg2.connect("dbname={} user=andrea".format(rnaset.rsdbname))
         logging.info('Running htseq-count')
         batch_run_htseq(conn)
 
     if args.copytodb:
         logging.info('Copying to database')
-        conn = psycopg2.connect("dbname=rnaseq user=andrea")
+        #conn = psycopg2.connect("dbname=rnaseq user=andrea")
+        conn = psycopg2.connect("dbname={} user=andrea".format(rnaset.rsdbname))
         batch_ht_add_berkid(conn)
         batch_ht_copy_to_dbtable(conn)
         conn.commit()
@@ -84,7 +85,8 @@ def main():
 
     if args.genesubset:
         logging.info('Generating htseq-count file for {}'.format(args.genesubset))
-        conn = psycopg2.connect("dbname=rnaseq user=andrea")
+        #conn = psycopg2.connect("dbname=rnaseq user=andrea")
+        conn = psycopg2.connect("dbname={} user=andrea".format(rnaset.rsdbname))
         batch_ht_gene_subset(conn, args.genesubset)
         conn.commit()
         conn.close()

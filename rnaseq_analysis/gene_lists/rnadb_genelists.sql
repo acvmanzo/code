@@ -12,6 +12,8 @@
 
 -- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_annID_r5.50';
 -- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel-r5.50_r5.57_lists/fbgn_name_annID_r5.57';
+-- \copy gff_genes from '/home/andrea/rnaseqanalyze/references/dmel_lists/fbgn_name_annID_r6.01_all';
+
 
 
 -- QUERY TO LOOK FOR GENES THAT ARE THE SAME IN THE R5.57 AND R5.5 FILES;
@@ -281,6 +283,7 @@
     -- unique (pfbgn, psfbgn)
 -- );
 -- \copy all_fbgns from '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/fbgn_annotation_ID_fb_2014_03_fordb_2fbgn.tsv' ;
+-- \copy all_fbgns from '/home/andrea/rnaseqanalyze/references/fbgn_annot_ID/fbgn_annotation_ID_fb_2014_04_db_2fbgn.tsv' ;
 
 
 -- As above, but with annotation IDs.
@@ -497,6 +500,14 @@
     -- all_fbgns as allf
     -- on (fbgn_id = psfbgn)
     -- where gff.gff_file = 'dmel-all-filtered-r5.57.gff')
+-- ;
+-- create or replace view r601_id_index as (
+    -- select gff.name_name, gff.fbgn_id, allf.pfbgn from
+    -- gff_genes as gff
+    -- inner join
+    -- all_fbgns as allf
+    -- on (fbgn_id = psfbgn)
+    -- where gff.gff_file = 'dmel-all-r6.01.gff')
 -- ;
 
 -- -- -- Gets the r557 fbgn_ids of the sfari homologs
@@ -809,12 +820,21 @@
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'sfari'))
 -- ;
 
+-- CREATE OR REPLACE VIEW sfari_r601 AS (
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r601_id_index', 'dmel-all-r6.01.gff', 'sfari'))
+-- ;
 
 -- Brain-expressed genes only --
 -- CREATE OR REPLACE VIEW brain_r557 AS (
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'fly_atlas')
 -- order by gene_short_name)
 -- ;
+
+-- CREATE OR REPLACE VIEW brain_r601 AS (
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r601_id_index', 'dmel-all-r6.01.gff', 'fly_atlas')
+-- order by gene_short_name)
+-- ;
+
 -- rnaseq=# select count (*) from brain_r557 ;
  -- count 
 -- -------
@@ -833,6 +853,17 @@
 
 
 -- ---Putting all the lists together ------
+-- CREATE OR REPLACE VIEW bwa_r601 AS (
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r601_id_index', 'dmel-all-r6.01.gff', 'williams')
+-- UNION
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r601_id_index', 'dmel-all-r6.01.gff', 'sfari')
+-- UNION
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r601_id_index', 'dmel-all-r6.01.gff', 'autkb')
+-- UNION
+-- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r601_id_index', 'dmel-all-r6.01.gff', 'fly_atlas')
+-- order by gene_short_name)
+-- ;
+
 -- CREATE OR REPLACE VIEW bwa_r557 AS (
 -- select distinct gff_fbgn_id as tracking_id, gff_name_name as gene_short_name from get_homolog_gff_names('r557_id_index', 'dmel-all-filtered-r5.57.gff', 'williams')
 -- UNION

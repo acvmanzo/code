@@ -86,7 +86,7 @@ def gen_joincmd(berkid, dbtable, gene_subset_table):
     newtable = dbtable + '_' + gene_subset_table
 
 
-    joinandcopycmd = "create table {3} as select gene_short_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, newtable)
+    joinandcopycmd = "create table {3} as select t0.gene_short_name, counts, t0.berkid from {0} as t0 {1} where t0.berkid = '{2}' order by gene_short_name;".format(dbtable, gsstring, berkid, newtable)
     logging.debug('%s', joinandcopycmd)
     return(joinandcopycmd, newtable)
 

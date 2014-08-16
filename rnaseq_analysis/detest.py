@@ -16,11 +16,11 @@ import cmn.cmn as cmn
 parser = argparse.ArgumentParser()
 parser.add_argument('tool', choices=['edger', 'deseq'],
         help='selects DE analysis tool')
-parser.add_argument('alignment', choices=['unstranded', '2str'], 
+parser.add_argument('alignment', choices=['unstranded', '2str', 'r6_2str'], 
         help='Option for which data to analyze')
 parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
         'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
-        'bwa_r557_ralph_mt_ex', 'sfari_r557'], 
+        'bwa_r557_ralph_mt_ex', 'sfari_r557', 'bwa_r601', 'sfari_r601'], 
         help='set of genes on which to run DE analysis')
 parser.add_argument('-r', '--run', action="store_true", 
         help='runs DE analysis')
@@ -62,7 +62,7 @@ if args.run:
 if args.copytodb:
     #Generates files formatted for database and copies data from that file into 
     #the database. 
-    conn = psycopg2.connect("dbname=rnaseq user=andrea")
+    conn = psycopg2.connect("dbname={} user=andrea".format(rnaset.rsdbname))
     dl.batch_makecopy_db_degenefile(rnaseqdict, tool, gene_subset, conn)
     conn.commit()
     conn.close()

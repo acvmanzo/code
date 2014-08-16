@@ -82,6 +82,7 @@ class RNASeqData:
             self.htseq_table = 'htseq_un'
             self.degene_table = 'degenes_un'
             self.htseq_dir = 'htseq_out'
+            self.rsdbname = 'rnaseq'
 
         if alignment == '2str':
             self.th_resdir = 'results_tophat_2str'
@@ -89,6 +90,7 @@ class RNASeqData:
             self.htseq_table = 'htseq_2str'
             self.degene_table = 'degenes_2str'
             self.htseq_dir = 'htseq_out'
+            self.rsdbname = 'rnaseq'
 
         if alignment == 'r6_2str':
             self.th_resdir = 'results_tophat_r6_2str'
@@ -96,6 +98,7 @@ class RNASeqData:
             self.htseq_table = 'htseq_r6_2str'
             self.degene_table = 'degenes_r6_2str'
             self.htseq_dir = 'htseq_out_str'
+            self.rsdbname = 'sixrna'
         
         self.sampleinfo_table = 'autin'
 

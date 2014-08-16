@@ -123,14 +123,16 @@
 -- Create a table of protein-coding genes; output of QueryBuilder on Flybase where I selected genes
 -- that matched the class 'protein_coding_genes'
 
+-- DROP TABLE prot_coding_genes;
 -- CREATE TABLE prot_coding_genes (
     -- tracking_id character varying(20),
     -- gene_long_name character varying(100),
     -- gene_short_name character varying(100)
 -- );
 
--- Copy into table.
--- \copy prot_coding_genes from '/home/andrea/rnaseqanalyze/references/protein_coding_genes/flybase_results_protein_coding_genes_dmel_symbol.txt';
+-- -- Copy into table.
+-- -- \copy prot_coding_genes from '/home/andrea/rnaseqanalyze/references/protein_coding_genes/flybase_results_protein_coding_genes_dmel_symbol.txt';
+-- \copy prot_coding_genes from '/home/andrea/rnaseqanalyze/references/gene_lists/protein_coding_genes/prot_coding_genes_r6.01_db.txt';
 
 -- create view test as select t0.tracking_id, t0.berkid as berkid0, t0.fpkm as fpkm0, t1.berkid as berkid1, t1.fpkm as fpkm1 from cufflinks_data as t0 full outer join cufflinks_data as t1 using (tracking_id) where t0.berkid = 'RGAM009G' and t1.berkid = 'RGAM011A' and t0.tracking_id != '' and t0.fpkm_status = 'OK' and t1.fpkm_status = 'OK' order by tracking_id;
 
@@ -178,11 +180,11 @@
 -- );
 
 -- Testing using htseq and SERE
--- CREATE TABLE htseq (
+-- CREATE TABLE htseq_r6_2str (
     -- gene_short_name varchar(100),
     -- counts int,
     -- berkid varchar(20),
-    -- unique(gene_name, berkid)
+    -- unique(gene_short_name, berkid)
 -- );
 
 -- \copy htseq from '/home/andrea/bookmarks/analysis/results_tophat/RGAM009H/tophat_out/htseq_results_edit_berkid.txt';
@@ -244,7 +246,7 @@
 
 -- Creates a table for the DE gene data.
 -- DROP TABLE degenes;
--- CREATE TABLE degenes (
+-- CREATE TABLE degenes_r6_2str (
     -- gene varchar(100),
     -- logfc double precision,
     -- logcpm double precision,
@@ -841,7 +843,7 @@
 -- order by avg DESC
 -- ;
 
-\copy ( select gene, g.fbgn_id, avg(coalesce(df.count, 0) + coalesce(dm.count, 0)) as num_samples, 2^avg(logfc) as avg_fc, 2^avg(logcpm) as avg_cpm, array_agg(group1) from decountf_prot_coding_genes_edger_fdr10_2str as df full outer join decountm_prot_coding_genes_edger_fdr10_2str as dm using (gene) inner join degenes_2str as d using (gene) inner join gff_genes as g on (gene = g.name_name) where d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and d.fdr < 0.10 and (d.group2 = 'CS_M' or d.group2 = 'CS_F') and d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and g.gff_file = 'dmel-all-filtered-r5.57.gff' group by gene, g.fbgn_id order by num_samples DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/decount/decountf+m_fdr10_groups.txt' csv header;
+-- \copy ( select gene, g.fbgn_id, avg(coalesce(df.count, 0) + coalesce(dm.count, 0)) as num_samples, 2^avg(logfc) as avg_fc, 2^avg(logcpm) as avg_cpm, array_agg(group1) from decountf_prot_coding_genes_edger_fdr10_2str as df full outer join decountm_prot_coding_genes_edger_fdr10_2str as dm using (gene) inner join degenes_2str as d using (gene) inner join gff_genes as g on (gene = g.name_name) where d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and d.fdr < 0.10 and (d.group2 = 'CS_M' or d.group2 = 'CS_F') and d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and g.gff_file = 'dmel-all-filtered-r5.57.gff' group by gene, g.fbgn_id order by num_samples DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/decount/decountf+m_fdr10_groups.txt' csv header;
 
 -- -- Get info from autin sorted and grouped by different fields
 
