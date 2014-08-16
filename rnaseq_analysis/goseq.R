@@ -8,7 +8,7 @@
 library(goseq)
 de = scan('de_all_fdr05.txt', what='character')
 
-all = scan('/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/all_genes.txt' ,what='character')
+all = scan('/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/prot_coding_genes_genes.txt' ,what='character')
 
 gene.vector = as.integer(all%in%de) # List of 0's and 1's of length all, 0 if not de, 1 otherwise.
 #print(gene.vector)
@@ -17,7 +17,7 @@ names(gene.vector)=all
 head(gene.vector)
 print(length(gene.vector))
 
-lengths = scan('/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/gene_lengths.txt', what='integer')
+lengths = scan('/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/gene_lengths.txt', what='integer')
 head(lengths)
 lengths = as.numeric(lengths)
 head(lengths)

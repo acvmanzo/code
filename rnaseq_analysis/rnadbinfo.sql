@@ -801,7 +801,47 @@
 -- order by count DESC
 -- ;
 -- \copy (  select * from decountf inner join gff_genes on (gene = name_name) where gff_file = 'dmel-all-filtered-r5.57.gff' order by count DESC ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decountf_fdr10_fbgns.txt' header csv;
+-- \copy (  select * from decountm_prot_coding_genes_edger_fdr10_2str inner join gff_genes on (gene = name_name) where gff_file = 'dmel-all-filtered-r5.57.gff' order by count DESC ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/decountm_fdr10_fbgns.txt' header csv;
 
+-- select g.fbgn_id, f.gene as gene_F, f.count as count_F, f.row_number as row_F,
+        -- m.gene as gene_M, m.count as count_M, m.row_number as row_M, 
+        -- coalesce(f.count, 0) + coalesce(m.count,0) as sum_counts
+-- from 
+-- decountf_prot_coding_genes_edger_fdr10_2str as f
+-- full outer join
+-- decountm_prot_coding_genes_edger_fdr10_2str as m
+-- on (f.gene = m.gene)
+-- inner join
+-- gff_genes as g
+-- on (f.gene = g.name_name or m.gene = g.name_name)
+-- where g.gff_file = 'dmel-all-filtered-r5.57.gff'
+-- order by sum_counts DESC, f.count DESC, m.count DESC
+-- ;
+
+-- \copy ( select g.fbgn_id, f.gene as gene_F, f.count as count_F, f.row_number as row_F, m.gene as gene_M, m.count as count_M, m.row_number as row_M, coalesce(f.count, 0) + coalesce(m.count,0) as sum_counts from decountf_prot_coding_genes_edger_fdr10_2str as f full outer join decountm_prot_coding_genes_edger_fdr10_2str as m on (f.gene = m.gene) inner join gff_genes as g on (f.gene = g.name_name or m.gene = g.name_name) where g.gff_file = 'dmel-all-filtered-r5.57.gff' order by sum_counts DESC, f.count DESC, m.count DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/decount/decountf+m_fdr10_fbgns.txt' header csv ;
+
+-- -- Returns a list of DE genes, along with the number of samples and which samples they are considered DE.
+-- select gene, g.fbgn_id, avg(coalesce(df.count, 0) + coalesce(dm.count, 0)), array_agg(group1)
+-- -- select gene, df.count, d.group1, d.fdr
+-- from decountf_prot_coding_genes_edger_fdr10_2str as df
+-- full outer join
+-- decountm_prot_coding_genes_edger_fdr10_2str as dm
+-- using (gene)
+-- inner join
+-- degenes_2str as d
+-- using (gene)
+-- inner join 
+-- gff_genes as g
+-- on (gene = g.name_name)
+-- where d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and d.fdr < 0.10 and d.tool = 'edger'
+-- and g.gff_file = 'dmel-all-filtered-r5.57.gff
+-- and (group2 = 'CS_M' or group2 = 'CS_F')
+-- and d.gene_subset = 'prot_coding_genes'
+-- group by gene, g.fbgn_id
+-- order by avg DESC
+-- ;
+
+\copy ( select gene, g.fbgn_id, avg(coalesce(df.count, 0) + coalesce(dm.count, 0)) as num_samples, 2^avg(logfc) as avg_fc, 2^avg(logcpm) as avg_cpm, array_agg(group1) from decountf_prot_coding_genes_edger_fdr10_2str as df full outer join decountm_prot_coding_genes_edger_fdr10_2str as dm using (gene) inner join degenes_2str as d using (gene) inner join gff_genes as g on (gene = g.name_name) where d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and d.fdr < 0.10 and (d.group2 = 'CS_M' or d.group2 = 'CS_F') and d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and g.gff_file = 'dmel-all-filtered-r5.57.gff' group by gene, g.fbgn_id order by num_samples DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/decount/decountf+m_fdr10_groups.txt' csv header;
 
 -- -- Get info from autin sorted and grouped by different fields
 

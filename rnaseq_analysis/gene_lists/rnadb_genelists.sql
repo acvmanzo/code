@@ -822,13 +822,13 @@
 -- (1 row)
 
 ---- Protein coding genes without ralph or mt genes.
-create or replace view prot_coding_genes_ralph_mt_ex as (
-    select gene_short_name from prot_coding_genes
-    except
-    select gene_name from ralph_ex_genes
-    except 
-    select gene_name from mt_ex_genes
-    order by gene_short_name);
+-- create or replace view prot_coding_genes_ralph_mt_ex as (
+    -- select gene_short_name from prot_coding_genes
+    -- except
+    -- select gene_name from ralph_ex_genes
+    -- except 
+    -- select gene_name from mt_ex_genes
+    -- order by gene_short_name);
 
 
 

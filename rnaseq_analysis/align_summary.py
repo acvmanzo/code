@@ -270,12 +270,12 @@ if __name__ == '__main__':
     TH_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/results_thcompare_r6_unfil_2str_minintron'
     CLC_ALIGN_DIR = '/home/andrea/Documents/lab/RNAseq/analysis/CLC_results'
     TOPHAT_DIR = 'tophat_out'
-    HTSEQ_DIR = 'htseq_out_str'
+    HTSEQ_DIR = 'htseq_out_str_exon'
     SUMM_FILE = 'align_summary.txt'
     #CLC_ALL_SUMM_FILE = 'clc_all_align_summary.txt'
     HTSEQ_FILE = 'htseqcount'
-    TH_ALL_SUMM_FILE = 'tophat_r6_unfil_2str_minintron_all_align_summary.txt'
-    HTSEQ_ALL_SUMM_FILE = 'htseq_r6_unfil_2str_minintron_all_unique_summary.txt'
+    TH_ALL_SUMM_FILE = 'tophat_r6_unfil_2str_all_align_summary.txt'
+    HTSEQ_ALL_SUMM_FILE = 'htseq_r6_unfil_2str_exon_all_unique_summary.txt'
 
     #add_aligner_col(CLC_ALL_SUMM_FILE, 'clc')
     #add_aligner_col(TH_ALL_SUMM_FILE, 'tophat_2str')
@@ -284,7 +284,7 @@ if __name__ == '__main__':
     #d = plot_htseqcount_dist(HTSEQ_FILE, 'y')
     #print(d)
     #add_col('tophat_all_align_summarywithal.txt', '2str')
-    batch_align_summ_tophat(TH_ALIGN_DIR, TH_ALL_SUMM_FILE, TOPHAT_DIR, 
-            SUMM_FILE)
+    #batch_align_summ_tophat(TH_ALIGN_DIR, TH_ALL_SUMM_FILE, TOPHAT_DIR, 
+            #SUMM_FILE)
     batch_align_summ_htseqcount(TH_ALIGN_DIR, HTSEQ_ALL_SUMM_FILE, HTSEQ_DIR, 
         HTSEQ_FILE, aligner='tophat_2str')

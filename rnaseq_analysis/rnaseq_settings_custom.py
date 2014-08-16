@@ -78,10 +78,10 @@ class RNASeqData:
                 ]
 
 
-        self.th_resdir = 'results_thcompare_r550_unfil_2str'
+        self.th_resdir = 'results_thcompare_r6_unfil_2str_minintron'
         self.strand = 'fr-secondstrand'
-        self.minintron = False
-        self.htseq_dir = 'htseq_out_str'
+        self.minintron = True
+        self.htseq_dir = 'htseq_out_str_exon'
 
         #self.th_resdir = 'results_thcompare_r6_unfil_2str_minintron'
         #self.strand = 'fr-secondstrand'
@@ -94,15 +94,15 @@ class RNASeqData:
 
         #Paths to the reference genome and other files used for alignment
         #by Tophat.
-        #self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r6.01' 
-        #self.gff_path = os.path.join(self.refseq_path,
-                #'dmel-all-r6.01.gff')
-        #self.gff_path_nofa = os.path.join(self.refseq_path,
-                #'dmel-all-r6.01-nofa.gff')
-        #self.mitogff_path = os.path.join(self.refseq_path, 
-                #'dmel-dmel_mitochondrion_genome-r6.01.gff')
-        #self.btindex = os.path.join(self.refseq_path,
-                #'dmel-all-chromosome-r6.01')
+        self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r6.01' 
+        self.gff_path = os.path.join(self.refseq_path,
+                'dmel-all-r6.01.gff')
+        self.gff_path_nofa = os.path.join(self.refseq_path,
+                'dmel-all-r6.01-nofa.gff')
+        self.mitogff_path = os.path.join(self.refseq_path, 
+                'dmel-dmel_mitochondrion_genome-r6.01.gff')
+        self.btindex = os.path.join(self.refseq_path,
+                'dmel-all-chromosome-r6.01')
 
         #self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.57'
         #self.gff_path = os.path.join(self.refseq_path, 
@@ -114,15 +114,15 @@ class RNASeqData:
         #self.btindex = os.path.join(self.refseq_path, 
                 #'dmel-all-chromosome-r5.57')
 
-        self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.50'
-        self.gff_path = os.path.join(self.refseq_path, 
-                'dmel-all-r5.50.gff')
-        self.gff_path_nofa = os.path.join(self.refseq_path, 
-                'dmel-all-r5.50-nofa.gff')
-        self.mitogff_path = os.path.join(self.refseq_path, 
-                'dmel-dmel_mitochondrion_genome-r5.50.gff')
-        self.btindex = os.path.join(self.refseq_path, 
-                'dmel-all-chromosome-r5.50')
+        #self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.50'
+        #self.gff_path = os.path.join(self.refseq_path, 
+                #'dmel-all-r5.50.gff')
+        #self.gff_path_nofa = os.path.join(self.refseq_path, 
+                #'dmel-all-r5.50-nofa.gff')
+        #self.mitogff_path = os.path.join(self.refseq_path, 
+                #'dmel-dmel_mitochondrion_genome-r5.50.gff')
+        #self.btindex = os.path.join(self.refseq_path, 
+                #'dmel-all-chromosome-r5.50')
 
         self.genesubset = 'all'
         self.sampleinfo_table = 'autin'

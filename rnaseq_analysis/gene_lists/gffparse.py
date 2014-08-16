@@ -5,7 +5,11 @@ import os
 import HTSeq 
 
 REF_DIR = '/home/andrea/rnaseqanalyze/references'
-LIST_DIR = 'dmel-r5.50_r5.57_lists'
+LIST_DIR = 'dmel_lists'
+
+R601_GFF_FILE = os.path.join(REF_DIR, 'dmel-r6.01', 'dmel-all-r6.01.gff')
+R601_FBGN_NAME_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_r6.01_all')
+R601_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r6.01_all')
 
 R557_GFF_FILE = os.path.join(REF_DIR, 'dmel-r5.57', 'dmel-all-r5.57.gff')
 R557_FBGN_NAME_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_r5.57_all')
@@ -21,15 +25,15 @@ R550_FNA_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_annID_r5.50')
 R550_FN2F_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_2fbgn_r5.50')
 
 def main():
-    get_genes_mrna(outfile='igv_dmel-all-r5.57.gff', gff_file='dmel-all-r5.57-nofa.gff')
+    #get_genes_mrna(outfile='igv_dmel-all-r5.57.gff', gff_file='dmel-all-r5.57-nofa.gff')
 
-    #open(R557_FNA_FILE, 'w')
-    #og = [R557_FNA_FILE, R557_GFF_FILE]
+    open(R601_FNA_FILE, 'w')
+    og = [R601_FNA_FILE, R601_GFF_FILE]
        
-    #try:
-        #get_fbgn_name_annid(og[0], og[1])
-    #except ValueError:
-        #pass 
+    try:
+        get_fbgn_name_annid(og[0], og[1])
+    except ValueError:
+        pass 
 
     #outfile = 'test.txt'
     #gff_file = R557_FIL_GFF_FILE

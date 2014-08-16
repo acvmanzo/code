@@ -193,6 +193,7 @@ class RNASeqData:
         self.edger_toptags_file = 'toptags_edgeR.csv'
         self.edger_dbtoptags_file = 'db_toptags_edgeR.csv'
         self.edger_toptags_fdr_file = 'toptags_edgeR_'
+        self.edger_counts_file = 'gene_counts.csv'
         self.de_hh_file = 'human_hom_'
     
         #Paths to DEseq files.

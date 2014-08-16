@@ -11,6 +11,7 @@ biolcv_plot_file <- args[3]
 masmear_plot_file <- args[4]
 toptags_file <- args[5]
 toptags_fdr_file <- args[6]
+counts_file <- args[7]
 
 library("edgeR")
 # Loads sample info and counts into R.
@@ -46,6 +47,7 @@ colnames(counts) = samples$Sample
 # argument after the comma refers to columns
 # 5 is the # or rows returned for the head function
 print(head( counts[,order(samples$CorE)], 5 ))
+write.csv(counts[,order(samples$CorE)], file = counts_file, quote=FALSE)
 
 # at this step, normalized by total count number for each library
 d = DGEList(counts = counts, group = samples$CorE)
@@ -82,7 +84,8 @@ dev.off()
 
 # From the manual: Implements the method of Robinson and Smyth (2008) for estimating a common dispersion parameter by conditional maximum likelihood. 
 d = estimateCommonDisp(d)
-print(paste("common dispersion =", d))
+print(paste("common dispersion =", d$common.dispersion))
+print(paste("normalization factors =", d$samples))
 
 # From the manual: This function implements the empirical Bayes strategy
 # proposed by Robinson and Smyth (2007) for estimating the tagwise negative
@@ -98,7 +101,6 @@ print(paste("common dispersion =", d))
 #individual tagwise data.
 #If trend="none", then the prior dispersion is just a constant, the common dispersion. Otherwise, the trend is determined by a moving average (trend="movingave") or loess smoother applied to the tagwise conditional log-likelihood. method="loess" applies a loess curve of degree 0 as im- plemented in loessByCol
 d = estimateTagwiseDisp(d)
-
 #From the manual: This function is useful for exploring the mean-variance
 #relationship in the data. Raw variances are, for each gene, the pooled variance
 #of the counts from each sample, divided by a scaling factor (by default the
