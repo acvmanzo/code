@@ -236,10 +236,12 @@ def run_descript(de_file_dict, tool):
     '''
     d = de_file_dict
     if tool == 'edger':
-        cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R {0} {1} {2} {3} {4} {5} {6} > edgeR.log 2>&1'.format(d['edger_mdsplot_file'], 
+        cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/edgeR.R \
+                {0} {1} {2} {3} {4} {5} {6} {7} > edgeR.log 2>&1'.format(d['edger_mdsplot_file'], 
                 d['edger_mvplot_file'], d['edger_bcvplot_file'], 
                 d['edger_maplot_file'], d['edger_toptags_file'],
-                d['edger_toptags_fdr_file'], d['edger_counts_file'])
+                d['edger_toptags_fdr_file'], d['edger_counts_file'],
+                d['edger_kept_counts_file'])
     elif tool == 'deseq':
         cmd = 'Rscript ~/Documents/lab/code/rnaseq_analysis/deseq.R > deseq.log 2>&1'
     print(tool, cmd)

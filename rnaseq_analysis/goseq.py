@@ -1,84 +1,61 @@
+#!/usr/bin/python
+
+#Code for running goseq
+
+import argparse 
+import cmn.cmn as cmn
+import datetime
+import glob
+import libs.goseqlib as gl
+import libs.rnaseqlib as rl
+import rnaseq_settings as rs
 import os
+import psycopg2
 
 
-def get_GOcat(goobo_file):
-    with open(goobo_file, 'r') as e:
-        #lines = e.readlines()
-        #print(lines[:100])
-        goids = []
-        gonames = []
-        nspaces = []
-        for l in e:
-            if ':' not in l:
-                continue
-            llist = l.strip('\n').split(': ')
-            #print(llist)
-            field = llist[0]
-            val = llist[1]
-            if field  == 'id':
-                goids.append(val)
-            if field == 'name':
-                #print(val)
-                gonames.append(val)
-            if field == 'namespace':
-                nspaces.append(val)
-        gotup = zip(goids, gonames, nspaces)
-        #print(len(goids), len(gonames))
+parser = argparse.ArgumentParser()
+parser.add_argument('tool', choices=['edger', 'deseq'],
+        help='selects DE analysis tool used')
+parser.add_argument('alignment', choices=['unstranded', '2str', 'r6_2str'], 
+        help='Option for which data to analyze')
+parser.add_argument('-s', '--genesubset', choices=['all', 'prot_coding_genes',
+        'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
+        'bwa_r557_ralph_mt_ex', 'sfari_r557', 'bwa_r601', 'sfari_r601', 
+        'pcg_r601'], 
+        help='set of genes on which DE analysis was run')
+parser.add_argument('-r', '--run', action="store_true", 
+        help='runs goseq analysis')
+parser.add_argument('-c', '--copytodb', action="store_true", 
+        help='copies goseq results to database')
 
-        dgo = {}
-        for item in gotup:
-            dgo[item[0]] = [item[1], item[2]]
-        #print(dgo)
-        return(dgo)
+args = parser.parse_args()
+tool = args.tool
 
-def get_gene_goids(assoc_file, out_file):
-    with open(out_file, 'w') as g:
-        with open(assoc_file, 'r') as f:
-            d = {}
-            for l in f:
-                if l[0] == '!':
-                    continue
-                gene_name = l.split('\t')[2]
-                qual = l.split('\t')[3]
-                goid  = l.split('\t')[4]
-                if qual == 'NOT':
-                    continue
-                g.write('{}\t{}\n'.format(gene_name, goid))
+rnaset = rs.RNASeqData(alignment=args.alignment, genesubset=args.genesubset)
+rnaseqdict = rnaset.__dict__
+degroups = rs.DEGroups()
 
-def get_gene_categories(dictgo, assoc_file, out_file):
+if args.genesubset:
+    gene_subset = args.genesubset
 
-    with open(out_file, 'w') as g:
-        with open(assoc_file, 'r') as f:
-            d = {}
-            for l in f:
-                if l[0] == '!':
-                    continue
-                gene_name = l.split('\t')[2]
-                qual = l.split('\t')[3]
-                goid  = l.split('\t')[4]
-                catname = dictgo[goid][0]
-                nspace = dictgo[goid][1]
-                if qual == 'NOT':
-                    continue
-                g.write('{}\t{}\t{}\t{}\n'.format(gene_name, goid, catname, 
-                    nspace))
+if args.copytodb or args.run:
+    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    exptdir = os.path.join(rnaseqdict['edger_dirpath'], gene_subset)
+    cmn.makenewdir(exptdir)
+    logpath = os.path.join(exptdir, '{}_{}'.format(curtime, 
+        rnaseqdict['goseq_log_file']))
+    rl.logginginfo(logpath)
 
-def get_go_categories(goobo_file, out_file):
-    d = get_GOcat(goobo_file)
-    with open(out_file, 'w') as g:
-        for k, v in d.items():
-            g.write('{}\t{}\t{}\n'.format(k, v[0], v[1]))
+if args.run:
+#Runs DE analysis on the indicated groups.
+    exptlist = sorted(glob.glob('*/'))
+    gl.batch_run_goseq(exptlist, rnaset, tool)
 
+if args.copytodb:
+    #Generates files formatted for database and copies data from that file into 
+    #the database. 
+    conn = psycopg2.connect("dbname={} user=andrea".format(rnaset.rsdbname))
+    gl.batch_makecopy_db_goseqfile(rnaset, tool, gene_subset, conn)
+    conn.commit()
+    conn.close()
 
-assoc_file = 'gene_association.fb'
-goobo_file = 'gene_ontology.obo'
-#out_file = 'gene_GOcateg.txt'
-#out_file = 'gene_goid.txt'
-#out_file = 'gene_goid_gocat.txt'
-out_file = 'goid_gocat.txt'
-
-#get_gene_categories(goobo_file, assoc_file, out_file)
-#get_gene_goids(assoc_file, out_file)
-#d = get_GOcat(goobo_file)
-#get_gene_categories(d, assoc_file, out_file)
-get_go_categories(goobo_file, out_file)

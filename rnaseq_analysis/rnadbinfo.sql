@@ -359,23 +359,24 @@
 
 -- \copy r557_gene_length from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-filtered-r5.57_gene_length.txt';
 
--- -- Create table with GO for every gene.
--- create table r557_gene_go (
+-- Create table with GO id for every gene.
+-- create table r601_gene_go (
     -- gene_name varchar(100),
     -- go_id varchar(20),
     -- go_cat varchar(500),
     -- go_nspace varchar(100)
 -- );
 
--- \copy r557_gene_go from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/gene_goid_gocat.txt';
+-- \copy r601_gene_go from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_gene_cat.txt'
 
--- create table r557_go_cat (
+-- Create table with go category for every GO ID.
+-- create table r601_go_cat (
     -- go_id varchar(20),
     -- go_cat varchar(500),
     -- go_nspace varchar(100)
 -- );
 
--- \copy r557_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/goid_gocat.txt';
+-- \copy r601_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_cat.txt';
 
 -- Brain genes.
 -- \copy (select tracking_id from brain_r557 intersect select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/brain_fbgns.txt';
@@ -404,7 +405,7 @@
 
 -- Create GOseq table.
 -- drop table goseq;
--- create table goseq (
+-- create table goseq_r6_2str (
     -- go_id varchar(20),
     -- over_pval double precision,
     -- under_pval double precision,
@@ -414,6 +415,7 @@
     -- fdr_under_pval double precision, 
     -- tool varchar(40),
     -- gene_subset varchar(50),
+    -- defdr real,
     -- group1 varchar(50),
     -- group2 varchar(50),
     -- unique (go_id, over_pval, gene_subset, group1, group2)
@@ -850,10 +852,54 @@
 -- select genotype, sex, sample, rnaconc, qbitngul, use_seq from autin order by qbitngul;
 
 
+-- -- Gene lists for GOseq.
+-- \copy (select gene_short_name from pcg_r601 order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/pcg_r601_genes.txt';
+-- \copy (select gene_short_name from sfari_r601 order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/sfari_r601_genes.txt';
+-- \copy (select gene_short_name from bwa_r601 order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/bwa_r601_genes.txt';
+-- \copy (select tracking_id from pcg_r601 order by tracking_id) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/pcg_r601_fbgns.txt';
+-- \copy (select tracking_id from sfari_r601 order by tracking_id) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/sfari_r601_fbgns.txt';
+-- \copy (select tracking_id from bwa_r601 order by tracking_id) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/bwa_r601_fbgns.txt';
 
+-- -- Gene lists with current gene models:
+-- \copy (select gene_short_name from pcg_r601 inner join gff_genes on (name_name = gene_short_name) where gff_file = 'dmel-all-r6.01.gff' order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/pcg_r601_genes.txt';
+-- \copy (select gene_short_name from sfari_r601 inner join gff_genes on (name_name = gene_short_name) where gff_file = 'dmel-all-r6.01.gff' order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/sfari_r601_genes.txt';
+-- \copy (select gene_short_name from bwa_r601 inner join gff_genes on (name_name = gene_short_name) where gff_file = 'dmel-all-r6.01.gff' order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/bwa_r601_genes.txt';
 
+-- -- Figuring out the overlap between protein coding genes, gff_genes, and htseq results.
+-- select count (*) 
+-- from htseq_r6_2str 
+-- inner join
+-- gff_genes
+-- on (gene_short_name = name_name)
+-- where gff_file = 'dmel-all-r6.01.gff'
+-- and berkid = 'RGAM014A'
+-- ;
 
+-- select count (*) 
+-- from pcg_r601
+-- inner join
+-- gff_genes
+-- on (tracking_id = fbgn_id)
+-- where gff_file = 'dmel-all-r6.01.gff'
+-- ;
 
+-- select count (*)
+-- from pcg_r601
+-- inner join
+-- htseq_r6_2str
+-- using (gene_short_name)
+-- where berkid = 'RGAM014A'
+-- ;
 
+-- OK, pcg_r601 has genes that are not in the gff file. Looks like extra genes
+-- are the non current ones (from field gene model status). I'm just going to
+-- recopy the gene list to avoid future confusion.
+-- select gene_short_name
+-- from pcg_r601
+-- EXCEPT
+-- select name_name 
+-- from gff_genes
+-- where gff_file = 'dmel-all-r6.01.gff'
+-- ;
 
 

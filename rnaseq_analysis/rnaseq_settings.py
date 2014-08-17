@@ -99,13 +99,15 @@ class RNASeqData:
             self.degene_table = 'degenes_r6_2str'
             self.htseq_dir = 'htseq_out_str'
             self.rsdbname = 'sixrna'
+            self.goseq_table = 'goseq_r6_2str'
         
         self.sampleinfo_table = 'autin'
 
         #Paths to the reference genome and other files used for alignment
         #by Tophat.
+        self.ref_path = '/home/andrea/rnaseqanalyze/references' 
         if alignment == 'r6_2str':
-            self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r6.01' 
+            self.refseq_path = os.path.join(self.ref_path, 'dmel-r6.01')
             self.gff_path = os.path.join(self.refseq_path,
                     'dmel-all-r6.01.gff')
             self.gff_path_nofa = os.path.join(self.refseq_path,
@@ -114,9 +116,11 @@ class RNASeqData:
                     'dmel-dmel_mitochondrion_genome-r6.01.gff')
             self.btindex = os.path.join(self.refseq_path,
                     'dmel-all-chromosome-r6.01')
+            self.gogene_path = os.path.join(self.refseq_path,
+                    'go_id_gene.txt')
 
         elif alignment == 'unstranded' or alignment == '2str':
-            self.refseq_path = '/home/andrea/rnaseqanalyze/references/dmel-r5.57'
+            self.refseq_path = os.path.join(self.ref_path, 'dmel-r5.57')
             self.gff_path = os.path.join(self.refseq_path, 
                     'dmel-all-filtered-r5.57.gff')
             self.gff_path_nofa = os.path.join(self.refseq_path, 
@@ -196,7 +200,9 @@ class RNASeqData:
         self.edger_toptags_file = 'toptags_edgeR.csv'
         self.edger_dbtoptags_file = 'db_toptags_edgeR.csv'
         self.edger_toptags_fdr_file = 'toptags_edgeR_'
+        self.edger_toptags_fdr_name = 'toptags_edgeR_xgene'
         self.edger_counts_file = 'gene_counts.csv'
+        self.edger_kept_counts_file = 'kept_gene_counts.csv'
         self.de_hh_file = 'human_hom_'
     
         #Paths to DEseq files.
@@ -212,7 +218,14 @@ class RNASeqData:
     
         self.berkidlen = 8 #Length of berkid names.
 
-
+        #Goseq settings
+        self.goseq_dir = 'goseq'
+        self.genelist_dirpath = os.path.join(self.ref_path, 'gene_lists', 
+                'goseq_lists')
+        self.pwfplot_file = 'pwf.png'
+        self.goresults_fdr_file = 'go_results_'
+        self.goresults_fdr_name = 'go_results_xgene.txt'
+        self.goseq_log_file = 'batch_goseq.log'
 
     def GetResultsFiles(self, berkid):
         '''A method that returns a dictionary of the file paths for a specific

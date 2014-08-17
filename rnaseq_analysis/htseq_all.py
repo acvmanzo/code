@@ -21,7 +21,8 @@ parser.add_argument('alignment', choices=['unstranded', '2str', 'r6_2str'],
         #help='make new file of htseq-count results for the given subset of genes')
 parser.add_argument('genesubset', choices=['all', 'prot_coding_genes',
         'prot_coding_genes_ralph_mt_ex', 'brain_r557', 'bwa_r557',
-        'bwa_r557_ralph_mt_ex', 'sfari_r557', 'bwa_r601', 'sfari_r601'], 
+        'bwa_r557_ralph_mt_ex', 'sfari_r557', 'bwa_r601', 'sfari_r601', 
+        'pcg_r601'], 
         help='make new file of htseq-count results for the given subset of genes')
 parser.add_argument('-ht', '--htseqcount', action='store_true', 
         help='run htseq-count')

@@ -12,13 +12,15 @@ masmear_plot_file <- args[4]
 toptags_file <- args[5]
 toptags_fdr_file <- args[6]
 counts_file <- args[7]
+kept_counts_file <- args[8]
 
 library("edgeR")
 # Loads sample info and counts into R.
 samples = read.table('metadata.txt', header = TRUE)
 #print(samples)
-counts = readDGE(samples$HTSeqPath)$counts
+counts = readDGE(samples$HTSeqPath, header=FALSE)$counts
 print(paste("dim-counts(rows,cols) =", dim(counts)))
+write.csv(counts[,order(samples$CorE)], file = counts_file, quote=FALSE)
 
 # Comment from paper - In edgeR, it is recommended to remove features without
 # at least 1 read per million in n of the samples, where n is the size of the
@@ -47,7 +49,7 @@ colnames(counts) = samples$Sample
 # argument after the comma refers to columns
 # 5 is the # or rows returned for the head function
 print(head( counts[,order(samples$CorE)], 5 ))
-write.csv(counts[,order(samples$CorE)], file = counts_file, quote=FALSE)
+write.csv(counts[,order(samples$CorE)], file = kept_counts_file, quote=FALSE)
 
 # at this step, normalized by total count number for each library
 d = DGEList(counts = counts, group = samples$CorE)
@@ -152,7 +154,7 @@ nc = cpm(d, normalized.lib.sizes = TRUE)
 rn = rownames(tt$table) 
 head(nc[rn,order(samples$CorE)],5)
 
-for (i in c(.01, .05)) {
+for (i in c(.01, .05, .10)) {
     deg = rn[tt$table$FDR < i] 
     print(paste("DE genes where FDR<",i,sep=""))
     print(deg)
@@ -173,7 +175,7 @@ for (i in c(.01, .05)) {
     #controlling for the FDR at the given level. 
     fdr = tt$table$FDR < i
 
-    write.table(deg, file = paste(toptags_fdr_file, i, "gene", sep=""), 
+    write.table(deg, file = paste(toptags_fdr_file, format(round(i, 2), nsmall=2), "gene", sep=""), 
                 row.names = FALSE, col.names = FALSE, quote=FALSE)
     #write.table(deg, file = paste("toptags_edgeR_",i,"gene", sep=""), 
                 #row.names = FALSE, col.names = FALSE, quote=FALSE)
