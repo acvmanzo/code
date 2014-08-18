@@ -378,7 +378,7 @@
 -- )
 -- ;
 
--- \copy r601_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_cat.txt';
+-- \copyr601_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_cat.txt';
 
 -- Brain genes.
 -- \copy (select tracking_id from brain_r557 intersect select fbgn_id from gff_genes where gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/brain_r557/GO_analysis/brain_fbgns.txt';
@@ -758,7 +758,7 @@
 -- select * from testfn('degenes', 0.10);
 
 -- DROP FUNCTION find_decount(text,text,text,text,real,text);
--- CREATE FUNCTION find_decount(selgroup1 text, decounttable text, tool text, gene_subset text, selfdr real, gff_file text) RETURNS TABLE (fbgn_id varchar(20), gene varchar(100), count bigint, logfc double precision, fdr double precision, group1 varchar(50))
+-- CREATE FUNCTION find_decount(selgroup1 text, decounttable text, degenetable text, tool text, gene_subset text, selfdr real, gff_file text) RETURNS TABLE (fbgn_id varchar(20), gene varchar(100), count bigint, logfc double precision, fdr double precision, group1 varchar(50))
 -- AS
         -- $BODY$
         -- BEGIN
@@ -767,13 +767,14 @@
         -- select g.fbgn_id, dc.gene, dc.count, d.logfc, d.fdr, d.group1 
         -- from %s as dc
         -- inner join
-        -- degenes as d
+        -- %s as d
         -- using (gene)
         -- inner join
         -- gff_genes as g
         -- on (d.gene = g.name_name)
         -- where d.tool = %L and d.gene_subset = %L and d.fdr < %s and d.group1 = %L and gff_file = %L'
         -- ,decounttable
+        -- ,degenetable
         -- ,tool
         -- ,gene_subset
         -- ,selfdr

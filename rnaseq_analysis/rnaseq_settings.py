@@ -103,14 +103,16 @@ class RNASeqData:
             self.gocat_table = 'r601_go_cat'
         
         self.sampleinfo_table = 'autin'
+        self.gff_table = 'gff_genes'
 
         #Paths to the reference genome and other files used for alignment
         #by Tophat.
         self.ref_path = '/home/andrea/rnaseqanalyze/references' 
         if alignment == 'r6_2str':
             self.refseq_path = os.path.join(self.ref_path, 'dmel-r6.01')
+            self.gff_file = 'dmel-all-r6.01.gff'
             self.gff_path = os.path.join(self.refseq_path,
-                    'dmel-all-r6.01.gff')
+                    self.gff_file)
             self.gff_path_nofa = os.path.join(self.refseq_path,
                     'dmel-all-r6.01-nofa.gff')
             self.mitogff_path = os.path.join(self.refseq_path, 
@@ -218,6 +220,24 @@ class RNASeqData:
         self.deseq_toptags_fdr_file = 'res_DEseq_'
     
         self.berkidlen = 8 #Length of berkid names.
+
+        #DE count settings.
+        self.decount_dir = 'decounts'
+        self.decount_dirpath = os.path.join(self.analysis_path, 
+                self.decount_dir, self.th_resdir)
+        self.decount_table_male = 'decountm'
+        self.decount_table_female = 'decountf'
+        self.decount_mf_base = 'decountmf'
+        self.decount_info_f = os.path.join(self.decount_dirpath,
+                'decount_genesf')
+        self.decount_info_m = os.path.join(self.decount_dirpath, 
+                'decount_genesm')
+        self.decount_fccv_f = os.path.join(self.decount_dirpath,
+                'decount_fccv_f')
+        self.decount_fccv_m = os.path.join(self.decount_dirpath,
+                'decount_fccv_m')
+        self.decount_top = 25 # top percent of genes with the highest cv of fold
+        #change
 
         #Goseq settings
         self.goseq_dir = 'goseq'
