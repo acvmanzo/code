@@ -369,12 +369,14 @@
 
 -- \copy r601_gene_go from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_gene_cat.txt'
 
--- Create table with go category for every GO ID.
+-- -- Create table with go category for every GO ID.
 -- create table r601_go_cat (
     -- go_id varchar(20),
     -- go_cat varchar(500),
-    -- go_nspace varchar(100)
--- );
+    -- go_nspace varchar(100),
+    -- unique (go_id, go_cat, go_nspace)
+-- )
+-- ;
 
 -- \copy r601_go_cat from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_cat.txt';
 
@@ -415,23 +417,23 @@
     -- fdr_under_pval double precision, 
     -- tool varchar(40),
     -- gene_subset varchar(50),
-    -- defdr real,
+    -- defdr double precision,
     -- group1 varchar(50),
     -- group2 varchar(50),
-    -- unique (go_id, over_pval, gene_subset, group1, group2)
+    -- unique (go_id, over_pval, gene_subset, defdr, group1, group2)
 -- );
 
 -- \copy goseq from '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/db_de_all_fdr05_goseq.txt' (delimiter ' ');
 
 -- Get GO categories from GO IDs for enriched GO terms.
--- select gc.go_id, gc.go_cat, gs.fdr_over_pval, gs.fdr_under_pval
--- from r557_go_cat as gc
+-- select gc.go_id, gc.go_cat, go_nspace, gs.fdr_over_pval, gs.fdr_under_pval, gs.num_de, gs.num_total, gs.tool, gs.gene_subset, gs.defdr, gs.group1, gs.group2
+-- from r601_go_cat as gc
 -- inner join
--- goseq as gs
+-- goseq_r6_2str as gs
 -- using (go_id)
 -- -- where gs.fdr_over_pval < 0.05 or gs.fdr_under_pval < 0.05
 -- order by gs.fdr_over_pval
-;
+-- ;
 
 -- select g.fbgn_id, g.name_name, d.logfc, d.fdr
 -- from degenes as d 

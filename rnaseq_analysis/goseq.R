@@ -72,6 +72,6 @@ head(GO.wall)
 #indices = p.adjust(GO.wall$over_represented_pvalue, method="BH")<.05
 #print(enriched.GO)
 write.table(GO.wall, file = goresultfile,
-            row.names = TRUE, col.names = TRUE, quote=FALSE)
+            row.names = FALSE, col.names = TRUE, quote=FALSE, sep=",")
 #write.table(GO.wall, file = goresultfile,
             #row.names = FALSE, col.names = FALSE, quote=FALSE)

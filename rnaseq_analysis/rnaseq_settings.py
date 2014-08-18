@@ -100,6 +100,7 @@ class RNASeqData:
             self.htseq_dir = 'htseq_out_str'
             self.rsdbname = 'sixrna'
             self.goseq_table = 'goseq_r6_2str'
+            self.gocat_table = 'r601_go_cat'
         
         self.sampleinfo_table = 'autin'
 
@@ -164,7 +165,7 @@ class RNASeqData:
 
         #Paths to output of correlation analysis. 
         self.corr_dir = 'correlations'
-        self.corr_dirpath = os.path.join(self.analysis_path, self.corr_dir,
+        self.corr_dirpath = os.path.join(self.analysis_path, self.corr_dir, 
                 self.th_resdir, self.genesubset)
         self.pearson_corrfile = 'pearson_correlations.txt' 
         self.spearman_corrfile = 'spearman_correlations.txt' 
