@@ -120,7 +120,7 @@ class RNASeqData:
             self.btindex = os.path.join(self.refseq_path,
                     'dmel-all-chromosome-r6.01')
             self.gogene_path = os.path.join(self.refseq_path,
-                    'go_id_gene.txt')
+                    'go_id_gene_uniq.txt')
 
         elif alignment == 'unstranded' or alignment == '2str':
             self.refseq_path = os.path.join(self.ref_path, 'dmel-r5.57')

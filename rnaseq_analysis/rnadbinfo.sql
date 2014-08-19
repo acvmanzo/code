@@ -370,14 +370,16 @@
 
 
 -- Create table with GO id for every gene.
+-- drop table r601_gene_go;
 -- create table r601_gene_go (
     -- gene_name varchar(100),
     -- go_id varchar(20),
     -- go_cat varchar(500),
-    -- go_nspace varchar(100)
+    -- go_nspace varchar(100),
+    -- unique (gene_name, go_id, go_cat)
 -- );
 
--- \copy r601_gene_go from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_gene_cat.txt'
+-- \copy r601_gene_go from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/go_id_gene_cat_uniq.txt'
 
 -- -- Create table with go category for every GO ID.
 -- create table r601_go_cat (
@@ -416,7 +418,7 @@
     -- ;
 
 -- Create GOseq table.
--- drop table goseq;
+-- drop table goseq_r6_2str cascade;
 -- create table goseq_r6_2str (
     -- go_id varchar(20),
     -- over_pval double precision,
@@ -430,7 +432,7 @@
     -- defdr double precision,
     -- group1 varchar(50),
     -- group2 varchar(50),
-    -- unique (go_id, over_pval, gene_subset, defdr, group1, group2)
+    -- unique (go_id, gene_subset, defdr, group1, group2)
 -- );
 
 -- \copy goseq from '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/db_de_all_fdr05_goseq.txt' (delimiter ' ');
@@ -971,3 +973,69 @@
 -- ;
 
 
+-- -- create view of sfari go categories
+-- create view sfari_gocat as (
+-- select gc.go_id, gc.go_cat, go_nspace, gs.fdr_over_pval, gs.fdr_under_pval,
+-- gs.num_de, gs.num_total, gs.tool, gs.gene_subset, gs.defdr, gs.group1,
+-- gs.group2 
+-- from r601_go_cat as gc 
+-- inner join 
+-- goseq_r6_2str as gs 
+-- using (go_id)
+-- where tool = 'none' and gene_subset = 'all_sfari' and defdr = 0 and group1 =
+-- 'none' and group2 = 'none' and num_de > 0
+-- order by gs.fdr_over_pval )
+-- ;
+
+-- -- Find the inner join between GO categories of DE genes and sfari genes.
+-- select g.go_id, s.go_cat, g.num_de, g.fdr_over_pval as g_overpval, 
+-- s.fdr_over_pval as s_overpval, g.defdr, h.human_sym
+-- -- array_agg(human_sym)
+-- from goseq_r6_2str as g
+-- inner join
+-- sfari_gocat as s
+-- using (go_id)
+-- inner join
+-- sfari_go_hom as h
+-- using(go_id)
+-- where g.group1 = 'Betaintnu_F'
+-- and g.tool = 'edger' and g.defdr = 0.05
+-- and g.gene_subset = 'pcg_r601'
+-- and g.num_de > 0
+-- -- group by g.go_id, s.go_cat, g.num_de, g.fdr_over_pval, s.fdr_over_pval, g.defdr
+-- order by g.fdr_over_pval
+-- ;
+
+-- -- Find the genes in the sfari list, their human homologs, and the relevant
+-- -- GO categories with the given GO id.
+-- create view sfari_go_hom as (
+-- select s.gene_short_name, g.go_id, g.go_cat, h.human_sym from
+-- -- select * from
+-- sfari_r601 as s
+-- inner join
+-- r601_gene_go as g
+-- on (gene_short_name = gene_name)
+-- inner join
+-- r601_id_index as i
+-- on (gene_short_name = i.name_name)
+-- inner join
+-- homolog_pfbgns as hp
+-- using (pfbgn)
+-- inner join
+-- homologs as h
+-- using (fly_sym)
+-- where h.gene_source = 'sfari' and hp.gene_source = 'sfari' 
+-- ) 
+-- ;
+-- and g.go_id = 'GO:0006412'
+-- ;
+
+-- -- Find the overlap of GO categories in DE genes.
+-- select go_id, array_agg(group1)
+-- select *
+-- from goseq_r6_2str
+-- where tool = 'edger' and gene_subset = 'pcg_r601' 
+-- and go_id = 'GO:0000003' and defdr = 0.05
+-- -- group by go_id
+-- order by go_id
+-- ;
