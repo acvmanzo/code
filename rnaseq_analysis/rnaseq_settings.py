@@ -224,7 +224,7 @@ class RNASeqData:
         #DE count settings.
         self.decount_dir = 'decounts'
         self.decount_dirpath = os.path.join(self.analysis_path, 
-                self.decount_dir, self.th_resdir)
+                self.decount_dir, self.th_resdir, self.genesubset)
         self.decount_table_male = 'decountm'
         self.decount_table_female = 'decountf'
         self.decount_mf_base = 'decountmf'
@@ -238,6 +238,13 @@ class RNASeqData:
                 'decount_fccv_m')
         self.decount_top = 25 # top percent of genes with the highest cv of fold
         #change
+        self.decount_log_file = 'decount.log'
+        self.count_num_degenes_file = 'num_degenes' 
+        self.histcountmname = 'hist_decountm'
+        self.histcountfname = 'hist_decountf'
+        self.decount_cv_file = 'decount_fccvonly'
+        self.decount_hom = os.path.join(self.decount_dirpath,
+                'decount_hom')
 
         #Goseq settings
         self.goseq_dir = 'goseq'

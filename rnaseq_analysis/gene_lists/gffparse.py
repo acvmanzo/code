@@ -27,17 +27,17 @@ R550_FN2F_FILE = os.path.join(REF_DIR, LIST_DIR, 'fbgn_name_2fbgn_r5.50')
 def main():
     #get_genes_mrna(outfile='igv_dmel-all-r5.57.gff', gff_file='dmel-all-r5.57-nofa.gff')
 
-    open(R601_FNA_FILE, 'w')
-    og = [R601_FNA_FILE, R601_GFF_FILE]
+    #open(R601_FNA_FILE, 'w')
+    #og = [R601_FNA_FILE, R601_GFF_FILE]
        
-    try:
-        get_fbgn_name_annid(og[0], og[1])
-    except ValueError:
-        pass 
+    #try:
+        #get_fbgn_name_annid(og[0], og[1])
+    #except ValueError:
+        #pass 
 
-    #outfile = 'test.txt'
-    #gff_file = R557_FIL_GFF_FILE
-    #get_fbgn_length(outfile, gff_file)
+    outfile = 'r601_gene_length.txt'
+    gff_file = R601_GFF_FILE
+    get_fbgn_length(outfile, gff_file)
     
 def batch_fbgn_name():
     '''Applies get_fbgn_name to multiple gff files'''

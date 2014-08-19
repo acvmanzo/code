@@ -1,4 +1,5 @@
 import libs.htseqlib as hl
+
 import libs.rnaseqlib as rl
 import libs.delib as dl
 import logging
@@ -12,54 +13,6 @@ import scipy
 import scipy.spatial
 import scipy.cluster
 
-#def get_gene_info(cur, gene, grouplist, ctrllist, sex, htseqtable, detable, tool, 
-        #genesubset, toprint='no'):
-    #'''For each group in degroups, gets the number of counts for the given gene.
-    #'''
-    #if sex == 'F':
-        #groups = degroups.females 
-        #ctrl = ['CS_F']
-    #elif sex == 'M':
-        #groups = degroups.males 
-        #ctrl = ['CS_M']
-
-    #d_repcounts = hl.compare_replicate_counts(cur, 
-            #groups + ctrl, gene, sampleinfo_table='autin', 
-            #htseqtable=htseqtable)
-    #d_derep = dl.compare_replicate_de(cur, groups, ctrl[0],
-         #gene, detable, tool, genesubset)
-    #allinfo,alllist = get_rep_counts_de(d_repcounts, d_derep)
-    #if toprint == 'yes':
-        #for i in allinfo:
-            #logging.info(i)
-    #return(allinfo, alllist)
-
-#def write_decount_info(cur, outfile, align, fdr, sex, tool, genesubset, gff_file,
-        #degroups, minfdr):
-
-    #htseqtable = 'htseq_'+align
-    #detable = 'degenes_'+align
-
-    #if fdr == 0.10 or fdr == .10:
-        #sfdr = '10'
-    #decounttable = 'decount{}_{}_{}_fdr{}_{}'.format(sex, genesubset, tool, 
-            #sfdr, align)
-
-    #entries = get_decount(cur, decounttable, gff_file) 
-    #with open(outfile, 'w') as g:
-        #g.write('FDR = {}, Gene subset = {}, Tool = {}, Release = {}\n'.format(sfdr, genesubset, tool, gff_file))
-        #for entry in entries:
-            #g.write('\n{}\t{}\t{}\t{}\n'.format(*entry))
-            #gene = entry[2]
-            #g.write('Genotype\thtseq counts\tFold change\tFDR\n')
-            #slist, ilist = get_gene_info(cur, gene, groups, sex,
-                   #htseqtable, detable, tool, genesubset)
-            #for i, ps in enumerate(slist):
-                #if minfdr:
-                    #if ilist[i][-1] < fdr:
-                        #g.write(ps)
-                #else:
-                    #g.write(ps)
 
 def write_sql_decount(cmdfile, degroups, fdr, decounttable, genesubset, tool,
         gff_file):
@@ -158,75 +111,6 @@ def plot_declusters(genotypes, genes, foldchanges):
     dend = scipy.cluster.hierarchy.dendrogram(avg_cluster, labels=genotypes, leaf_rotation=90)
     plt.savefig('males_cluster_by_foldchange.png')
 
-#def get_decvlist(cur, align, fdr, sex, tool, genesubset, gff_file,
-        #degroups):
-
-    #htseqtable = 'htseq_'+align
-    #detable = 'degenes_'+align
-
-    #if fdr == 0.10 or fdr == .10:
-        #sfdr = '10'
-    #decounttable = 'decount{}_{}_{}_fdr{}_{}'.format(sex, genesubset, tool, 
-            #sfdr, align)
-    #entries = get_decount(cur, decounttable, gff_file) 
-
-    #cvlist = []
-    #for entry in entries:
-        #gene = entry[2]
-        #ilist = get_gene_info(cur, gene, degroups,
-                #htseqtable, detable, tool, genesubset, sex)[1]
-        
-        #genfc = []
-
-        #for i in ilist:
-            #genotype, vcounts, gfc, gfdr = i
-            #if gfdr < fdr:
-                #genfc.append(gfc)
-
-        #mgfc = np.mean(genfc)
-        #sgfc = np.std(genfc)
-        #cv_gfc = sgfc/mgfc
-        #if cv_gfc > 0:
-            #cvlist.append((cv_gfc, gene))
-    #cvlist = sorted(cvlist)
-    #cvlist.reverse()
-    #return(cvlist)
-    ##print(cvlist[:top])
-    ##print(genes[:top])
-
-#def write_decount_cv(cvlist, outfile, topnum, cur, align, degroups, tool, genesubset,
-        #sex, fdr, minfdr):
-
-    #cvs, genes = zip(*cvlist)
-    #top = int(len(cvlist)/(100/topnum))
-    #topcvlist = cvlist[:top]
-    ##print(outfile)
-    #with open(outfile, 'w') as h:
-        #for g in genes[:top]:
-            #h.write('{}\n'.format(g))
-            #h.write('Genotype\thtseq counts\tFold change\tFDR\n')
-            #write_gene_count(h, g, cur, degroups, align, tool, genesubset, 
-                    #sex, fdr, minfdr)
-            #h.write('\n')
-
-#def write_gene_count(openfile, gene, cur, degroups, align, tool, genesubset, 
-        #sex, fdr, minfdr):
-
-    #htseqtable = 'htseq_'+align
-    #detable = 'degenes_'+align
-
-    #slist, ilist = get_gene_info(cur, gene, degroups,
-            #htseqtable, detable, tool, genesubset, sex)
-    #for i, ps in enumerate(slist):
-        #if minfdr:
-            #genotype = ilist[i][0]
-            #if ilist[i][-1] < fdr: 
-                #openfile.write(ps)
-            #elif genotype == 'CS_F' or genotype == 'CS_M':
-                #openfile.write(ps)
-        #else:
-            #openfile.write(ps)
-       
 
 def cmd_create_decount(viewname, detable, tool, gene_subset, fdr, sex):
     '''SQL command for generating decount tables.
@@ -243,6 +127,43 @@ def cmd_create_decount(viewname, detable, tool, gene_subset, fdr, sex):
     return(cmd_create)
 
 
+def write_homologs(cur, outfile, decount_table1, decount_table2, gene_source):
+    '''Writes the homologs of decount to a file outfile.
+    '''
+    cmd = ("COPY ("
+        "select gene, array_agg(human_sym) "
+        "from {0} as f "
+        "full outer join "
+        "{1} as m "
+        "using (gene) "
+        "inner join "
+        "r601_id_index as i "
+        "on (gene = i.name_name) "
+        "inner join "
+        "homolog_pfbgns as hp "
+        "using (pfbgn) "
+        "inner join "
+        "homologs as h "
+        "using (fly_sym) "
+        "where h.gene_source = '{2}' and hp.gene_source = '{2}' "
+        "group by gene "
+        "order by gene "
+        ") TO STDOUT CSV HEADER;").format(decount_table1, decount_table2, 
+            gene_source)
+
+    with open(outfile, 'w') as g:
+        cur.copy_expert(cmd, g)
+
+def write_homologs_obj(conn, rnaset, tool, fdr):
+    cur = conn.cursor()
+    outfile = '{}_mf_{}_{}_{:.2f}.csv'.format(rnaset.decount_hom, 
+            rnaset.genesubset, tool, fdr)
+    gene_source = rnaset.genesubset.split('_')[0]
+    decounttable1 = rnaset.decount_table_female
+    decounttable2 = rnaset.decount_table_male
+
+    write_homologs(cur, outfile, decounttable1, decounttable2, gene_source)
+
 def cmd_decount_samples_mf(decount_table1, decount_table2, degenes_table,
         gff_table, defdr, tool, gff_file, gene_subset):
     '''SQL command for writing a file with joined male and female decount table
@@ -250,6 +171,8 @@ def cmd_decount_samples_mf(decount_table1, decount_table2, degenes_table,
     cmd_get = \
     (" COPY (select gene, g.fbgn_id, "
     "avg(coalesce(df.count,0)) as avg_f, avg(coalesce(dm.count, 0)) as avg_m, "
+    "2^avg(d.logfc) as avg_fc, "
+    "avg(d.fdr) as avg_adjpval, "
     "avg(coalesce(df.count, 0) + coalesce(dm.count, 0)) as avg_mf, "
     "array_agg(group1) "
     "from {} as df "
@@ -270,7 +193,8 @@ def cmd_decount_samples_mf(decount_table1, decount_table2, degenes_table,
     "order by avg_mf DESC)"
     "TO STDOUT CSV HEADER;").format(decount_table1, decount_table2, degenes_table,
             gff_table, defdr, tool, gff_file, gene_subset)
-    logging.debug('Command for joined male/female table: %s', cmd_get)
+    #logging.debug('Command for joined male/female table: %s', cmd_get)
+    logging.debug('%s', cmd_get)
     return(cmd_get)
 
 # For a given fdr, gene subset, tool, alignment, get output files.
@@ -281,7 +205,9 @@ def create_decount_tables(conn, rnaset, tool, fdr):
             tool, rnaset.genesubset, fdr, 'F')
     cmd_decountm = cmd_create_decount(rnaset.decount_table_male, rnaset.degene_table,
             tool, rnaset.genesubset, fdr, 'M')
-    loggin.debug('Command for creatiing decount tables: %s') 
+    #logging.debug('Command for creatiing decount tables: %s') 
+    #logging.debug('%s', cmd_decountf) 
+    #logging.debug('%s', cmd_decountm) 
 
     cur = conn.cursor()
     cur.execute(cmd_decountf)
@@ -296,7 +222,7 @@ def write_decount_samples_mf(conn, rnaset, tool, fdr):
     cmd_get = cmd_decount_samples_mf(rnaset.decount_table_female, 
             rnaset.decount_table_male, rnaset.degene_table, rnaset.gff_table,
             fdr, tool, rnaset.gff_file, rnaset.genesubset)
-    outfile = '{}_{}_{}_{}.csv'.format(rnaset.decount_mf_base, rnaset.genesubset,
+    outfile = '{}_{}_{}_{:.2f}.csv'.format(rnaset.decount_mf_base, rnaset.genesubset,
             tool, fdr)
     outpath = os.path.join(rnaset.decount_dirpath, outfile)
     with open(outpath, 'w') as g:
@@ -314,7 +240,7 @@ def cmd_group_decount(group, decounttable, degenetable, genesubset,
     "to stdout "
     "header csv;\n").format(group, decounttable, degenetable, genesubset, 
             tool, fdr, gff_file)
-    logging.info('Command for getting decount info for a genotype: %s')
+    logging.debug('%s', cmd)
     return(cmd)
 
 def write_group_decount(conn, exptlist, rnaset, fdr, tool):
@@ -361,19 +287,19 @@ def write_decount_gene_counts(conn, rnaset, degroups, sex, fdr, tool, minfdr):
     if sex == 'F':
         grouplist = degroups.females
         ctrllist = [degroups.females_ctrl]
-        outfile = '{}_{}_{}_{}.txt'.format(rnaset.decount_info_f, 
+        outfile = '{}_{}_{}_{:.2f}.txt'.format(rnaset.decount_info_f, 
                 rnaset.genesubset, tool, fdr)
         decounttable = rnaset.decount_table_female
     if sex == 'M':
         grouplist = degroups.males
         ctrllist = [degroups.males_ctrl]
-        outfile = '{}_{}_{}_{}.txt'.format(rnaset.decount_info_m, 
+        outfile = '{}_{}_{}_{:.2f}.txt'.format(rnaset.decount_info_m, 
                 rnaset.genesubset, tool, fdr)
         decounttable = rnaset.decount_table_male
 
     cur = conn.cursor()
     entries = get_decount(cur, decounttable, rnaset.gff_file) 
-    print(outfile)
+    #print(outfile)
     with open(outfile, 'w') as g:
         g.write(("FDR = {}, Gene subset = {}, Tool = {}, "
                 "Release = {}\n").format(fdr, rnaset.genesubset, tool, 
@@ -388,7 +314,7 @@ def write_decount_gene_counts(conn, rnaset, degroups, sex, fdr, tool, minfdr):
                     rnaset.degene_table, tool, rnaset.genesubset)
             for i, ps in enumerate(slist):
                 if minfdr:
-                    if ilist[i][-1] < fdr:
+                    if ilist[i][-1] < fdr or 'CS' in ilist[i][0]:
                         g.write(ps)
                 else:
                     g.write(ps)
@@ -426,20 +352,48 @@ def get_decvlist(cur, grouplist, ctrllist, sampleinfo_table, htseqtable,
     #print(cvlist[:top])
     #print(genes[:top])
 
+def write_decount_fccv(conn, rnaset, degroups, sex, fdr, tool):
+    if sex == 'F':
+        grouplist = degroups.females
+        ctrllist = [degroups.females_ctrl]
+        decounttable = rnaset.decount_table_female
 
-def write_decount_fc_cv(conn, rnaset, degroups, sex, fdr, tool, minfdr):
+    if sex == 'M':
+        grouplist = degroups.males
+        ctrllist = [degroups.males_ctrl]
+        decounttable = rnaset.decount_table_male
+
+    cur = conn.cursor()
+    cvlist = get_decvlist(cur, grouplist, ctrllist, rnaset.sampleinfo_table, 
+            rnaset.htseq_table, rnaset.degene_table, decounttable, 
+            fdr, tool, rnaset.genesubset, rnaset.gff_file)
+
+    outfile = '{}{}_{}_{}_{:.2f}.txt'.format(rnaset.decount_cv_file, 
+            sex.lower(), rnaset.genesubset, tool, fdr)
+    outpath = os.path.join(rnaset.decount_dirpath, outfile)
+    
+    with open(outpath, 'w') as g:
+        g.write('CV\tGene\n')
+        for item in cvlist:
+            cv, gene = item
+            g.write('{}\t{}\n'.format(gene, cv))
+
+def write_decount_fccv_gene(conn, rnaset, degroups, sex, fdr, tool, minfdr):
+    '''Writes a file with the coefficient of variation of fold change
+    and gene counts/ fold changes for each gene.
+    '''
 
     if sex == 'F':
         grouplist = degroups.females
         ctrllist = [degroups.females_ctrl]
-        outfile = '{}_{}_{}_{}.txt'.format(rnaset.decount_fccv_f, 
+        outfile = '{}_{}_{}_{:.2f}.txt'.format(rnaset.decount_fccv_f, 
                 rnaset.genesubset, tool, fdr)
         decounttable = rnaset.decount_table_female
 
     if sex == 'M':
         grouplist = degroups.males
         ctrllist = [degroups.males_ctrl]
-        outfile = '{}_{}_{}_{}.txt'.format(rnaset.decount_fccv_m, 
+        outfile = '{}_{}_{}_{:.2f}.txt'.format(rnaset.decount_fccv_m, 
                 rnaset.genesubset, tool, fdr)
         decounttable = rnaset.decount_table_male
 
@@ -474,120 +428,68 @@ def write_decount_fc_cv(conn, rnaset, degroups, sex, fdr, tool, minfdr):
             h.write('\n')
     cur.close()
 
-def main():
-#write_sql_countf(SQLCMDFILE, DEGROUPS.females, 0.10, 'decountf', GENESUBSET, 'edger')
-#write_sql_countf(SQLCMDFILE, DEGROUPS.males, 0.10, 'decountm', GENESUBSET, 'edger')
-#print(hl.get_gene_count(cur, htseqtable, gene, berkid))
-#print(hl.get_counts(cur=cur, genotype='NrxIV_M', gene='klu', 
-    #sampleinfo_table='autin', htseqtable=htseqtable))
+def cmd_num_degenes(degene_table, tool, fdr, genesubset, sex):
+    '''Generates the command for finding the number of DE genes for each 
+    group1 in the DE table, using the indicated DE tool and FDR level.'''
 
-    #genesubset = sys.argv[1]
-    #gene = sys.argv[2]
-    align = '2str'
-    genesubset = 'prot_coding_genes'
+    cmd = ("COPY (select group1, count (*) from {} " 
+            "where tool = '{}' and fdr < {} and gene_subset = '{}' "
+            "and group1 ~ '.._{}' "
+            "group by group1 order by group1)"
+            "to STDOUT CSV HEADER").format(degene_table, tool,
+            fdr, genesubset, sex)
+    return(cmd)
 
-    conn = psycopg2.connect("dbname=rnaseq user=andrea")
-    rnaset = rs.RNASeqData(alignment=align, 
-            genesubset=genesubset)
-    degroups = rs.DEGroups()
-    htseqtable = 'htseq_2str'
-    edger_dirpath = os.path.join(rnaset.edger_dirpath, genesubset)
+def write_num_degenes(conn, rnaset, tool, fdr, sex):
+    '''Finds the number of DE genes for each group1 in the DE table, using
+    the indicated DE tool and FDR level.'''
 
-    berkid = 'RGAM009A'
-    group1 = 'NrxIV_M'
-    group2 = 'CS_M'
-    detable = 'degenes_2str'
-    tool = 'edger'
-    gff_file = 'dmel-all-filtered-r5.57.gff'
-    decounttable = 'decountf_pcg_edger_fdr10_2str'
-    fdr = .10
-
-    sex = 'M'
-    minfdr = True
     cur = conn.cursor()
-    
-
-    #print(gene)
-
-    #x = get_gene_info(cur=cur, gene='klu', degroups=degroups, 
-        #htseqtable=htseqtable, 
-        #detable='degenes_2str',
-        #tool='edger', genesubset='prot_coding_genes', sex='F', toprint='no')
-    #print(x)
-    #print(len(x))
-    
-    #write_decount(cur=cur, outfile='decountf_fdr10_fbgns_info_minfdr', align=align, 
-        #fdr=fdr, sex='F', tool=tool, genesubset=genesubset, gff_file=gff_file,
-        #degroups=degroups, minfdr=True)
-    #get_decount_cv(cur=cur, outfile='decountf_fdr10_fbgns_info_minfdr', align=align, 
-        #fdr=fdr, sex='F', tool=tool, genesubset=genesubset, gff_file=gff_file,
-        #degroups=degroups, minfdr=True)
-
-    #outfile='decountf_fdr10_fbgns_info_minfdr_top20percentcv' 
-    #cvlist = get_decvlist(cur=cur, align=align, fdr=fdr, sex=sex, tool=tool,
-            #genesubset=genesubset, gff_file=gff_file, degroups=degroups)
-    #write_decount_cv(cvlist=cvlist, outfile=outfile, topnum=20, cur=cur, 
-            #align=align, degroups=degroups, tool=tool, genesubset=genesubset, sex=sex,
-            #fdr=fdr, minfdr=True)
-
-    #gene = 'CG4928'
-    #get_gene_info(cur, gene, degroups, htseqtable, detable, tool, 
-        #genesubset, sex, toprint='yes')
-
-    genotypes, genes, foldchanges = (get_decount_for_clusters(cur, align, fdr, sex, tool, genesubset, gff_file, degroups, minfdr))
-    plot_declusters(genotypes, genes, foldchanges)
-    #get_decount(cur, decounttable, gff_file)
-
+    cmd = cmd_num_degenes(rnaset.degene_table, tool, fdr, rnaset.genesubset, 
+            sex)
+    logging.debug('%s', cmd)
+    outfile = '{}{}_{}_{}_{:.2f}.txt'.format(rnaset.count_num_degenes_file, 
+            sex.lower(), rnaset.genesubset, tool, fdr) 
+    outpath = os.path.join(rnaset.decount_dirpath, outfile)
+    with open(outpath, 'w') as g:
+        cur.copy_expert(cmd, g)
     cur.close()
-    conn.close()
 
-if __name__ == '__main__':
-    main()
-def get_gene_info(cur, gene, grouplist, ctrllist, sex, htseqtable, detable, tool, 
-        genesubset, toprint='no'):
-    '''For each group in degroups, gets the number of counts for the given gene.
-    '''
-    if sex == 'F':
-        groups = degroups.females 
-        ctrl = ['CS_F']
-    elif sex == 'M':
-        groups = degroups.males 
-        ctrl = ['CS_M']
+def plot_decount_hist(rnaset, fdr, tool):
 
-    d_repcounts = hl.compare_replicate_counts(cur, 
-            groups + ctrl, gene, sampleinfo_table='autin', 
-            htseqtable=htseqtable)
-    d_derep = dl.compare_replicate_de(cur, groups, ctrl[0],
-         gene, detable, tool, genesubset)
-    allinfo,alllist = get_rep_counts_de(d_repcounts, d_derep)
-    if toprint == 'yes':
-        for i in allinfo:
-            logging.info(i)
-    return(allinfo, alllist)
+    decountdir = os.path.join(rnaset.decount_dirpath)
+    countfile = 'decountmf_{}_{}_{:.2f}.csv'.format(rnaset.genesubset, tool, fdr)
+    countpath = os.path.join(decountdir, countfile) 
 
-def write_decount_info(cur, outfile, align, fdr, sex, tool, genesubset, gff_file,
-        degroups, minfdr):
+    histfname = '{}_{}_{}_{:.2f}.png'.format(rnaset.histcountfname, rnaset.genesubset, tool,
+            fdr)
+    histfpath = os.path.join(decountdir, histfname)
+    histmname = '{}_{}_{}_{:.2f}.png'.format(rnaset.histcountmname, rnaset.genesubset, tool,
+            fdr)
+    histmpath = os.path.join(decountdir, histmname)
+    cmd = ("Rscript /home/andrea/Documents/lab/code/rnaseq_analysis/decount.R "
+            "{} {} {}").format(countpath, histfpath, histmpath)
+    os.system(cmd)
 
-    htseqtable = 'htseq_'+align
-    detable = 'degenes_'+align
+#def get_gene_info(cur, gene, grouplist, ctrllist, sex, htseqtable, detable, tool, 
+        #genesubset, toprint='no'):
+    #'''For each group in degroups, gets the number of counts for the given gene.
+    #'''
+    #if sex == 'F':
+        #groups = degroups.females 
+        #ctrl = ['CS_F']
+    #elif sex == 'M':
+        #groups = degroups.males 
+        #ctrl = ['CS_M']
 
-    if fdr == 0.10 or fdr == .10:
-        sfdr = '10'
-    decounttable = 'decount{}_{}_{}_fdr{}_{}'.format(sex, genesubset, tool, 
-            sfdr, align)
+    #d_repcounts = hl.compare_replicate_counts(cur, 
+            #groups + ctrl, gene, sampleinfo_table='autin', 
+            #htseqtable=htseqtable)
+    #d_derep = dl.compare_replicate_de(cur, groups, ctrl[0],
+         #gene, detable, tool, genesubset)
+    #allinfo,alllist = get_rep_counts_de(d_repcounts, d_derep)
+    #if toprint == 'yes':
+        #for i in allinfo:
+            #logging.info(i)
+    #return(allinfo, alllist)
 
-    entries = get_decount(cur, decounttable, gff_file) 
-    with open(outfile, 'w') as g:
-        g.write('FDR = {}, Gene subset = {}, Tool = {}, Release = {}\n'.format(sfdr, genesubset, tool, gff_file))
-        for entry in entries:
-            g.write('\n{}\t{}\t{}\t{}\n'.format(*entry))
-            gene = entry[2]
-            g.write('Genotype\thtseq counts\tFold change\tFDR\n')
-            slist, ilist = get_gene_info(cur, gene, groups, sex,
-                   htseqtable, detable, tool, genesubset)
-            for i, ps in enumerate(slist):
-                if minfdr:
-                    if ilist[i][-1] < fdr:
-                        g.write(ps)
-                else:
-                    g.write(ps)

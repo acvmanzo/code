@@ -351,13 +351,23 @@
 -- \copy ( select distinct g.fbgn_id from degenes as d inner join gff_genes as g on (g.name_name = d.gene) where d.tool = 'edger' and d.gene_subset = 'bwa_r557_ralph_mt_ex' and d.fdr < 0.05 and d.group1 = 'NrxI_M' and d.group2 = 'CS_M' and g.gff_file = 'dmel-all-filtered-r5.57.gff') to '/home/andrea/Documents/lab/RNAseq/analysis/edger/bwa_r557_ralph_mt_ex/GO_analysis/de_NrxI_M_fdr05.txt'
 
 -- -- Create table with gene lengths for every gene.
--- create table r557_gene_length (
+-- create table r601_gene_length (
     -- gene_name varchar(100),
     -- gene_bp int,
     -- unique (gene_name, gene_bp)
 -- );
 
--- \copy r557_gene_length from '/home/andrea/rnaseqanalyze/references/dmel-r5.57/dmel-all-filtered-r5.57_gene_length.txt';
+-- \copy r601_gene_length from '/home/andrea/rnaseqanalyze/references/dmel-r6.01/dmel-all-r6.01_gene_length.txt';
+-- select count (*) from (
+-- select gene_name, gene_bp 
+-- from r601_gene_length
+-- inner join
+-- pcg_r601
+-- on (gene_name = gene_short_name)
+-- ) as foo
+-- ;
+-- \copy (select gene_name, gene_bp from r601_gene_length inner join pcg_r601 on (gene_name = gene_short_name)) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_r6_2str/sfari_r601_goseq/pcg_r601_gene_lengths.txt'
+
 
 -- Create table with GO id for every gene.
 -- create table r601_gene_go (
@@ -448,51 +458,59 @@
 -- ;
 
 -- -- -- Genes that are in the 3 aggression mutants but not in the other males.
+-- create view degenes_pcg_r601_agg_05 as (
 -- select g.fbgn_id 
--- from degenes as d 
+-- from degenes_r6_2str as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
--- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
--- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxI_M' 
+-- where d.tool = 'edger' and d.gene_subset = 'pcg_r601' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-r6.01.gff' and group1 = 'NrxI_M' 
 -- UNION
 -- select g.fbgn_id 
--- from degenes as d 
+-- from degenes_r6_2str as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
--- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
--- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'CG34127_M' 
+-- where d.tool = 'edger' and d.gene_subset = 'pcg_r601' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-r6.01.gff' and group1 = 'CG34127_M' 
 -- UNION
 -- select g.fbgn_id 
--- from degenes as d 
+-- from degenes_r6_2str as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
--- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
--- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'en_M' 
+-- where d.tool = 'edger' and d.gene_subset = 'pcg_r601' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-r6.01.gff' and group1 = 'en_M' 
 -- EXCEPT
 -- select g.fbgn_id 
--- from degenes as d 
+-- from degenes_r6_2str as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
--- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
--- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'NrxIV_M' 
+-- where d.tool = 'edger' and d.gene_subset = 'pcg_r601' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-r6.01.gff' and group1 = 'NrxIV_M' 
 -- -- INTERSECT
 -- EXCEPT
 -- select g.fbgn_id 
--- from degenes as d 
+-- from degenes_r6_2str as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
--- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
--- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'pten_M' 
+-- where d.tool = 'edger' and d.gene_subset = 'pcg_r601' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-r6.01.gff' and group1 = 'pten_M' 
 -- -- INTERSECT
 -- except
 -- select g.fbgn_id 
--- from degenes as d 
+-- from degenes_r6_2str as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
--- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
--- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Nhe3_M'
+-- where d.tool = 'edger' and d.gene_subset = 'pcg_r601' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-r6.01.gff' and group1 = 'Nhe3_M'
 -- -- INTERSECT
 -- except
 -- select g.fbgn_id 
--- from degenes as d 
+-- from degenes_r6_2str as d 
 -- inner join gff_genes as g on (g.name_name = d.gene) 
--- where d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and d.fdr < 0.05 and 
--- gff_file = 'dmel-all-filtered-r5.57.gff' and group1 = 'Betaintnu_M' 
+-- where d.tool = 'edger' and d.gene_subset = 'pcg_r601' and d.fdr < 0.05 and 
+-- gff_file = 'dmel-all-r6.01.gff' and group1 = 'Betaintnu_M' 
+-- )
 -- ;
+
+
+-- -- Shows samples the above are DE in:
+-- \copy (select g.name_name, g.fbgn_id, avg(d.fdr) as avg_adjpval, 2^avg(d.logfc) as avg_fc, array_agg(d.group1) from degenes_pcg_r601_agg_05 as agg inner join gff_genes as g on (agg.fbgn_id = g.fbgn_id) inner join degenes_r6_2str as d on (g.name_name = d.gene) where d.fdr < 0.05 and d.tool = 'edger' and g.gff_file = 'dmel-all-r6.01.gff' and d.gene_subset = 'pcg_r601' and d.group1 ~ '..M' group by g.name_name, g.fbgn_id order by g.name_name) to '/home/andrea/Documents/lab/RNAseq/analysis/decounts/results_tophat_r6_2str/pcg_r601/lowagg_males_degenes_edger_0.05.csv' csv header;
+
+
 
 -- CREATE TABLE tempfbgns (
     -- fbgn varchar(20)
@@ -828,24 +846,27 @@
 -- \copy ( select g.fbgn_id, f.gene as gene_F, f.count as count_F, f.row_number as row_F, m.gene as gene_M, m.count as count_M, m.row_number as row_M, coalesce(f.count, 0) + coalesce(m.count,0) as sum_counts from decountf_prot_coding_genes_edger_fdr10_2str as f full outer join decountm_prot_coding_genes_edger_fdr10_2str as m on (f.gene = m.gene) inner join gff_genes as g on (f.gene = g.name_name or m.gene = g.name_name) where g.gff_file = 'dmel-all-filtered-r5.57.gff' order by sum_counts DESC, f.count DESC, m.count DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/decount/decountf+m_fdr10_fbgns.txt' header csv ;
 
 -- -- Returns a list of DE genes, along with the number of samples and which samples they are considered DE.
--- select gene, g.fbgn_id, avg(coalesce(df.count, 0) + coalesce(dm.count, 0)), array_agg(group1)
--- -- select gene, df.count, d.group1, d.fdr
--- from decountf_prot_coding_genes_edger_fdr10_2str as df
+-- select gene, g.fbgn_id, 
+-- avg(coalesce(df.count,0)) as avg_f, avg(coalesce(dm.count, 0)) as avg_m, 
+-- avg(coalesce(df.count, 0) + coalesce(dm.count, 0)) as avg_mf, 
+-- 2^avg(d.logfc) as avg_fc,
+-- 2^avg(d.fdr) as avg_adjpval,
+-- array_agg(group1)
+-- from decountf as df
 -- full outer join
--- decountm_prot_coding_genes_edger_fdr10_2str as dm
+-- decountm as dm
 -- using (gene)
 -- inner join
--- degenes_2str as d
+-- degenes_r6_2str as d
 -- using (gene)
 -- inner join 
 -- gff_genes as g
 -- on (gene = g.name_name)
--- where d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and d.fdr < 0.10 and d.tool = 'edger'
--- and g.gff_file = 'dmel-all-filtered-r5.57.gff
--- and (group2 = 'CS_M' or group2 = 'CS_F')
--- and d.gene_subset = 'prot_coding_genes'
+-- where d.fdr < 0.10 and d.tool = 'edger'
+-- and g.gff_file = 'dmel-all-r6.01.gff'
+-- and d.gene_subset = 'pcg_r601'
 -- group by gene, g.fbgn_id
--- order by avg DESC
+-- order by avg_mf DESC
 -- ;
 
 -- \copy ( select gene, g.fbgn_id, avg(coalesce(df.count, 0) + coalesce(dm.count, 0)) as num_samples, 2^avg(logfc) as avg_fc, 2^avg(logcpm) as avg_cpm, array_agg(group1) from decountf_prot_coding_genes_edger_fdr10_2str as df full outer join decountm_prot_coding_genes_edger_fdr10_2str as dm using (gene) inner join degenes_2str as d using (gene) inner join gff_genes as g on (gene = g.name_name) where d.group1 != 'lowagg_CS' and d.group1 != 'aut_mut_m' and d.group1 != 'aut_mut_f' and d.group1 != 'lowagg_all' and d.fdr < 0.10 and (d.group2 = 'CS_M' or d.group2 = 'CS_F') and d.tool = 'edger' and d.gene_subset = 'prot_coding_genes' and g.gff_file = 'dmel-all-filtered-r5.57.gff' group by gene, g.fbgn_id order by num_samples DESC) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str_good/prot_coding_genes/GO_analysis/decount/decountf+m_fdr10_groups.txt' csv header;
@@ -903,6 +924,50 @@
 -- select name_name 
 -- from gff_genes
 -- where gff_file = 'dmel-all-r6.01.gff'
+-- ;
+
+
+
+-- -- Get homologs of decount genes
+-- select count (*) from (
+-- select count (*) from (
+-- select distinct gene
+-- select d.gene, h.fly_sym
+-- select gene, f.gene, m.gene, i.fbgn_id, hp.pfbgn, h.fly_sym, h.human_sym
+-- select gene, array_agg(human_sym)
+-- from decountf as f
+-- full outer join
+-- decountm as m
+-- using (gene)
+-- inner join
+-- r601_id_index as i
+-- on (gene = i.name_name)
+-- inner join
+-- homolog_pfbgns as hp
+-- using (pfbgn)
+-- inner join
+-- homologs as h
+-- using (fly_sym)
+-- where h.gene_source = 'sfari' and hp.gene_source = 'sfari'
+-- group by gene
+-- order by gene
+
+-- select gene, array_agg(human_sym) "
+-- "from {} as d "
+-- "full outer join "
+-- "{} as m "
+-- "using (gene) "
+-- "left outer join homologs as h "
+-- "on (gene = fly_sym) "
+-- "where gene_source = '{}' group by gene order by gene) "
+
+-- left outer join
+-- homologs as h
+-- on (gene = fly_sym)
+-- where gene_source = 'sfari'
+-- -- group by gene
+-- order by gene
+-- -- ) as foo
 -- ;
 
 
