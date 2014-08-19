@@ -245,8 +245,8 @@ def gocat_copy_cmd(gocat_table, goseq_table, tool, gene_subset, defdr, group1,
             "from {} as gc inner join {} as gs "
             "using (go_id) "
             "where tool = '{}' and gene_subset = '{}' and defdr = {} "
-            "and group1 = '{}' and group2 = '{}' "
-            "order by gs.fdr_over_pval"
+            "and group1 = '{}' and group2 = '{}' and num_de > 0 "
+            "order by gs.fdr_over_pval, num_de DESC"
             ") TO STDOUT CSV HEADER"
             ";").format(gocat_table, goseq_table, tool,
                     gene_subset, defdr, group1, group2)
