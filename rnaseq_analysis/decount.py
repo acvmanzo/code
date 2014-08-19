@@ -9,10 +9,10 @@ import glob
 import libs.decountlib as dl
 import libs.rnaseqlib as rl
 import logging
-import rnaseq_settings as rs
 import os
 import psycopg2
-
+import rnaseq_settings as rs
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('expts', 
@@ -46,38 +46,43 @@ else:
     exptlist = sorted([os.path.abspath(e) for e in args.expts.split(',')])
 
 
-curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-logpath = os.path.join(rnaset.decount_dirpath, '{}_{}'.format(curtime, 
-    rnaseqdict['decount_log_file']))
-rl.logginginfo(logpath)
-
-conn = psycopg2.connect("dbname={} user=andrea".format(rnaset.rsdbname))
 
 if args.run:
+    curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    logpath = os.path.join(rnaset.decount_dirpath, '{}_{}'.format(curtime, 
+        rnaseqdict['decount_log_file']))
+    rl.logginginfo(logpath)
+
+    conn = psycopg2.connect("dbname={} user=andrea".format(rnaset.rsdbname))
+    shutil.copy(rnaseqdict['set_path_orig'], '{}_{}'.format(rnaseqdict['decount_set_path_copy'], curtime))
+
     for fdr in [0.01, 0.05, 0.10]:
     #for fdr in [0.01]:
+        logging.info(fdr) 
         logging.info("Creating decount tables")
         dl.create_decount_tables(conn, rnaset, tool, fdr)
 
-        if args.genesubset != 'all' or args.genesubset != 'pcg_r601' or \
-                args.genesubset != 'prot_coding_genes':
-            logging.info("Writing homologs of decount genes") 
-            dl.write_homologs_obj(conn, rnaset, tool, fdr)
-        logging.info("Writing joined male/female decount file")
-        dl.write_decount_samples_mf(conn, rnaset, tool, fdr)
+        #if args.genesubset != 'all' or args.genesubset != 'pcg_r601' or \
+                #args.genesubset != 'prot_coding_genes':
+            #logging.info("Writing homologs of decount genes") 
+            #dl.write_homologs_obj(conn, rnaset, tool, fdr)
+        #logging.info("Writing joined male/female decount file")
+        #dl.write_decount_samples_mf(conn, rnaset, tool, fdr)
         #logging.info("Writing decount files for each group")
         #dl.write_group_decount(conn, exptlist, rnaset, fdr, tool)
         #logging.info(("Plotting histograms of decount"))
         #dl.plot_decount_hist(rnaset, fdr, tool)
+        #dl.plot_cv_hist(rnaset, fdr, tool)
 
-        #for sex in ['M', 'F']:
+        for sex in ['M', 'F']:
+            logging.info(sex) 
             #logging.info("Writing files with counts for each gene in the DE gene files")
             #dl.write_decount_gene_counts(conn, rnaset, degroups, sex, fdr, tool, 
                     #minfdr=True)
             #logging.info("Writing files for number of DE genes")
             #dl.write_num_degenes(conn, rnaset, tool, fdr, sex)
-            #logging.info(("Writing files with DE counts for each sex and"
-                #"coefficient of variation of fold change"))
+            logging.info(("Writing files with DE counts for each sex and "
+                "coefficient of variation of fold change"))
             #dl.write_decount_fccv(conn, rnaset, degroups, sex, fdr, tool)
-            #dl.write_decount_fccv_gene(conn, rnaset, degroups, sex, fdr, tool, 
-                    #minfdr=True)
+            dl.write_decount_fccv_gene(conn, rnaset, degroups, sex, fdr, tool, 
+                    minfdr=True)

@@ -91,6 +91,8 @@ def main():
         batch_ht_gene_subset(conn, args.genesubset)
         conn.commit()
         conn.close()
+    tl.seqdir_run_tophat_cufflinks(rnaseqdict, args.cufflinks, strand)
+    shutil.copy(rnaseqdict['set_path_orig'], '{}_{}'.format(rnaseqdict['th_set_path_copy'], curtime))
 
 print('Type -h for help')
 if __name__ == '__main__':

@@ -974,7 +974,7 @@
 
 
 -- -- create view of sfari go categories
--- create view sfari_gocat as (
+-- create or replace view sfari_gocat as (
 -- select gc.go_id, gc.go_cat, go_nspace, gs.fdr_over_pval, gs.fdr_under_pval,
 -- gs.num_de, gs.num_total, gs.tool, gs.gene_subset, gs.defdr, gs.group1,
 -- gs.group2 
@@ -1031,11 +1031,38 @@
 -- ;
 
 -- -- Find the overlap of GO categories in DE genes.
--- select go_id, array_agg(group1)
+-- select go_id, go_cat, array_agg(group1)
 -- select *
--- from goseq_r6_2str
--- where tool = 'edger' and gene_subset = 'pcg_r601' 
--- and go_id = 'GO:0000003' and defdr = 0.05
--- -- group by go_id
--- order by go_id
+-- select r.go_id, r.go_cat, array_agg(g.fdr_over_pval) as fdr_over_pval, array_agg(num_de) as num_de, array_agg(num_total) as num_total, count(g.group1), array_agg(g.group1)
+-- from goseq_r6_2str as g
+-- inner join
+-- r601_go_cat as r
+-- using (go_id)
+-- where tool = 'edger' and gene_subset = 'sfari_r601'
+-- and defdr = 0.10
+-- and num_de > 0
+-- and fdr_over_pval < 0.25
+-- -- and go_id = 'GO:0007052'
+-- group by r.go_id, r.go_cat
+-- order by fdr_over_pval
 -- ;
+
+-- create or replace view decountm_test as (
+-- select row_number() OVER (ORDER BY count (*) DESC),
+-- gene, count (*), array_agg(group1)
+-- from degenes_r6_2str
+-- where tool = 'edger' and gene_subset = 'pcg_r601'
+-- and fdr < 0.05
+-- and group1 ~ '.._M'
+-- -- and group1 != 'pten_F' and group1 != 'Betaintnu_F'
+-- group by gene 
+-- order by count (*) DESC)
+-- ;
+
+-- select gene, count, array_agg, array_agg(go_cat) from
+-- decountf_test
+-- inner join
+-- r601_gene_go
+-- on (gene_name = gene)
+-- group by gene, count, array_agg
+-- order by count DESC, gene

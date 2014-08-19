@@ -11,6 +11,7 @@ import libs.rnaseqlib as rl
 import rnaseq_settings as rs
 import os
 import psycopg2
+import shutil
 
 
 parser = argparse.ArgumentParser()
@@ -54,6 +55,8 @@ if args.copytodb or args.run or args.write_go_cat:
     logpath = os.path.join(exptdir, '{}_{}'.format(curtime, 
         rnaseqdict['goseq_log_file']))
     rl.logginginfo(logpath)
+    setpath = os.path.join(exptdir, rnaseqdict['goseq_set_file_copy'])
+    shutil.copy(rnaseqdict['set_path_orig'], '{}_{}'.format(setpath, curtime))
 
 if args.run:
     #Runs goseq analysis on the indicated groups.

@@ -51,7 +51,7 @@ def get_rep_counts_de(d_repcounts, d_derep):
             except KeyError:
                 logging.info('%s Not in list', k)
                 continue
-        ps = '{}\t{}\t{:.3f}\t{:.3f}\n'.format(k, vcounts, vde[1], vde[2])
+        ps = '{}\t{}\t{:.3g}\t{:.3g}\n'.format(k, vcounts, vde[1], vde[2])
         pslist.append(ps)
         itemlist.append([k, vcounts, vde[1], vde[2]])
     return(pslist, itemlist)
@@ -304,14 +304,16 @@ def write_decount_gene_counts(conn, rnaset, degroups, sex, fdr, tool, minfdr):
         g.write(("FDR = {}, Gene subset = {}, Tool = {}, "
                 "Release = {}\n").format(fdr, rnaset.genesubset, tool, 
                     rnaset.gff_file))
+        g.write('Rownum\tFBgn\tGene\t# samples\n')
+        g.write('Genotype\thtseq counts\tFold change\tFDR\n')
         for entry in entries:
-            g.write('Genotype\thtseq counts\tFold change\tFDR\n')
-            g.write('Rownum\tFBgn\tGene\t# samples\n')
             g.write('\n{}\t{}\t{}\t{}\n'.format(*entry))
             gene = entry[2]
             slist, ilist = get_gene_counts(cur, gene, grouplist, ctrllist, 
                     rnaset.sampleinfo_table, rnaset.htseq_table, 
                     rnaset.degene_table, tool, rnaset.genesubset)
+            #print('slist', slist)
+            #print('ilist', ilist)
             for i, ps in enumerate(slist):
                 if minfdr:
                     if ilist[i][-1] < fdr or 'CS' in ilist[i][0]:
@@ -330,13 +332,17 @@ def get_decvlist(cur, grouplist, ctrllist, sampleinfo_table, htseqtable,
 
     cvlist = []
     for entry in entries:
+        #print('entry', entry)
+
         gene = entry[2]
 
         ilist = get_gene_counts(cur, gene, grouplist, ctrllist, sampleinfo_table, 
             htseqtable, detable, tool, genesubset, toprint='no')[1]
+        #print('ilist')
         
         genfc = []
         for i in ilist:
+            #print(i)
             genotype, vcounts, gfc, gfdr = i
             if gfdr < fdr:
                 genfc.append(gfc)
@@ -344,8 +350,15 @@ def get_decvlist(cur, grouplist, ctrllist, sampleinfo_table, htseqtable,
         mgfc = np.mean(genfc)
         sgfc = np.std(genfc)
         cv_gfc = sgfc/mgfc
+        #print('genfc', genfc)
+        #print('mean fc', mgfc)
+        #print('standard dev fc', sgfc)
+        #print('CV of fc', cv_gfc)
+
         if cv_gfc > 0:
             cvlist.append((cv_gfc, gene))
+   
+    #print(cvlist[1:10])
     cvlist = sorted(cvlist)
     cvlist.reverse()
     return(cvlist)
@@ -373,7 +386,7 @@ def write_decount_fccv(conn, rnaset, degroups, sex, fdr, tool):
     outpath = os.path.join(rnaset.decount_dirpath, outfile)
     
     with open(outpath, 'w') as g:
-        g.write('CV\tGene\n')
+        g.write('Gene\tCV\n')
         for item in cvlist:
             cv, gene = item
             g.write('{}\t{}\n'.format(gene, cv))
@@ -407,21 +420,21 @@ def write_decount_fccv_gene(conn, rnaset, degroups, sex, fdr, tool, minfdr):
     top = int(len(cvlist)/(100/topnum))
     topcvlist = cvlist[:top]
     with open(outfile, 'w') as h:
-        h.write(("FDR = {}, Gene subset = {}, Tool = {},"
-                "Release = {}\n\n").format(fdr, rnaset.genesubset, tool, 
+        h.write(("FDR = {}, Gene subset = {}, Tool = {}, "
+                "Release = {}\n").format(fdr, rnaset.genesubset, tool, 
                     rnaset.gff_file))
+        h.write('Rownum\tFBgn\tGene\t# samples\n')
+        h.write('Genotype\thtseq counts\tFold change\tFDR\n')
 
         for cv, gene in cvlist[:top]:
-            h.write('Gene\tCV of fold change\n')
-            h.write('{}\t{:.4f}\n'.format(gene, cv))
-            h.write('Genotype\thtseq counts\tFold change\tFDR\n')
+            h.write('\n{}\t{:.4f}\n'.format(gene, cv))
 
             slist, ilist = get_gene_counts(cur, gene, grouplist, ctrllist, 
                     rnaset.sampleinfo_table, rnaset.htseq_table, 
                     rnaset.degene_table, tool, rnaset.genesubset)
             for i, ps in enumerate(slist):
                 if minfdr:
-                    if ilist[i][-1] < fdr:
+                    if ilist[i][-1] < fdr or 'CS' in ilist[i][0]:
                         h.write(ps)
                 else:
                     h.write(ps)
@@ -469,6 +482,26 @@ def plot_decount_hist(rnaset, fdr, tool):
     histmpath = os.path.join(decountdir, histmname)
     cmd = ("Rscript /home/andrea/Documents/lab/code/rnaseq_analysis/decount.R "
             "{} {} {}").format(countpath, histfpath, histmpath)
+    os.system(cmd)
+
+def plot_cv_hist(rnaset, fdr, tool):
+
+    decountdir = os.path.join(rnaset.decount_dirpath)
+    countfilef = 'decount_fccvonlyf_{}_{}_{:.2f}.txt'.format(rnaset.genesubset, 
+            tool, fdr)
+    countfilem = 'decount_fccvonlym_{}_{}_{:.2f}.txt'.format(rnaset.genesubset, 
+            tool, fdr)
+    countpathf, countpathm = [os.path.join(decountdir, cf) for cf in 
+            [countfilef, countfilem]]
+
+    histfname = '{}_{}_{}_{:.2f}.png'.format(rnaset.histcvfname, rnaset.genesubset, tool,
+            fdr)
+    histfpath = os.path.join(decountdir, histfname)
+    histmname = '{}_{}_{}_{:.2f}.png'.format(rnaset.histcvmname, rnaset.genesubset, tool,
+            fdr)
+    histmpath = os.path.join(decountdir, histmname)
+    cmd = ("Rscript /home/andrea/Documents/lab/code/rnaseq_analysis/decountcv.R "
+            "{} {} {} {}").format(countpathf, countpathm, histfpath, histmpath)
     os.system(cmd)
 
 #def get_gene_info(cur, gene, grouplist, ctrllist, sex, htseqtable, detable, tool, 

@@ -43,11 +43,13 @@ if args.genesubset:
 
 if args.copytodb or args.run:
     curtime = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-    exptdir = os.path.join(rnaseqdict['edger_dirpath'], gene_subset)
+    exptdir = os.path.join(rnaseqdict['{}_dirpath'.format(tool)], gene_subset)
     cmn.makenewdir(exptdir)
     logpath = os.path.join(exptdir, '{}_{}'.format(curtime, 
         rnaseqdict['{}_log_file'.format(tool)]))
     rl.logginginfo(logpath)
+    shutil.copy(rnaseqdict['set_path_orig'], 
+            '{}_{}'.format(rnaseqdict['{}_set_path_copy'.format(tool)], curtime))
 
 if args.run:
 #Runs DE analysis on the indicated groups.

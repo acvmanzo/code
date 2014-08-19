@@ -1,27 +1,16 @@
-#x = read.csv("decountf+m_fdr10_fbgns.txt")
-
-#hist(x$sum_counts)
-
-#library("ggplot2")
-#x = degenes
-#degenes = data.frame(sapply(degenes, as.numeric))
-
-#png('hist_decountf+m_fdr10_fbgns.png')
-
-#ggplot(degenes, aes(x=x.sum_counts)) + geom_histogram(binwidth=1, fill="gray", colour="black")
-#dev.off()
 
 library("ggplot2")
 args <- commandArgs(trailingOnly = TRUE)
 print(args)
 
-countfile <- args[1]
-histfname <- args[2]
-histmname <- args[3]
+cvffile <- args[1]
+cvmfile <- args[2]
+histfname <- args[3]
+histmname <- args[4]
 
-counts = read.csv(countfile)
-countsf = counts$avg_f[counts$avg_f != 0]
-countsm = counts$avg_m[counts$avg_m != 0]
+cvf = read.table(cvffile, header=TRUE)$CV
+cvm = read.table(cvmfile, header=TRUE)$CV
+
 
 #countsub = countsf
 #dfcountsub = data.frame(sapply(countsub, as.numeric))
@@ -40,12 +29,12 @@ countsm = counts$avg_m[counts$avg_m != 0]
 #print(getwd())
 
 plotcounthist <- function(countsub, pngname) {
-    dfcountsub = data.frame(num_genotypes = sapply(countsub, as.numeric))
+    dfcountsub = data.frame(cv = sapply(countsub, as.numeric))
     #print(head(dfcountsub))
     png(pngname)
     #print(pngname)
-    plotobj = ggplot(dfcountsub, aes(x=num_genotypes)) + 
-        geom_histogram(binwidth=1, fill="gray", colour="black") +
+    plotobj = ggplot(dfcountsub, aes(x=cv)) + 
+        geom_histogram(binwidth=0.03, fill="gray", colour="black") +
         theme(axis.text.x = element_text(size=14, colour='black'),
             axis.text.y = element_text(size=14, colour='black'),
             axis.title.x = element_text(size=16),
@@ -53,12 +42,15 @@ plotcounthist <- function(countsub, pngname) {
             legend.text = element_text(size=14),
             legend.title = element_text(size=16)
             ) +
-        xlim(1, 7)
+        xlim(0, 1)
     print(plotobj)
     dev.off()
     print(getwd())
 }
 
-plotcounthist(countsf, histfname)
-plotcounthist(countsm, histmname)
+plotcounthist(cvf, histfname)
+plotcounthist(cvm, histmname)
+
+plot(cvf)
+#plotcounthist(countsm, name)
 

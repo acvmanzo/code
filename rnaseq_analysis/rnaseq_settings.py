@@ -188,6 +188,8 @@ class RNASeqData:
         self.htseq_log_file = 'htseq.log'
         self.htseq_file = 'htseqcount'
         self.res_sample_glob = 'RG*'
+        self.htseq_set_path_copy = os.path.join(self.th_resdirpath, 
+                os.path.splitext(self.set_file)[0]+'_htseq')
       
         #Paths to edgeR files.
         self.edger_dir = 'edger'
@@ -207,6 +209,8 @@ class RNASeqData:
         self.edger_counts_file = 'gene_counts.csv'
         self.edger_kept_counts_file = 'kept_gene_counts.csv'
         self.de_hh_file = 'human_hom_'
+        self.edger_set_path_copy = os.path.join(self.edger_dirpath,
+                os.path.splitext(self.set_file)[0]+'_edger')
     
         #Paths to DEseq files.
         self.deseq_dir = 'deseq'
@@ -218,6 +222,8 @@ class RNASeqData:
         self.deseq_toptags_file = 'res_DEseq.csv'
         self.deseq_dbtoptags_file = 'db_res_DEseq.csv'
         self.deseq_toptags_fdr_file = 'res_DEseq_'
+        self.deseq_set_path_copy = os.path.join(self.deseq_dirpath,
+                os.path.splitext(self.set_file)[0]+'_deseq')
     
         self.berkidlen = 8 #Length of berkid names.
 
@@ -236,7 +242,7 @@ class RNASeqData:
                 'decount_fccv_f')
         self.decount_fccv_m = os.path.join(self.decount_dirpath,
                 'decount_fccv_m')
-        self.decount_top = 25 # top percent of genes with the highest cv of fold
+        self.decount_top = 100 # top percent of genes with the highest cv of fold
         #change
         self.decount_log_file = 'decount.log'
         self.count_num_degenes_file = 'num_degenes' 
@@ -245,6 +251,10 @@ class RNASeqData:
         self.decount_cv_file = 'decount_fccvonly'
         self.decount_hom = os.path.join(self.decount_dirpath,
                 'decount_hom')
+        self.decount_set_path_copy = os.path.join(self.decount_dirpath,
+                os.path.splitext(self.set_file)[0]+'_decount')
+        self.histcvfname = 'hist_cvf'
+        self.histcvmname = 'hist_cvm'
 
         #Goseq settings
         self.goseq_dir = 'goseq'
@@ -254,6 +264,7 @@ class RNASeqData:
         self.goresults_fdr_file = 'go_results_'
         self.goresults_fdr_name = 'go_results_xgene.txt'
         self.goseq_log_file = 'batch_goseq.log'
+        self.goseq_set_file_copy = os.path.splitext(self.set_file)[0]+'_goseq'
 
     def GetResultsFiles(self, berkid):
         '''A method that returns a dictionary of the file paths for a specific
