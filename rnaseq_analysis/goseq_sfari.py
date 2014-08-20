@@ -17,13 +17,13 @@ FULL_GO_RES_FILE = 'cat+' + GOSEQFILE
 conn = psycopg2.connect("dbname=sixrna user=andrea")
 cur = conn.cursor()
 
-gl.gen_db_goseqfile(GOSEQFILE, DB_GOSEQFILE, TOOL, GENE_SUBSET, GROUP1, 
+#gl.gen_db_goseqfile(GOSEQFILE, DB_GOSEQFILE, TOOL, GENE_SUBSET, GROUP1, 
         #GROUP2, DEFDR, delim=',')
-gl.copy_goseq_dbtable(DB_GOSEQFILE, DBTABLE, cur)
+#gl.copy_goseq_dbtable(DB_GOSEQFILE, DBTABLE, cur)
 cmd = gl.gocat_copy_cmd(GOCATTABLE, DBTABLE, TOOL, GENE_SUBSET, DEFDR, GROUP1,
         GROUP2)
 print(cmd)
-#gl.write_full_go_results(cmd, FULL_GO_RES_FILE, cur)
+gl.write_full_go_results(cmd, FULL_GO_RES_FILE, cur)
 
 cur.close()
 conn.commit()

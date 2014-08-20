@@ -166,30 +166,30 @@ def get_num_DAVID_ids():
     get_info_DAVID(cmd, edger_dirpath, degroups)
 
 
-
-ALIGN = '2str'
+ALIGN = 'r6_2str'
 #GENESUBSET = 'prot_coding_genes'
-GENESUBSET = 'brain_r557'
+#GENESUBSET = 'brain_r557'
+GENESUBSET = 'sfari_r601'
 TOPTAGFILE = 'toptags_edgeR'
-GENECLASSFILE = 'toptags_edgeR_0.10fbgn_geneclass'
-FNCLUSTERFILE = 'toptags_edgeR_0.10fbgn_fncluster'
+#GENECLASSFILE = 'toptags_edgeR_0.10fbgn_geneclass'
+#FNCLUSTERFILE = 'toptags_edgeR_0.10fbgn_fncluster'
 
-CONN = psycopg2.connect("dbname=rnaseq user=andrea")
+CONN = psycopg2.connect("dbname=sixrna user=andrea")
 RNASET = rs.RNASeqData(alignment=ALIGN, 
         genesubset=GENESUBSET)
 DEGROUPS = rs.DEGroups()
 
 EDGER_DIRPATH = os.path.join(RNASET.edger_dirpath, GENESUBSET)
-DESEQ_DIRPATH = os.path.join(RNASET.deseq_dirpath, GENESUBSET)
+#DESEQ_DIRPATH = os.path.join(RNASET.deseq_dirpath, GENESUBSET)
 #print(edger_dirpath)
 
 
-GCINFOFILE = 'toptags_edgeR_0.10fbgn_geneclass_deinfo.txt'
-FNCINFOFILE = 'toptags_edgeR_0.10fbgn_fncluster_deinfo.txt'
+#GCINFOFILE = 'toptags_edgeR_0.10fbgn_geneclass_deinfo.txt'
+#FNCINFOFILE = 'toptags_edgeR_0.10fbgn_fncluster_deinfo.txt'
 
-DESEQFILE = 'res_DEseq'
+#DESEQFILE = 'res_DEseq'
 
-SQLCMDFILE = '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decount_sqlcmd.sql'
+#SQLCMDFILE = '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2str/prot_coding_genes/GO_analysis/decount_sqlcmd.sql'
 
 #cmd = 'cat toptags_edgeR_0.10fbgn_fncluster | grep cyt | cut -f2'
 #get_info_DAVID(cmd, EDGER_DIRPATH, DEGROUPS)
@@ -200,7 +200,7 @@ SQLCMDFILE = '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_2s
     #'degenes_ij_sfari_fdr10_fncluster')
 
 #rename_degene_file(toptagfile)
-batch_get_degenes(CONN, ALIGN, 'fbgn_id', 'edger', GENESUBSET, 0.1, TOPTAGFILE,
+batch_get_degenes(CONN, ALIGN, 'fbgn_id', 'edger', GENESUBSET, 0.05, TOPTAGFILE,
         EDGER_DIRPATH, DEGROUPS)
 #remove_files('toptags_edgeR_0.1name')
 #rename_degene_file('toptags_edgeR_0.10fbgn', 'toptags_edgeR_0.10_fbgn')

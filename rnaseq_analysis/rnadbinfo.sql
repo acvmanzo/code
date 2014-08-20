@@ -887,7 +887,8 @@
 -- \copy (select tracking_id from bwa_r601 order by tracking_id) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/bwa_r601_fbgns.txt';
 
 -- -- Gene lists with current gene models:
--- \copy (select gene_short_name from pcg_r601 inner join gff_genes on (name_name = gene_short_name) where gff_file = 'dmel-all-r6.01.gff' order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/pcg_r601_genes.txt';
+-- \copy (select tracking_id from pcg_r601 inner join gff_genes on (fbgn_id = tracking_id) where gff_file = 'dmel-all-r6.01.gff' order by tracking_id) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/pcg_r601_fbgns.txt';
+
 -- \copy (select gene_short_name from sfari_r601 inner join gff_genes on (name_name = gene_short_name) where gff_file = 'dmel-all-r6.01.gff' order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/sfari_r601_genes.txt';
 -- \copy (select gene_short_name from bwa_r601 inner join gff_genes on (name_name = gene_short_name) where gff_file = 'dmel-all-r6.01.gff' order by gene_short_name) to '/home/andrea/rnaseqanalyze/references/gene_lists/goseq_lists/bwa_r601_genes.txt';
 
@@ -1033,19 +1034,94 @@
 -- -- Find the overlap of GO categories in DE genes.
 -- select go_id, go_cat, array_agg(group1)
 -- select *
--- select r.go_id, r.go_cat, array_agg(g.fdr_over_pval) as fdr_over_pval, array_agg(num_de) as num_de, array_agg(num_total) as num_total, count(g.group1), array_agg(g.group1)
+-- drop view tempview2;
+-- create or replace view tempview2 as (
+-- -- select r.go_id, r.go_cat, array_agg(to_char(g.fdr_over_pval::real, '999d99eeee')) as fdr_over_pval, array_agg(num_de) as num_de, array_agg(num_total) as num_total, count(g.group1), array_agg(g.group1)
+-- select r.go_id, r.go_cat, 
+-- array_agg(g.fdr_over_pval) as fdr_over_pval, 
+-- array_agg(g.num_de) as num_de, array_agg(g.num_total) as num_total, 
+-- count(g.group1), 
+-- array_agg(g.group1),
+-- avg(s.fdr_over_pval) as s_fdr_over_pval, 
+-- avg(s.num_de) as s_num_de, 
+-- avg(s.num_total) as s_num_total
+-- -- select r.go_id, r.go_cat, g.fdr_over_pval as fdr_over_pval, num_de, num_total, g.group1
 -- from goseq_r6_2str as g
 -- inner join
 -- r601_go_cat as r
 -- using (go_id)
--- where tool = 'edger' and gene_subset = 'sfari_r601'
--- and defdr = 0.10
--- and num_de > 0
--- and fdr_over_pval < 0.25
--- -- and go_id = 'GO:0007052'
--- group by r.go_id, r.go_cat
--- order by fdr_over_pval
+-- inner join 
+-- sfari_gocat as s
+-- using (go_id)
+-- where g.tool = 'edger' 
+-- and g.gene_subset = 'pcg_r601'
+-- and g.defdr = 0.10
+-- and g.num_de > 0
+-- and s.num_de > 0
+-- and g.fdr_over_pval < 0.2
+-- -- and go_id = 'go:0007052'
+-- group by r.go_id, r.go_cat 
+-- order by avg(g.fdr_over_pval)
+-- )
 -- ;
+-- \copy (select * from tempview2) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_r6_2str/pcg_r601/goseq/go_edger_pcg_r601_defdr10_goseqfdr020.csv' csv header;
+
+-- drop view tempview4;
+-- create or replace view tempview4 as (
+-- select r.go_id, r.go_cat, 
+-- -- avg(g.num_de) as avg_num_de, 
+-- array_agg(g.num_de) as num_de,
+-- avg(g.num_total) as num_total, 
+-- count(g.group1), 
+-- array_agg(g.group1),
+-- avg(s.num_de) as s_num_de, 
+-- avg(s.num_total) as s_num_total,
+-- avg(s.fdr_over_pval) as s_fdr_over_pval
+-- from goseq_r6_2str as g
+-- inner join
+-- r601_go_cat as r
+-- using (go_id)
+-- left outer join
+-- sfari_gocat as s
+-- using (go_id)
+-- where g.tool = 'edger' 
+-- and g.gene_subset = 'pcg_r601'
+-- and g.defdr = 0.10
+-- -- and g.num_de > 0
+-- -- and s.num_de > 0
+-- -- and s.fdr_over_pval < 0.10
+-- group by r.go_id, r.go_cat
+-- order by s_fdr_over_pval 
+-- )
+-- ;
+-- \copy (select * from tempview4) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_r6_2str/pcg_r601/goseq/gocat_edger_pcg_r601_defdr0.10_numde_sfdr.csv' csv header;
+
+
+-- drop view tempview5;
+-- create or replace view tempview5 as (
+-- select r.go_id, r.go_cat, 
+-- -- avg(g.num_de) as avg_num_de, 
+-- array_agg(g.num_de) as num_de,
+-- avg(g.num_total) as num_total, 
+-- count(g.group1), 
+-- array_agg(g.group1) as groups,
+-- array_agg(g.fdr_over_pval) as pvals,
+-- avg(g.fdr_over_pval) as avg_pval
+-- from goseq_r6_2str as g
+-- inner join
+-- r601_go_cat as r
+-- using (go_id)
+-- where g.tool = 'edger' 
+-- and g.gene_subset = 'pcg_r601'
+-- and g.defdr = 0.10
+-- and g.num_de > 0
+-- and g.fdr_over_pval < 0.10
+-- group by r.go_id, r.go_cat
+-- order by avg_pval
+-- )
+-- ;
+-- \copy (select * from tempview5) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/results_tophat_r6_2str/pcg_r601/goseq/gocat_edger_pcg_r601_defdr0.10_new.csv' csv header;
+
 
 -- create or replace view decountm_test as (
 -- select row_number() OVER (ORDER BY count (*) DESC),
@@ -1066,3 +1142,7 @@
 -- on (gene_name = gene)
 -- group by gene, count, array_agg
 -- order by count DESC, gene
+
+-- \copy ( select gene, 2^logfc as fc, 2^logcpm as cpm, pvalue, fdr, tool, gene_subset, group1, group2 from degenes_r6_2str where (gene = 'Nhe3' or gene = 'Nrx-1' or gene = 'Itgbetanu' or gene = 'en' or gene = 'Pten'or gene = 'Nrx-IV' or gene = 'CG34127') order by gene ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/tested_genes.csv' header csv;
+
+\copy ( select gene, 2^logfc as fc, 2^logcpm as cpm, pvalue, fdr, tool, gene_subset, group1, group2 from degenes_r6_2str where gene = 'Pten' and (group1 = 'pten_F' or group1 = 'pten_M')) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/Pten.csv' header csv;
