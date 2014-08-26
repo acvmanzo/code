@@ -1,3 +1,7 @@
+#Script for performing DESeq analysis; largely taken from the Anders et al
+#2013 Nature Protocols paper 'Count-based differential expression analysis of
+#RNA sequencing data using R and Bioconductor'
+
 
 library("DESeq")
 # Loads sample info and counts into R.

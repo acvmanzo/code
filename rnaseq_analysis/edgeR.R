@@ -1,5 +1,7 @@
 
-# Copied from Anders et al 2013, Nat Protocols
+# Largely taken from Anders et al 2013, Nat Protocols, 'Count-based
+# differential expression analysis of RNA sequencing data using R and
+# Bioconductor'
 
 #options(echo=TRUE) # if you want see commands in output file
 args <- commandArgs(trailingOnly = TRUE)

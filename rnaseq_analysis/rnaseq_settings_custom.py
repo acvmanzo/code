@@ -1,5 +1,6 @@
 # This module contains functions that define classes and objects where the
 # object attributes specify the files and directories used in RNA-Seq analysis.
+# This file is used for custom settings for small tests.
 
 import os
 

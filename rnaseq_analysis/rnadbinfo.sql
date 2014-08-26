@@ -1145,4 +1145,4 @@
 
 -- \copy ( select gene, 2^logfc as fc, 2^logcpm as cpm, pvalue, fdr, tool, gene_subset, group1, group2 from degenes_r6_2str where (gene = 'Nhe3' or gene = 'Nrx-1' or gene = 'Itgbetanu' or gene = 'en' or gene = 'Pten'or gene = 'Nrx-IV' or gene = 'CG34127') order by gene ) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/tested_genes.csv' header csv;
 
-\copy ( select gene, 2^logfc as fc, 2^logcpm as cpm, pvalue, fdr, tool, gene_subset, group1, group2 from degenes_r6_2str where gene = 'Pten' and (group1 = 'pten_F' or group1 = 'pten_M')) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/Pten.csv' header csv;
+-- \copy ( select gene, 2^logfc as fc, 2^logcpm as cpm, pvalue, fdr, tool, gene_subset, group1, group2 from degenes_r6_2str where gene = 'Pten' and (group1 = 'pten_F' or group1 = 'pten_M')) to '/home/andrea/Documents/lab/RNAseq/analysis/edger/Pten.csv' header csv;

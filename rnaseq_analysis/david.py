@@ -1,3 +1,7 @@
+#Functions for performing GO analysis using the online tool DAVID 
+#(http://david.abcc.ncifcrf.gov/). Prepares lists of genes for uploading
+#to the tool, and analyzes the files produced by the tool.
+
 import itertools
 import libs.correlationlib as cl
 import matplotlib.pyplot as plt

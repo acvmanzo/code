@@ -1,3 +1,6 @@
+# Script for converting output of DIOPT into a format that can be loaded
+# into a postgres database.
+
 
 SFARI_PARAMS = [
 '/home/andrea/rnaseqanalyze/references/brain_autism_williams_genes/sfari/autism_sfari_list_diopt.txt',

@@ -1,3 +1,5 @@
+#Plots histograms and probability densities of negative binomial and poisson distributions with different parameters.
+
 library("ggplot2")
 
 mu1 = 100

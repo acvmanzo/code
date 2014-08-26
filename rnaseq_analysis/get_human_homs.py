@@ -1,3 +1,5 @@
+#Script for finding the human homologs of genes.
+
 import libs.rnaseqlib as rl
 import libs.htseqlib as hl
 import libs.edgeRlib as el

@@ -1,3 +1,5 @@
+# Library containing functions for performing GO analysis with goseq.
+
 import datetime
 import glob
 import logging

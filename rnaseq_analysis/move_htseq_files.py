@@ -1,3 +1,5 @@
+# Moves htseq_files from one folder to another.
+
 import libs.htseqlib as htl
 from rnaseq_settings import *
 import psycopg2

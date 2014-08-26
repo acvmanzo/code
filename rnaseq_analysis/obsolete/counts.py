@@ -1,3 +1,7 @@
+#Script with functions to find the number of genes that are differentially
+#expressed in a given sample. Also finds the number of reads that map to genes
+#using htseq-count for a specific gene.
+
 import libs.htseqlib as hl
 import libs.rnaseqlib as rl
 import libs.delib as dl

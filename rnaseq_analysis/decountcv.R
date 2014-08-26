@@ -1,3 +1,6 @@
+#Script for plotting a histogram of the coefficient of variation of log fold change 
+#for differentially expressed genes.
+
 
 library("ggplot2")
 args <- commandArgs(trailingOnly = TRUE)

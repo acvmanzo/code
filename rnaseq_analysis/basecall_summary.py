@@ -1,3 +1,6 @@
+# Script that makes the manually assembled basecall_summary.txt file 
+# suitable for loading into the postgres database.
+
 import re
 import os
 import glob

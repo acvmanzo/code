@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#Code for running goseq
+#Code for running goseq analysis.
 
 import argparse 
 import cmn.cmn as cmn

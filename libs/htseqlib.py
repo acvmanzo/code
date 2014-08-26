@@ -1,3 +1,5 @@
+# Functions useful for running htseq-count.
+
 import shutil
 import logging
 import libs.rnaseqlib as rl

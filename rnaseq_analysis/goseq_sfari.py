@@ -1,4 +1,7 @@
-
+#Code for running goseq analysis on Sfari genes, without differential 
+#expression analysis, just to see which GO terms are over-represented
+#in that list. Instead of giving the bias vector as a list of counts,
+#gave it a list of gene lengths.
 
 import libs.goseqlib as gl
 import psycopg2
